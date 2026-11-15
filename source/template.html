@@ -928,7 +928,7 @@ function declareWar(a, b, notes, coalition) {
   if (a === game.player) text = `You declare war on ${nameOf(b)}.`;
   else if (coalition) text = `${capitalize(nameOf(a))} joins the coalition against ${who(b)}!`;
   else text = `${capitalize(nameOf(a))} declares war on ${who(b)}!`;
-  notes.push({ text, kind });
+  notes.push({ text, kind, warOnMe: b === game.player });
 
   // The defender's allies honor the alliance
   for (const c of alliesOf(b)) {
@@ -939,7 +939,8 @@ function declareWar(a, b, notes, coalition) {
       text: c === game.player
         ? `As ${nameOf(b)}'s ally, you are now at war with ${nameOf(a)}.`
         : `${capitalize(nameOf(c))} honors its alliance with ${who(b)} and joins the war against ${who(a)}.`,
-      kind: a === game.player ? "bad" : ""
+      kind: (a === game.player || c === game.player) ? "bad" : "",
+      warOnMe: c === game.player
     });
   }
 }
@@ -1199,7 +1200,7 @@ function runEvents(notes, cards) {
         const farm = p.building === "farm";
         if (farm) p.building = null;
         p.unrest = Math.max(p.unrest, 2);
-        const text = `A storm flood strikes ${p.name}.${farm ? " The farm is washed away, and" : ""} the province pays nothing for 2 years.`;
+        const text = `A storm flood strikes ${p.name}.${farm ? " The farm is washed away, and the province" : " The province"} pays nothing for 2 years.`;
         if (p.owner === me) cards.push({ emoji: "🌊", title: "Storm flood", text });
         else notes.push({ text, kind: "" });
       }
@@ -1271,6 +1272,18 @@ const yearView = { timer: null, savedView: null };
 
 function startNewYear(notes, cards) {
   const attacksOnMe = game.lastTurn.filter(r => r.defender === game.player);
+
+  // War declarations against you come first, before any battle they lead to
+  const wars = notes.filter(n => n.warOnMe);
+  if (wars.length) {
+    const others = notes.filter(n => !n.warOnMe);
+    const card = { emoji: "⚔️", title: "War!", text: wars.map(n => n.text).join(" ") };
+    return showCard(card, () => startNewYearAfterWar(others, cards, attacksOnMe));
+  }
+  startNewYearAfterWar(notes, cards, attacksOnMe);
+}
+
+function startNewYearAfterWar(notes, cards, attacksOnMe) {
   const next = () => {
     if (attacksOnMe.length) showBattle(attacksOnMe.shift(), next);
     else if (cards.length) showCard(cards.shift(), () => { checkGameOver(); next(); });
