@@ -60,5 +60,5 @@ subs = {"__VIEWBOX__": vb, "__BORDERS__": rows,
         "__TERRITORIES__": json.dumps({i: path(cells[i]) for i in ids}),
         "__MAP_SHAPES__": json.dumps({"land": path(land, tol=0.6), "rivers": path(rivers, tol=0.5)})}
 for k, v in subs.items():
-    assert src.count(k) == 1, k; src = src.replace(k, v)
+    assert src.count(k) >= 1, k; src = src.replace(k, v)
 open(OUT, 'w').write(src)

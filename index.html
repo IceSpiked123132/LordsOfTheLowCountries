@@ -55,7 +55,7 @@
   /* The map. The svg is allowed to draw outside its box (overflow: visible),
      so on any screen shape the edges show more real map instead of a hard cut. */
   #mapwrap { flex: 1; min-height: 0; position: relative; background: var(--sea); overflow: hidden; }
-  svg { width: 100%; height: 100%; display: block; overflow: visible; touch-action: none; }
+  #map { width: 100%; height: 100%; display: block; overflow: visible; touch-action: none; }
   #zoom-ctrl { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
   #zoom-ctrl button {
     width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--ink);
@@ -120,13 +120,48 @@
   }
   .overlay h1 { font-size: 28px; margin: 0 0 4px; }
   .overlay p { margin: 0 0 22px; color: var(--ink-soft); font-size: 18px; }
-  .realm-btn {
-    width: 100%; max-width: 320px; margin: 6px 0; padding: 14px;
-    border: 2px solid var(--ink); border-radius: 8px;
-    font-family: 'Cinzel', serif; font-weight: 800; font-size: 16px;
-    color: #fff; cursor: pointer; text-align: left;
-    display: flex; flex-direction: column; gap: 2px;
+  /* Start screen */
+  #start {
+    justify-content: flex-start; overflow-y: auto;
+    padding: calc(26px + env(safe-area-inset-top)) 16px 24px;
+    background: radial-gradient(ellipse at 50% 40%, #f6edd5 0%, #e9dbb4 55%, #cbb683 100%);
   }
+  #start-map { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: .3; pointer-events: none; }
+  .start-inner { position: relative; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .start-kicker { font-family: 'Cinzel', serif; font-weight: 600; letter-spacing: .25em; font-size: 12px; color: var(--ink-soft); }
+  #start h1 { font-size: 36px; line-height: 1.05; margin: 0; text-shadow: 0 2px 0 #fff8e0, 0 0 18px #f6edd5; }
+  .start-rule { width: 70%; height: 2px; background: linear-gradient(90deg, transparent, var(--ink), transparent); margin: 2px 0 4px; }
+  .section-label { font-family: 'Cinzel', serif; font-weight: 800; font-size: 12px; letter-spacing: .18em; color: var(--ink-soft); margin-top: 6px; }
+  #start-msg { min-height: 20px; font-size: 15px; color: #9a2c2c; text-align: center; }
+  .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+  .realm-card {
+    background: rgba(255, 250, 235, .88); border: 2px solid var(--ink); border-top: 7px solid var(--side);
+    border-radius: 10px; padding: 12px 8px 10px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; font-family: inherit; color: var(--ink); box-shadow: 0 3px 10px rgba(59, 42, 26, .2);
+    transition: transform .1s;
+  }
+  .realm-card:active { transform: scale(.96); }
+  .rc-name { font-family: 'Cinzel', serif; font-weight: 800; font-size: 14px; line-height: 1.15; }
+  .rc-info { font-size: 13px; color: var(--ink-soft); line-height: 1.2; }
+  .continue-btn {
+    width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer;
+    background: var(--ink); color: var(--parchment); border: 2px solid var(--ink); border-radius: 10px; text-align: left;
+    font-family: inherit; box-shadow: 0 3px 10px rgba(59, 42, 26, .3);
+  }
+  .continue-btn b { font-family: 'Cinzel', serif; font-size: 17px; display: block; }
+  .continue-btn small { font-size: 14px; opacity: .85; }
+  .diff { display: flex; width: 100%; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; }
+  .diff button {
+    flex: 1; padding: 9px 0; font-family: 'Cinzel', serif; font-weight: 800; font-size: 13px; cursor: pointer;
+    background: rgba(255, 250, 235, .88); color: var(--ink); border: none; border-right: 1px solid var(--ink);
+  }
+  .diff button:last-child { border-right: none; }
+  .diff button.on { background: var(--ink); color: var(--parchment); }
+  .diff-text { font-size: 14px; color: var(--ink-soft); min-height: 36px; text-align: center; }
+  .crest { display: inline-block; vertical-align: middle; flex: none; }
+  #topbar .realm .crest { margin: -4px 0; }
+  .b-name { display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .dip-name { display: flex; align-items: center; gap: 8px; }
   /* The new year: a short look at the map before you play */
   #yearview { position: absolute; inset: 0; z-index: 15; cursor: pointer; }
   #year-banner {
@@ -179,7 +214,6 @@
   #help h3 { margin: 14px 0 4px; font-size: 16px; }
   #help p, #help li { font-size: 16px; color: var(--ink); margin: 0 0 6px; }
   #help ul { margin: 0; padding-left: 20px; }
-  #continue { background: var(--ink); color: var(--parchment); }
   #panel ul.warn { margin: 0; padding-left: 20px; }
   #panel ul.warn li { margin-bottom: 4px; }
 
@@ -214,7 +248,6 @@
   #b-result b { font-family: 'Cinzel', serif; font-size: 20px; }
   #b-result.good b { color: #3f7d3a; }
   #b-result.bad b { color: #b23a3a; }
-  .realm-btn small { font-family: 'EB Garamond', serif; font-weight: 400; font-size: 14px; opacity: .9; }
 </style>
 </head>
 <body>
@@ -231,11 +264,20 @@
   <div id="panel"></div>
 
   <div id="start" class="overlay">
-    <h1>Lords of the<br>Low Countries</h1>
-    <p>Anno Domini 1350. Choose your realm.</p>
-    <button id="continue" class="realm-btn" style="display:none"></button>
-    <div id="realm-buttons" style="width:100%;display:flex;flex-direction:column;align-items:center"></div>
-    <button class="act light" style="flex:none;width:200px;margin-top:16px;min-height:40px" onclick="showHelp()">How to play</button>
+    <svg id="start-map" viewBox="-101 -43 593 683" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="start-inner">
+      <div class="start-kicker">ANNO DOMINI 1350</div>
+      <h1>Lords of the<br>Low Countries</h1>
+      <div class="start-rule"></div>
+      <button id="continue" class="continue-btn" style="display:none"></button>
+      <div class="section-label">DIFFICULTY</div>
+      <div class="diff" id="difficulty"></div>
+      <div class="diff-text" id="difficulty-text"></div>
+      <div class="section-label">CHOOSE YOUR REALM</div>
+      <div id="realm-buttons" class="realm-grid"></div>
+      <div id="start-msg"></div>
+      <button class="act light" style="flex:none;width:200px;min-height:40px" onclick="showHelp()">How to play</button>
+    </div>
   </div>
   <div id="menu" class="overlay" style="display:none">
     <h1>Paused</h1>
@@ -383,10 +425,21 @@ const RULES = {
   endYear: 1400
 };
 
+// Difficulty only changes the AI realms; your own rules stay the same
+const DIFFICULTY = {
+  easy:   { label: "Easy",   aiIncome: 0.75, aiWar: 0.5, aiMargin: 0.3,  peaceYears: 3,
+            text: "The other realms are poorer, slower to start wars and quicker to make peace." },
+  normal: { label: "Normal", aiIncome: 1,    aiWar: 1,   aiMargin: 0,    peaceYears: 5,
+            text: "A fair fight." },
+  hard:   { label: "Hard",   aiIncome: 1.25, aiWar: 1.4, aiMargin: -0.1, peaceYears: 8,
+            text: "The other realms are richer, hungrier for war and slow to make peace." }
+};
+const diff = () => DIFFICULTY[game.difficulty] || DIFFICULTY.normal;
+
 const REALMS = {
-  holland: { short: "Holland", name: "County of Holland",    color: "#b23a3a", capital: "haarlem",  note: "Rich coastal towns" },
-  utrecht: { short: "the Bishopric", name: "Bishopric of Utrecht", color: "#c9a227", capital: "utrecht",  note: "Small, central (hard mode)" },
-  gelre:   { short: "Gelre", name: "Duchy of Gelre",       color: "#3f7d3a", capital: "nijmegen", note: "Rivers and manpower" },
+  holland: { short: "Holland", name: "County of Holland",    color: "#b23a3a", capital: "haarlem",  note: "Rich towns along the coast" },
+  utrecht: { short: "the Bishopric", name: "Bishopric of Utrecht", color: "#c9a227", capital: "utrecht",  note: "Spread out between rivals (hard)" },
+  gelre:   { short: "Gelre", name: "Duchy of Gelre",       color: "#3f7d3a", capital: "nijmegen", note: "Safe behind the great rivers" },
   brabant: { short: "Brabant", name: "Duchy of Brabant",     color: "#2f5d9e", capital: "brussels", note: "The wealthiest realm" },
   independent: { short: "the independents", name: "Independent", color: "#8a8478", capital: null }
 };
@@ -411,7 +464,7 @@ const PROVINCES = {
   drenthe:   { name: "Drenthe",   owner: "utrecht", x: 395, y: 125, income: 1, manpower: 2 },
   twente:    { name: "Twente",    owner: "utrecht", x: 440, y: 240, income: 2, manpower: 2 },
   // Duchy of Gelre
-  harderwijk:{ name: "Harderwijk",owner: "gelre",   x: 256, y: 218, income: 1, manpower: 1, labelAbove: true },
+  harderwijk:{ name: "Harderwijk",owner: "gelre",   x: 256, y: 218, income: 1, manpower: 1 },
   zutphen:   { name: "Zutphen",   owner: "gelre",   x: 362, y: 302, income: 2, manpower: 2 },
   arnhem:    { name: "Arnhem",    owner: "gelre",   x: 290, y: 300, income: 2, manpower: 1 },
   tiel:      { name: "Tiel",      owner: "gelre",   x: 222, y: 334, income: 1, manpower: 2 },
@@ -524,7 +577,8 @@ const game = {
   provinces: {}     // ownership, buildings and armies per province
 };
 
-function newGame(playerRealm) {
+function newGame(playerRealm, difficulty) {
+  game.difficulty = difficulty || "normal";
   game.year = RULES.startYear;
   game.player = playerRealm;
   game.selected = null;
@@ -792,7 +846,7 @@ function aiTurn(id) {
   const results = [];
   const lands = () => provincesOf(id);
   if (lands().length === 0) return results;
-  const margin = random(RULES.aiMarginMin, RULES.aiMarginMax);   // bold or careful this year
+  const margin = random(RULES.aiMarginMin, RULES.aiMarginMax) + diff().aiMargin;   // bold or careful this year
   const near = (p) => p.neighbors.map(n => game.provinces[n]);
   // Places to fight: realms we're at war with (also while mobilizing) and the independents
   const hostile = (q) => q.owner !== id && (q.owner === "independent" || rel(id, q.owner).state === "war");
@@ -804,7 +858,7 @@ function aiTurn(id) {
   // 1. Recruit where the fighting is, or else at the most threatened border
   const front = fronts().sort((a, b) => threat(b) - threat(a))[0]
     || lands().slice().sort((a, b) => threat(b) - threat(a))[0];
-  while (canRecruit(front) && incomeOf(id) - (armyOf(id) + 1) * RULES.upkeep >= 0) {
+  while (canRecruit(front) && Math.round(incomeOf(id) * diff().aiIncome) - (armyOf(id) + 1) * RULES.upkeep >= 0) {
     recruit(front);
   }
 
@@ -902,7 +956,8 @@ function endTurn() {
 
     const income = incomeOf(id);
     const upkeep = upkeepOf(id);
-    realm.gold += income - upkeep;
+    // On easy the AI realms earn less, on hard more
+    realm.gold += (id === game.player ? income : Math.round(income * diff().aiIncome)) - upkeep;
 
     // Can't pay? One regiment deserts for every gold you're short.
     let deserted = 0;
@@ -1087,7 +1142,7 @@ function aiDiplomacy(id, notes) {
     const lead = (r.score[id] || 0) - (r.score[b] || 0);
     if (b === game.player) {
       const losing = lead < 0 || myArmy < armyOf(b) * 0.7;
-      if (years >= 2 && (losing || years >= 5) && game.year - r.lastOffer >= 3) {
+      if (years >= 2 && (losing || years >= diff().peaceYears) && game.year - r.lastOffer >= 3) {
         r.lastOffer = game.year;
         game.offers.push(id);
       }
@@ -1105,7 +1160,7 @@ function aiDiplomacy(id, notes) {
   }
 
   // 3. War on a weak neighbor, if not already fighting two wars
-  if (warsOf(id).length < 2 && Math.random() < RULES.aiWarChance) {
+  if (warsOf(id).length < 2 && Math.random() < RULES.aiWarChance * diff().aiWar) {
     const strength = (b) => armyOf(b) + alliesOf(b).reduce((s, c) => s + armyOf(c), 0);
     const target = REALM_IDS
       .filter(b => b !== id && alive(b) && bordering(id, b) && rel(id, b).state === "peace" && rel(id, b).truce === 0)
@@ -1129,7 +1184,7 @@ function proposePeace(b) {
   const me = game.player, r = rel(me, b);
   const years = game.year - r.since;
   const lead = (r.score[b] || 0) - (r.score[me] || 0);   // > 0: they're winning
-  const ok = (years >= 1 && lead <= 0) || armyOf(b) < armyOf(me) * 0.8 || years >= 5;
+  const ok = (years >= 1 && lead <= 0) || armyOf(b) < armyOf(me) * 0.8 || years >= diff().peaceYears;
   if (!ok) return { ok, text: `${capitalize(nameOf(b))} refuses. They think they're winning this war.` };
   const notes = [];
   makePeace(me, b, notes);
@@ -1191,7 +1246,7 @@ function renderDiplomacy() {
     }
     return `
       <div class="dip-row" style="--side:${REALMS[b].color}">
-        <div class="dip-name">${REALMS[b].name}</div>
+        <div class="dip-name">${crest(b, 28)}${REALMS[b].name}</div>
         <div class="dip-stats">${provincesOf(b).length} provinces · ${armyOf(b)} regiments</div>
         <div class="dip-status">${statusOf(b)}</div>
         ${theirWars.length || theirAllies.length ? `<div class="dip-stats">${theirWars.length ? `At war with ${theirWars.join(", ")}. ` : ""}${theirAllies.length ? `Allied with ${theirAllies.join(", ")}.` : ""}</div>` : ""}
@@ -1539,7 +1594,7 @@ function saveGame() {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       year: game.year, player: game.player, stats: game.stats,
       realms: game.realms, provinces: game.provinces,
-      relations: game.relations, flags: game.flags, endless: game.endless
+      relations: game.relations, flags: game.flags, endless: game.endless, difficulty: game.difficulty
     }));
   } catch (e) { /* storage not available: just don't save */ }
 }
@@ -1559,7 +1614,7 @@ function continueGame(data) {
   Object.assign(game, {
     year: data.year, player: data.player, stats: data.stats,
     realms: data.realms, provinces: data.provinces,
-    relations: data.relations || {}, flags: data.flags || {}, endless: !!data.endless,
+    relations: data.relations || {}, flags: data.flags || {}, endless: !!data.endless, difficulty: data.difficulty || "normal",
     selected: null, order: null, over: false, lastTurn: [], confirmEnd: null, endInfo: null, offers: [],
     message: `Welcome back. The year is ${data.year}.`
   });
@@ -1571,6 +1626,74 @@ function continueGame(data) {
   render();
   focusOnRealm(data.player);
   checkGameOver();
+}
+
+// =====================================================================
+// COATS OF ARMS
+// Each realm's real medieval arms, drawn as a small SVG:
+//   Holland: a red lion on gold        Utrecht: a white cross on red
+//   Gelre:   a gold lion on blue       Brabant: a gold lion on black
+//   Independent: a white tower on grey
+// =====================================================================
+
+const ARMS = {
+  holland:     { field: "#e3b32b", charge: "#c0262d", type: "lion" },
+  utrecht:     { field: "#b8282e", charge: "#f4efe2", type: "cross" },
+  gelre:       { field: "#2b5aa8", charge: "#e3b32b", type: "lion" },
+  brabant:     { field: "#1f1c1a", charge: "#e3b32b", type: "lion" },
+  independent: { field: "#8a8478", charge: "#f4efe2", type: "tower" }
+};
+
+// A lion rampant (standing on its hind legs, facing left), in a 100 x 110 box
+function lionShape(color) {
+  // Spiky mane: a star of points around the neck
+  const mane = [];
+  for (let k = 0; k < 14; k++) {
+    const angle = (k / 14) * Math.PI * 2, r = k % 2 ? 11 : 17;
+    mane.push(`${(47 + Math.cos(angle) * r).toFixed(1)},${(36 + Math.sin(angle) * r).toFixed(1)}`);
+  }
+  return `<g transform="translate(-4 -4) scale(1.08)" fill="${color}" stroke="${color}" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M63 76 C84 74 70 50 82 36 C86 31 84 26 80 24" fill="none" stroke-width="4.5"/>
+    <path d="M80 24 l-1 -7 l5 5 l3 -6 l1 8 l5 -2 l-6 6 z" stroke-width="1.5"/>
+    <ellipse cx="54" cy="60" rx="12" ry="22" transform="rotate(-16 54 60)" stroke-width="0"/>
+    <path d="M55 76 L47 89 L37 93" fill="none" stroke-width="7.5"/>
+    <path d="M63 74 L67 89 L79 93" fill="none" stroke-width="7.5"/>
+    <path d="M36 93 l-5 -3 M36 93 l-5 2 M79 93 l5 -3 M79 93 l5 2" stroke-width="2.5"/>
+    <polygon points="${mane.join(" ")}" stroke-width="0"/>
+    <path d="M48 46 L34 40 L28 31" fill="none" stroke-width="6.5"/>
+    <path d="M49 53 L35 58 L28 53" fill="none" stroke-width="6.5"/>
+    <path d="M28 31 l-5 -2 M28 31 l-3 -5 M28 53 l-6 1 M28 53 l-4 -4" stroke-width="2.5"/>
+    <circle cx="41" cy="31" r="10" stroke-width="0"/>
+    <path d="M33 26 L24 27 L26 32 L22 35 L27 37 L25 41 L34 38 Z" stroke-width="1"/>
+    <path d="M43 22 l1 -7 l5 6" stroke-width="2.5"/>
+  </g>
+  <path d="M21 36 l-6 3" stroke="#b02020" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="38" cy="29" r="1.8" fill="#00000066"/>`;
+}
+
+function crest(id, size) {
+  const a = ARMS[id] || ARMS.independent;
+  const shield = "M10 8 H90 V52 C90 80 72 96 50 104 C28 96 10 80 10 52 Z";
+  let charge = "";
+  if (a.type === "lion") charge = lionShape(a.charge);
+  if (a.type === "cross") charge = `<path d="M43 8 H57 V104 H43 Z M10 46 H90 V60 H10 Z" fill="${a.charge}"/>`;
+  if (a.type === "tower") charge = `<path d="M34 92 V44 H30 V30 H38 V36 H46 V30 H54 V36 H62 V30 H70 V44 H66 V92 Z M45 92 V76 C45 70 55 70 55 76 V92 Z" fill="${a.charge}" fill-rule="evenodd"/>`;
+  const clip = `crest-clip-${id}-${Math.random().toString(36).slice(2, 7)}`;
+  return `<svg class="crest" style="width:${size}px;height:${Math.round(size * 1.1)}px" viewBox="0 0 100 110" aria-hidden="true">
+    <defs>
+      <clipPath id="${clip}"><path d="${shield}"/></clipPath>
+      <linearGradient id="${clip}-shine" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/>
+        <stop offset="1" stop-color="#000" stop-opacity=".22"/>
+      </linearGradient>
+    </defs>
+    <g clip-path="url(#${clip})">
+      <rect width="100" height="110" fill="${a.field}"/>
+      ${charge}
+      <rect width="100" height="110" fill="url(#${clip}-shine)"/>
+    </g>
+    <path d="${shield}" fill="none" stroke="#3b2a1a" stroke-width="5"/>
+  </svg>`;
 }
 
 // =====================================================================
@@ -1677,7 +1800,7 @@ function renderTopbar() {
   const s = game.realms[game.player];
   const net = incomeOf(game.player) - upkeepOf(game.player);
   document.getElementById("topbar").innerHTML = `
-    <div class="realm"><button class="menu-btn" data-do="menu">☰</button><span class="swatch" style="background:${r.color}"></span>${game.year}</div>
+    <div class="realm"><button class="menu-btn" data-do="menu">☰</button>${crest(game.player, 20)}${game.year}</div>
     <div class="stats">
       <span>💰 ${s.gold} <small>(${net >= 0 ? "+" : "−"}${Math.abs(net)})</small></span>
       <span>⚔️ ${s.manpower}/${RULES.maxManpower}</span>
@@ -1695,7 +1818,7 @@ function renderPanel() {
       <h2 class="end-title ${e.won ? "win" : "lose"}">${e.title}</h2>
       <div>${e.text}</div>
       <div class="end-stats">
-        ${REALMS[game.player].name} · ${game.year - RULES.startYear} years · ${s.won} battles won, ${s.lost} lost ·
+        ${REALMS[game.player].name} (${diff().label.toLowerCase()}) · ${game.year - RULES.startYear} years · ${s.won} battles won, ${s.lost} lost ·
         ${s.taken} provinces conquered · most held at once: ${Math.max(s.peak, provincesOf(game.player).length)}
       </div>
       <div class="spacer"></div>
@@ -1767,7 +1890,7 @@ function renderPanel() {
     const total = allProvinces().length;
     const goal = game.endless ? `Conquer all ${total} provinces to unite the Low Countries.` : `Own ${RULES.provincesToWin} of the ${total} provinces to win.`;
     panel.innerHTML = `
-      <h2>${r.name}</h2>
+      <h2 style="display:flex;align-items:center;gap:8px">${crest(game.player, 26)}${r.name}</h2>
       ${msg}
       <div>${wars.length ? `⚔️ At war with ${wars.join(", ")}` : "🕊️ At peace with every realm"}${allies.length ? ` · 🤝 Allied with ${allies.join(", ")}` : ""}</div>
       ${danger}
@@ -1850,8 +1973,8 @@ function showBattle(r, onDone) {
   $("b-title").textContent = r.defender === game.player
     ? `${capitalize(att.short)} attacks ${r.place}!`
     : `Battle of ${r.place}`;
-  $("b-att-name").textContent = capitalize(att.short);
-  $("b-def-name").textContent = capitalize(def.short);
+  $("b-att-name").innerHTML = crest(r.attacker, 22) + capitalize(att.short);
+  $("b-def-name").innerHTML = crest(r.defender, 22) + capitalize(def.short);
   $("b-att").style.setProperty("--side", att.color);
   $("b-def").style.setProperty("--side", def.color);
   $("b-att-count").textContent = r.sent;
@@ -2192,19 +2315,47 @@ function showStart() {
   const button = document.getElementById("continue");
   if (save) {
     const owned = Object.values(save.provinces).filter(p => p.owner === save.player).length;
-    button.innerHTML = `<span>Continue</span><small>${REALMS[save.player].name} · ${save.year} · ${owned} provinces</small>`;
+    const level = (DIFFICULTY[save.difficulty] || DIFFICULTY.normal).label.toLowerCase();
+    button.innerHTML = `${crest(save.player, 40)}<span><b>Continue</b><small>${REALMS[save.player].name} · ${save.year} · ${owned} provinces · ${level}</small></span>`;
     button.style.display = "flex";
     button.onclick = () => { hide("start"); continueGame(save); };
   } else {
     button.style.display = "none";
   }
+  document.getElementById("start-msg").textContent = "";
   show("start");
 }
+
+// The faded map behind the start screen: every realm's lands in 1350
+function drawStartMap() {
+  const map = document.getElementById("start-map");
+  el("path", { d: MAP_SHAPES.land, fill: "#cdb98a", stroke: "#8a7448", "stroke-width": 1.5 }, map);
+  for (const [id, p] of Object.entries(PROVINCES)) {
+    el("path", { d: TERRITORIES[id], fill: REALMS[p.owner].color, "fill-opacity": 0.55, stroke: "#3b2a1a", "stroke-opacity": 0.4 }, map);
+  }
+  el("path", { d: MAP_SHAPES.rivers, fill: "none", stroke: "#5f8fa3", "stroke-width": 3 }, map);
+}
+
+// The difficulty picker remembers your last choice on this device
+let chosenDifficulty = "normal";
+try { chosenDifficulty = localStorage.getItem("lords-difficulty") || "normal"; } catch (e) {}
+function renderDifficulty() {
+  document.getElementById("difficulty").innerHTML = Object.entries(DIFFICULTY)
+    .map(([id, d]) => `<button class="${id === chosenDifficulty ? "on" : ""}" data-level="${id}">${d.label}</button>`).join("");
+  document.getElementById("difficulty-text").textContent = DIFFICULTY[chosenDifficulty].text;
+}
+document.getElementById("difficulty").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-level]");
+  if (!b) return;
+  chosenDifficulty = b.dataset.level;
+  try { localStorage.setItem("lords-difficulty", chosenDifficulty); } catch (e) {}
+  renderDifficulty();
+});
 
 document.getElementById("topbar").addEventListener("click", (e) => {
   if (!e.target.closest("[data-do=menu]") || game.over) return;
   document.getElementById("menu-text").textContent =
-    `${REALMS[game.player].name}, ${game.year}. Your game is saved automatically.`;
+    `${REALMS[game.player].name}, ${game.year}, ${diff().label.toLowerCase()}. Your game is saved automatically.`;
   show("menu");
 });
 function closeMenu() { hide("menu"); }
@@ -2217,26 +2368,28 @@ for (const id of ["holland", "utrecht", "gelre", "brabant"]) {
   const r = REALMS[id];
   const count = Object.values(PROVINCES).filter(p => p.owner === id).length;
   const b = document.createElement("button");
-  b.className = "realm-btn";
-  b.style.background = r.color;
-  b.innerHTML = `<span>${r.name}</span><small>${count} provinces · ${r.note}</small>`;
+  b.className = "realm-card";
+  b.style.setProperty("--side", r.color);
+  b.innerHTML = `${crest(id, 62)}<span class="rc-name">${r.name}</span><span class="rc-info">${count} provinces<br>${r.note}</span>`;
   b.onclick = () => {
     if (loadSave() && !confirmNewGame()) return;
     hide("start");
-    newGame(id);
+    newGame(id, chosenDifficulty);
   };
   buttons.appendChild(b);
 }
+drawStartMap();
+renderDifficulty();
 
 // Starting a new game overwrites the save: ask with a second tap
 let newGameArmed = false;
 function confirmNewGame() {
   if (newGameArmed) { newGameArmed = false; return true; }
   newGameArmed = true;
-  document.querySelector("#start p").textContent = "This replaces your saved game. Tap a realm again to confirm.";
+  document.getElementById("start-msg").textContent = "This replaces your saved game. Tap a realm again to confirm.";
   setTimeout(() => {
     newGameArmed = false;
-    document.querySelector("#start p").textContent = "Anno Domini 1350. Choose your realm.";
+    document.getElementById("start-msg").textContent = "";
   }, 4000);
   return false;
 }
