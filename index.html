@@ -143,7 +143,35 @@
   #year-hint { font-size: 13px; color: var(--ink-soft); margin-top: 6px; display: flex; align-items: center; gap: 8px; }
   #year-timer { flex: 1; height: 4px; background: rgba(59,42,26,.15); border-radius: 2px; overflow: hidden; }
   #year-timer i { display: block; height: 100%; background: var(--ink); width: 100%; }
-  #end-stats { font-size: 16px !important; }
+  /* Diplomacy screen */
+  #diplo { justify-content: flex-start; padding-top: calc(20px + env(safe-area-inset-top)); overflow-y: auto; }
+  #diplo .box { width: 100%; max-width: 420px; text-align: left; }
+  #diplo h1 { text-align: center; margin-bottom: 12px; }
+  .dip-row { background: var(--parchment-dark); border-left: 6px solid var(--side); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .dip-name { font-family: 'Cinzel', serif; font-weight: 800; font-size: 16px; }
+  .dip-stats { font-size: 14px; color: var(--ink-soft); }
+  .dip-status { font-size: 16px; }
+  .dip-row button.act { min-height: 40px; font-size: 13px; }
+  #diplo-msg { margin-bottom: 10px; }
+
+  /* Event cards */
+  #eventcard { background: rgba(43, 33, 24, 0.82); z-index: 20; }
+  #eventcard .card {
+    width: 100%; max-width: 380px; background: var(--parchment); border-radius: 12px;
+    border: 3px solid var(--ink); padding: 20px 18px 16px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    animation: drop .35s ease-out;
+  }
+  #ev-emoji { font-size: 46px; }
+  #ev-title { font-family: 'Cinzel', serif; font-weight: 800; font-size: 22px; margin: 4px 0 8px; }
+  #ev-text { font-size: 17px; margin-bottom: 16px; }
+  #ev-buttons { display: flex; flex-direction: column; gap: 8px; }
+  #ev-buttons button.act { flex: none; width: 100%; }
+
+  /* End of the game: shown in the bottom panel so the map stays visible */
+  .end-title { font-family: 'Cinzel', serif; font-weight: 800; font-size: 26px; margin: 0; }
+  .end-title.win { color: #3f7d3a; }
+  .end-title.lose { color: #9a2c2c; }
+  .end-stats { font-size: 15px; color: var(--ink-soft); }
   .stack { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
   .stack button.act { flex: none; width: 100%; }
   #help .box { width: 100%; max-width: 400px; text-align: left; overflow-y: auto; max-height: 100%; }
@@ -214,6 +242,7 @@
     <p id="menu-text"></p>
     <div class="stack">
       <button class="act" onclick="closeMenu()">Resume</button>
+      <button class="act light" onclick="closeMenu(); openDiplomacy()">Diplomacy 🤝</button>
       <button class="act light" onclick="showHelp()">How to play</button>
       <button class="act light" onclick="quitToStart()">Main menu (game is saved)</button>
     </div>
@@ -222,7 +251,7 @@
     <div class="box">
       <h1>How to play</h1>
       <h3>Goal</h3>
-      <p>Own 12 of the 20 provinces, or hold the most when the year 1400 comes. You lose if you have no provinces left or another realm reaches 12.</p>
+      <p>Own 12 of the 20 provinces, or hold the most when the year 1400 comes. You lose if another realm gets there first. Either way you can keep playing, all the way to uniting the whole country. The game only ends for good when you hold all 20, or none.</p>
       <h3>Your turn</h3>
       <ul>
         <li><b>Recruit:</b> tap your province, press Recruit (5 💰, 1 ⚔️ manpower).</li>
@@ -232,6 +261,15 @@
       </ul>
       <h3>The map</h3>
       <p>Pinch or use + and − to zoom, drag to move around. At the start of every year the map shows what the other realms did: an arrow for each attack (dashed with ✕ when it was beaten back) and a flashing yellow border on provinces that changed hands. Attacks on you are played out on the battle card first.</p>
+      <h3>Diplomacy</h3>
+      <ul>
+        <li>You can only attack realms you're at war with (and the grey independents, always). Open Diplomacy 🤝 to declare war, offer peace or propose an alliance.</li>
+        <li>Peace means a 10-year truce. Everyone keeps what they hold.</li>
+        <li>If someone declares war on your ally, you join in, and the other way around.</li>
+        <li>Grow to 8 provinces and your neighbors may form a coalition against you.</li>
+      </ul>
+      <h3>Events</h3>
+      <p>History happens: the Black Death (1351), the Hook and Cod wars in Holland (1353), plague, storm floods, good harvests and mercenaries. A conquered province left without soldiers may revolt.</p>
       <h3>Money</h3>
       <p>Every regiment costs 1 💰 per year. If you can't pay, soldiers desert.</p>
       <h3>Battles</h3>
@@ -278,11 +316,21 @@
       <div id="year-hint"><span>Tap to continue</span><div id="year-timer"><i></i></div></div>
     </div>
   </div>
-  <div id="end" class="overlay" style="display:none">
-    <h1 id="end-title"></h1>
-    <p id="end-text"></p>
-    <p id="end-stats"></p>
-    <button class="act" style="flex:none;width:220px" onclick="showStart()">Play again</button>
+  <div id="diplo" class="overlay" style="display:none">
+    <div class="box">
+      <h1>Diplomacy</h1>
+      <div id="diplo-msg" class="msg"></div>
+      <div id="diplo-list"></div>
+      <button class="act" style="width:100%;margin-top:6px" onclick="closeDiplomacy()">Back to the map</button>
+    </div>
+  </div>
+  <div id="eventcard" class="overlay" style="display:none">
+    <div class="card">
+      <div id="ev-emoji"></div>
+      <div id="ev-title"></div>
+      <div id="ev-text"></div>
+      <div id="ev-buttons"></div>
+    </div>
   </div>
 </div>
 
@@ -312,7 +360,12 @@ const RULES = {
   castleCost: 20,        // a castle multiplies defenders by castleBonus
   aiMarginMin: 1.1,      // the AI only attacks when it's this much stronger;
   aiMarginMax: 1.6,      //   each year each realm picks a number in between (its mood)
-  provincesToWin: 12,
+  provincesToWin: 12,    // a victory (you can keep playing to conquer all 20)
+  truceYears: 10,        // after a peace treaty, no war between the two for this long
+  coalitionAt: 8,        // a realm this big makes its neighbors gang up on it
+  aiWarChance: 0.45,     // yearly chance an AI looks for a new war
+  revoltChance: 0.15,    // yearly chance an unguarded, freshly conquered province revolts
+  eventChance: 0.45,     // yearly chance of a random event (flood, harvest, mercenaries)
   startYear: 1350,
   endYear: 1400
 };
@@ -350,7 +403,7 @@ const PROVINCES = {
   breda:     { name: "Breda",     owner: "brabant", x: 122, y: 410, income: 1, manpower: 2 },
   antwerp:   { name: "Antwerp",   owner: "brabant", x: 65,  y: 480, income: 3, manpower: 1 },
   brussels:  { name: "Brussels",  owner: "brabant", x: 70,  y: 561, income: 3, manpower: 2 },
-  leuven:    { name: "Leuven",    owner: "brabant", x: 160, y: 545, income: 2, manpower: 1 },
+  leuven:    { name: "Leuven",    owner: "brabant", x: 160, y: 545, income: 1, manpower: 1 },
   // Independent
   friesland: { name: "Friesland", owner: "independent", x: 260, y: 70, income: 1, manpower: 2 },
   groningen: { name: "Groningen", owner: "independent", x: 365, y: 60, income: 2, manpower: 1 }
@@ -430,6 +483,11 @@ function newGame(playerRealm) {
   game.stats = { won: 0, lost: 0, taken: 0, peak: 0 };
   game.lastTurn = [];
   game.confirmEnd = null;
+  game.endless = false;   // true after "Keep playing"
+  game.endInfo = null;
+  game.flags = {};        // events that already happened
+  game.offers = [];       // AI peace offers waiting for the player
+  initRelations("peace");
 
   for (const id in REALMS) {
     game.realms[id] = {
@@ -586,6 +644,7 @@ function attack(from, to, count) {
     result.won = true;
     result.attackLoss = losses;
     result.defenseLoss = defenders;
+    scoreConquest(attacker, defender);
     result.note = capture(to, attacker, count - losses);
   } else {
     const losses = Math.max(0, Math.min(Math.ceil(count / 2), defenders - 1));
@@ -673,7 +732,8 @@ function capture(p, newOwner, survivors) {
 function aiTurn(id) {
   const results = [];
   const lands = () => provincesOf(id);
-  const enemiesNear = (p) => p.neighbors.map(n => game.provinces[n]).filter(n => n.owner !== id);
+  // Neighbors that aren't ours or an ally's (at peace or at war: we keep an eye on both)
+  const enemiesNear = (p) => p.neighbors.map(n => game.provinces[n]).filter(n => n.owner !== id && !allied(id, n.owner));
   const threat = (p) => enemiesNear(p).reduce((sum, n) => sum + n.army, 0);
   const frontier = () => lands().filter(p => enemiesNear(p).length > 0);
   if (lands().length === 0) return results;
@@ -691,7 +751,7 @@ function aiTurn(id) {
     let best = null;
     for (const from of lands()) {
       if (ready(from) === 0) continue;
-      for (const to of enemiesNear(from)) {
+      for (const to of enemiesNear(from).filter(to => canAttack(id, to))) {
         const needed = defenseSize(to) * defenseBonus(from, to) * margin;
         if (ready(from) < needed) continue;
         // Leave one regiment at home if the attack still works without it
@@ -750,8 +810,13 @@ function aiTurn(id) {
 
 function endTurn() {
   const notes = [];    // { text, kind }: short news for the new year banner
+  const cards = [];    // events and offers the player has to see or decide
   game.lastTurn = [];  // every AI attack, to show on the map
   game.confirmEnd = null;
+  game.offers = [];
+
+  // The AI realms do their diplomacy first: peace, new wars, alliances
+  for (const id of REALM_IDS) if (id !== game.player) aiDiplomacy(id, notes);
 
   // The AI realms take their turns
   for (const id in REALMS) {
@@ -805,14 +870,22 @@ function endTurn() {
     if (p.unrest > 0) p.unrest -= 1;
   }
 
+  // Truces run out
+  for (const r of Object.values(game.relations)) if (r.truce > 0) r.truce -= 1;
+
   game.year += 1;
+
+  // History happens, and AI peace offers arrive
+  runEvents(notes, cards);
+  for (const b of game.offers) if (rel(game.player, b).state === "war") cards.push(peaceOfferCard(b));
+
   game.selected = null;
   game.order = null;
   game.message = `The year is ${game.year}. ${report}`;
   game.stats.peak = Math.max(game.stats.peak, provincesOf(game.player).length);
   checkGameOver();
   render();
-  startNewYear(notes);
+  startNewYear(notes, cards);
 }
 
 // Things the player might have forgotten this year. Empty list = nothing.
@@ -824,7 +897,7 @@ function unusedWarnings() {
   for (const p of mine) {
     if (ready(p) === 0) continue;
     for (const n of p.neighbors.map(n => game.provinces[n])) {
-      if (n.owner !== me && winChance(p, n, ready(p)) >= 0.75) targets.add(n.name);
+      if (canAttack(me, n) && winChance(p, n, ready(p)) >= 0.75) targets.add(n.name);
     }
   }
   if (targets.size) {
@@ -841,6 +914,386 @@ function unusedWarnings() {
 }
 
 // =====================================================================
+// DIPLOMACY
+// Every pair of realms is at peace, at war, or allied. You can only
+// attack realms you're at war with (and the independents, always).
+//   - Declaring war: only at peace and with no truce. The target's allies
+//     join the war against you.
+//   - Peace: a truce of RULES.truceYears years; everyone keeps what they hold.
+//   - Alliance: if someone declares war on your ally, you join in (and the
+//     other way around).
+//   - When one realm grows too big, the others may form a coalition and
+//     all declare war on it. That includes you.
+// =====================================================================
+
+const REALM_IDS = ["holland", "utrecht", "gelre", "brabant"];
+const alive = (id) => id !== "independent" && provincesOf(id).length > 0;
+const nameOf = (id) => REALMS[id].short;
+
+// The relation between two realms (created as peace the first time it's needed)
+function rel(a, b) {
+  const key = [a, b].sort().join("|");
+  if (!game.relations[key]) {
+    game.relations[key] = { state: "peace", truce: 0, since: game.year, score: { [a]: 0, [b]: 0 }, lastOffer: 0, asked: 0 };
+  }
+  return game.relations[key];
+}
+const atWar = (a, b) => a !== b && (a === "independent" || b === "independent" || rel(a, b).state === "war");
+const allied = (a, b) => a !== b && a !== "independent" && b !== "independent" && rel(a, b).state === "alliance";
+const canAttack = (realm, p) => p.owner !== realm && atWar(realm, p.owner);
+const warsOf = (a) => REALM_IDS.filter(b => b !== a && alive(b) && rel(a, b).state === "war");
+const alliesOf = (a) => REALM_IDS.filter(b => b !== a && alive(b) && allied(a, b));
+const bordering = (a, b) => provincesOf(a).some(p => p.neighbors.some(n => game.provinces[n].owner === b));
+
+function initRelations(state) {
+  game.relations = {};
+  for (const a of REALM_IDS) for (const b of REALM_IDS) if (a < b) rel(a, b).state = state;
+}
+
+// A sentence about two realms from the player's point of view
+function who(id) { return id === game.player ? "you" : nameOf(id); }
+
+function declareWar(a, b, notes, coalition) {
+  const r = rel(a, b);
+  Object.assign(r, { state: "war", truce: 0, since: game.year, score: { [a]: 0, [b]: 0 } });
+  const kind = (b === game.player) ? "bad" : "";
+  let text;
+  if (a === game.player) text = `You declare war on ${nameOf(b)}.`;
+  else if (coalition) text = `${capitalize(nameOf(a))} joins the coalition against ${who(b)}!`;
+  else text = `${capitalize(nameOf(a))} declares war on ${who(b)}!`;
+  notes.push({ text, kind });
+
+  // The defender's allies honor the alliance
+  for (const c of alliesOf(b)) {
+    if (c === a || allied(c, a) || rel(c, a).state === "war" || rel(c, a).truce > 0) continue;
+    const rc = rel(c, a);
+    Object.assign(rc, { state: "war", truce: 0, since: game.year, score: { [a]: 0, [c]: 0 } });
+    notes.push({
+      text: c === game.player
+        ? `As ${nameOf(b)}'s ally, you are now at war with ${nameOf(a)}.`
+        : `${capitalize(nameOf(c))} honors its alliance with ${who(b)} and joins the war against ${who(a)}.`,
+      kind: a === game.player ? "bad" : ""
+    });
+  }
+}
+
+function makePeace(a, b, notes) {
+  Object.assign(rel(a, b), { state: "peace", truce: RULES.truceYears });
+  notes.push({ text: `${capitalize(who(a))} and ${who(b)} make peace (${RULES.truceYears}-year truce).`, kind: "" });
+}
+
+function makeAlliance(a, b, notes) {
+  Object.assign(rel(a, b), { state: "alliance", truce: 0 });
+  notes.push({ text: `${capitalize(who(a))} and ${who(b)} form an alliance.`, kind: "" });
+}
+
+function breakAlliance(a, b, notes) {
+  Object.assign(rel(a, b), { state: "peace", truce: 3 });
+  notes.push({ text: `${capitalize(who(a))} ended the alliance with ${who(b)}.`, kind: "" });
+}
+
+// Count provinces taken in a war (for deciding who's winning)
+function scoreConquest(attacker, defender) {
+  if (attacker === "independent" || defender === "independent") return;
+  const r = rel(attacker, defender);
+  if (r.state === "war") r.score[attacker] = (r.score[attacker] || 0) + 1;
+}
+
+// The biggest realm other than "except"
+function leaderBesides(except) {
+  return REALM_IDS.filter(x => x !== except && alive(x))
+    .sort((a, b) => provincesOf(b).length - provincesOf(a).length)[0];
+}
+
+// --- The AI's diplomacy, once a year for each AI realm ---
+function aiDiplomacy(id, notes) {
+  if (!alive(id)) return;
+  const myArmy = armyOf(id);
+
+  // 1. Peace: AI wars fizzle out after a few years; the player gets offers
+  for (const b of warsOf(id)) {
+    const r = rel(id, b);
+    const years = game.year - r.since;
+    const lead = (r.score[id] || 0) - (r.score[b] || 0);
+    if (b === game.player) {
+      const losing = lead < 0 || myArmy < armyOf(b) * 0.7;
+      if (years >= 2 && (losing || years >= 8) && game.year - r.lastOffer >= 3) {
+        r.lastOffer = game.year;
+        game.offers.push(id);
+      }
+    } else if (id < b && years >= 3) {
+      if (Math.random() < 0.15 + (Math.abs(lead) >= 2 ? 0.15 : 0)) makePeace(id, b, notes);
+    }
+  }
+
+  // 2. Coalition against a realm that has grown too big (the player too)
+  const leader = leaderBesides(id);
+  if (leader && provincesOf(leader).length >= RULES.coalitionAt && rel(id, leader).state === "peace" &&
+      rel(id, leader).truce === 0 && bordering(id, leader) && Math.random() < 0.4) {
+    declareWar(id, leader, notes, true);
+    return;
+  }
+
+  // 3. War on a weak neighbor, if not already fighting two wars
+  if (warsOf(id).length < 2 && Math.random() < RULES.aiWarChance) {
+    const strength = (b) => armyOf(b) + alliesOf(b).reduce((s, c) => s + armyOf(c), 0);
+    const target = REALM_IDS
+      .filter(b => b !== id && alive(b) && bordering(id, b) && rel(id, b).state === "peace" && rel(id, b).truce === 0)
+      .sort((a, b) => strength(a) - strength(b))[0];
+    if (target && myArmy >= 1.2 * strength(target)) {
+      declareWar(id, target, notes, false);
+      return;
+    }
+  }
+
+  // 4. Team up with another neighbor of a big realm
+  if (leader && provincesOf(leader).length >= 7 && bordering(id, leader) && alliesOf(id).length === 0 && Math.random() < 0.3) {
+    const partner = REALM_IDS.find(c => c !== id && c !== leader && c !== game.player && alive(c) &&
+      rel(id, c).state === "peace" && bordering(c, leader) && alliesOf(c).length === 0);
+    if (partner) makeAlliance(id, partner, notes);
+  }
+}
+
+// --- What the AI says when the player asks for something ---
+function proposePeace(b) {
+  const me = game.player, r = rel(me, b);
+  const years = game.year - r.since;
+  const lead = (r.score[b] || 0) - (r.score[me] || 0);   // > 0: they're winning
+  const ok = (years >= 1 && lead <= 0) || armyOf(b) < armyOf(me) * 0.8 || years >= 8;
+  if (!ok) return { ok, text: `${capitalize(nameOf(b))} refuses. They think they're winning this war.` };
+  const notes = [];
+  makePeace(me, b, notes);
+  return { ok, text: `${capitalize(nameOf(b))} accepts. ${notes[0].text}` };
+}
+
+function proposeAlliance(b) {
+  const me = game.player, r = rel(me, b);
+  if (r.asked === game.year) return { ok: false, text: `${capitalize(nameOf(b))} already gave you an answer this year.` };
+  r.asked = game.year;
+  if (provincesOf(me).length >= RULES.coalitionAt) {
+    return { ok: false, text: `${capitalize(nameOf(b))} refuses. Your realm has grown too powerful to trust.` };
+  }
+  const threat = REALM_IDS.find(c => c !== me && c !== b && alive(c) &&
+    (rel(b, c).state === "war" || (provincesOf(c).length > provincesOf(b).length && bordering(b, c))));
+  if (!threat) return { ok: false, text: `${capitalize(nameOf(b))} sees no need for an alliance right now.` };
+  const notes = [];
+  makeAlliance(me, b, notes);
+  return { ok: true, text: `${capitalize(nameOf(b))} accepts. Together you stand against ${nameOf(threat)}.` };
+}
+
+// --- The diplomacy screen ---
+const diplo = { armed: null, message: "" };
+
+function statusOf(b) {
+  const r = rel(game.player, b);
+  if (r.state === "war") {
+    return `⚔️ <b>At war</b> since ${r.since} · provinces taken: you ${r.score[game.player] || 0}, them ${r.score[b] || 0}`;
+  }
+  if (r.state === "alliance") return "🤝 <b>Allied</b>";
+  if (r.truce > 0) return `🕊️ <b>Truce</b> · ${r.truce} more ${r.truce === 1 ? "year" : "years"}`;
+  return "🕊️ <b>At peace</b>";
+}
+
+function openDiplomacy() {
+  diplo.armed = null;
+  diplo.message = "";
+  renderDiplomacy();
+  show("diplo");
+}
+
+function renderDiplomacy() {
+  const me = game.player;
+  const rows = REALM_IDS.filter(b => b !== me && alive(b)).map(b => {
+    const r = rel(me, b);
+    const theirWars = warsOf(b).filter(c => c !== me).map(nameOf);
+    const theirAllies = alliesOf(b).filter(c => c !== me).map(nameOf);
+    let buttons = "";
+    if (r.state === "war") buttons = `<button class="act light" data-dip="peace" data-realm="${b}">Offer peace 🕊️</button>`;
+    if (r.state === "alliance") buttons = `<button class="act light" data-dip="break" data-realm="${b}">End alliance</button>`;
+    if (r.state === "peace") {
+      buttons = `<button class="act light" data-dip="ally" data-realm="${b}">Propose alliance 🤝</button>`;
+      if (r.truce === 0) {
+        buttons += diplo.armed === b
+          ? `<button class="act go" data-dip="war" data-realm="${b}">Sure? Declare war</button>`
+          : `<button class="act light" data-dip="arm" data-realm="${b}">Declare war ⚔️</button>`;
+      }
+    }
+    return `
+      <div class="dip-row" style="--side:${REALMS[b].color}">
+        <div class="dip-name">${REALMS[b].name}</div>
+        <div class="dip-stats">${provincesOf(b).length} provinces · ${armyOf(b)} regiments</div>
+        <div class="dip-status">${statusOf(b)}</div>
+        ${theirWars.length || theirAllies.length ? `<div class="dip-stats">${theirWars.length ? `At war with ${theirWars.join(", ")}. ` : ""}${theirAllies.length ? `Allied with ${theirAllies.join(", ")}.` : ""}</div>` : ""}
+        <div class="row">${buttons}</div>
+      </div>`;
+  }).join("");
+  document.getElementById("diplo-list").innerHTML = rows;
+  const m = document.getElementById("diplo-msg");
+  m.innerHTML = diplo.message;
+  m.style.display = diplo.message ? "block" : "none";
+}
+
+document.getElementById("diplo").addEventListener("click", (e) => {
+  const button = e.target.closest("button[data-dip]");
+  if (!button) return;
+  const b = button.dataset.realm, action = button.dataset.dip;
+  const notes = [];
+  diplo.armed = null;
+  if (action === "arm") { diplo.armed = b; diplo.message = ""; }
+  if (action === "war") {
+    declareWar(game.player, b, notes, false);
+    diplo.message = notes.map(n => n.text).join(" ");
+  }
+  if (action === "peace") diplo.message = proposePeace(b).text;
+  if (action === "ally") diplo.message = proposeAlliance(b).text;
+  if (action === "break") { breakAlliance(game.player, b, notes); diplo.message = notes[0].text; }
+  renderDiplomacy();
+  render();
+});
+
+function closeDiplomacy() { hide("diplo"); render(); }
+
+// =====================================================================
+// HISTORICAL AND RANDOM EVENTS
+// Run at the start of every year. Events that matter to the player become
+// cards (some with a choice); smaller news goes into the year banner.
+// =====================================================================
+
+const COASTAL = ["alkmaar", "haarlem", "leiden", "delft", "dordrecht", "friesland", "groningen", "antwerp", "zwolle"];
+const pick = (list) => list[Math.floor(Math.random() * list.length)];
+
+function runEvents(notes, cards) {
+  const me = game.player, y = game.year, flags = game.flags;
+
+  // The Black Death (1351): no new soldiers, big armies lose a third
+  if (!flags.blackDeath && y >= 1351) {
+    flags.blackDeath = true;
+    for (const id of REALM_IDS) game.realms[id].manpower = 0;
+    for (const p of allProvinces()) if (p.army >= 2) p.army -= Math.floor(p.army / 3);
+    cards.push({
+      emoji: "💀", title: "The Black Death",
+      text: "The great pestilence reaches the Low Countries. Every large army loses a third of its men, and no realm can find new soldiers this year (all manpower drops to 0)."
+    });
+  }
+
+  // The Hook and Cod wars (1353): Holland's nobles split into two factions
+  if (!flags.hookCod && y >= 1353 && alive("holland")) {
+    flags.hookCod = true;
+    const rebels = provincesOf("holland").filter(p => !isCapital(p)).sort((a, b) => a.army - b.army).slice(0, 2);
+    const names = rebels.map(p => p.name).join(" and ");
+    const revolt = () => {
+      for (const p of rebels) {
+        capture(p, "independent", 2);
+        p.unrest = 0;
+      }
+      return `${names} broke away from Holland.`;
+    };
+    const pay = () => { game.realms.holland.gold -= 20; return "The nobles are paid off. Holland stays together, for now."; };
+    if (me === "holland") {
+      const choices = [{ label: `Let them fight (lose ${names})`, run: revolt }];
+      if (game.realms.holland.gold >= 20) choices.unshift({ label: "Pay the nobles (20 💰)", run: pay });
+      cards.push({
+        emoji: "🪝🐟", title: "The Hook and Cod wars",
+        text: `Holland's nobles have split into two factions, the Hooks and the Cods, and are ready to fight each other. Pay them off, or ${names} will break away and become independent.`,
+        choices
+      });
+    } else if (game.realms.holland.gold >= 20) {
+      pay();
+      notes.push({ text: "Holland buys peace between its quarrelling Hook and Cod nobles.", kind: "" });
+    } else {
+      notes.push({ text: `Civil war in Holland: ${revolt()}`, kind: "" });
+    }
+  }
+
+  // The plague returns (once, in the early 1360s): manpower halved
+  if (!flags.plague2 && y >= 1360 && (y >= 1365 || Math.random() < 0.3)) {
+    flags.plague2 = true;
+    for (const id of REALM_IDS) game.realms[id].manpower = Math.floor(game.realms[id].manpower / 2);
+    cards.push({ emoji: "⚰️", title: "The plague returns", text: "A new wave of plague sweeps the land. Every realm's manpower is halved." });
+  }
+
+  // Revolts: a freshly conquered province without soldiers may rise up
+  for (const p of allProvinces()) {
+    if (p.owner === "independent" || p.unrest === 0 || p.army > 0) continue;
+    if (Math.random() >= RULES.revoltChance) continue;
+    const owner = p.owner;
+    const note = capture(p, "independent", 1);
+    p.unrest = 0;
+    if (owner === me) notes.push({ text: `${p.name} rose in revolt and declared itself independent!${note}`, kind: "bad" });
+  }
+
+  // One random event in some years
+  if (Math.random() < RULES.eventChance) {
+    const roll = Math.random();
+    if (roll < 0.35) {
+      // Storm flood on the coast: farm washed away, no income for 2 years
+      const p = pick(COASTAL.map(id => game.provinces[id]).filter(p => p.owner !== "independent"));
+      if (p) {
+        const farm = p.building === "farm";
+        if (farm) p.building = null;
+        p.unrest = Math.max(p.unrest, 2);
+        const text = `A storm flood strikes ${p.name}.${farm ? " The farm is washed away, and" : ""} the province pays nothing for 2 years.`;
+        if (p.owner === me) cards.push({ emoji: "🌊", title: "Storm flood", text });
+        else notes.push({ text, kind: "" });
+      }
+    } else if (roll < 0.65) {
+      // Good harvest: one realm gets extra gold
+      const id = pick(REALM_IDS.filter(alive));
+      game.realms[id].gold += 10;
+      if (id === me) cards.push({ emoji: "🌾", title: "A rich harvest", text: "The granaries are full. Your treasury gains 10 💰." });
+    } else if (game.realms[me].gold >= 25 && alive(me)) {
+      // Mercenaries offer their services to the player
+      const capital = game.provinces[game.realms[me].capital];
+      cards.push({
+        emoji: "🗡️", title: "Mercenaries for hire",
+        text: `A company of Free Lances offers its swords: 3 regiments for 25 💰, no manpower needed. They would join you at ${capital.name}.`,
+        choices: [
+          { label: "Hire them (25 💰)", run: () => { game.realms[me].gold -= 25; capital.army += 3; return `3 mercenary regiments arrive at ${capital.name}.`; } },
+          { label: "Send them away", run: () => "" }
+        ]
+      });
+    }
+  }
+}
+
+// --- Event and decision cards ---
+function showCard(card, done) {
+  document.getElementById("ev-emoji").textContent = card.emoji;
+  document.getElementById("ev-title").textContent = card.title;
+  document.getElementById("ev-text").textContent = card.text;
+  const box = document.getElementById("ev-buttons");
+  box.innerHTML = "";
+  const choices = card.choices || [{ label: "Continue" }];
+  choices.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "act" + (i > 0 ? " light" : "");
+    b.textContent = c.label;
+    b.onclick = () => {
+      const result = c.run ? c.run() : "";
+      if (result) game.message = result;
+      hide("eventcard");
+      render();
+      done();
+    };
+    box.appendChild(b);
+  });
+  show("eventcard");
+}
+
+// A peace offer from an AI realm becomes a card with Accept / Refuse
+function peaceOfferCard(b) {
+  const me = game.player, r = rel(me, b);
+  return {
+    emoji: "🕊️", title: `${capitalize(nameOf(b))} offers peace`,
+    text: `After ${game.year - r.since} years of war (provinces taken: you ${r.score[me] || 0}, them ${r.score[b] || 0}), ${nameOf(b)} proposes a ${RULES.truceYears}-year truce. Everyone keeps what they hold now.`,
+    choices: [
+      { label: "Accept peace", run: () => { if (rel(me, b).state !== "war") return ""; const n = []; makePeace(me, b, n); return n[0].text; } },
+      { label: "Refuse, the war goes on", run: () => "" }
+    ]
+  };
+}
+
+// =====================================================================
 // THE NEW YEAR
 // 1. Every attack on you is played out on the battle card, one by one.
 // 2. Then the map shows all of last year's attacks for a few seconds
@@ -849,10 +1302,11 @@ function unusedWarnings() {
 
 const yearView = { timer: null, savedView: null };
 
-function startNewYear(notes) {
+function startNewYear(notes, cards) {
   const attacksOnMe = game.lastTurn.filter(r => r.defender === game.player);
   const next = () => {
     if (attacksOnMe.length) showBattle(attacksOnMe.shift(), next);
+    else if (cards.length) showCard(cards.shift(), () => { checkGameOver(); next(); });
     else if (!game.over) showYearOverview(notes);
   };
   next();
@@ -905,35 +1359,50 @@ document.getElementById("yearview").addEventListener("click", closeYearOverview)
 
 function checkGameOver() {
   if (game.over) return;
-  const realms = Object.keys(REALMS).filter(id => id !== "independent");
   const count = (id) => provincesOf(id).length;
   const mine = count(game.player);
-  const leader = realms.slice().sort((a, b) => count(b) - count(a))[0];
+  const leader = leaderBesides(game.player);
+  const total = allProvinces().length;
 
+  // These always end the game
+  if (mine === total) {
+    return endGame("The Low Countries united!", `In ${game.year} every one of the 20 provinces flies your banner.`, true, true);
+  }
+  if (mine === 0) {
+    return endGame("Defeat", `Your realm was wiped off the map in ${game.year}.`, false, true);
+  }
+  // These are a victory or defeat, but you can keep playing
+  if (game.endless) return;
   if (mine >= RULES.provincesToWin) {
-    endGame("Victory!", `You rule ${mine} of the 20 provinces in the year ${game.year}. The Low Countries are yours.`);
-  } else if (mine === 0) {
-    endGame("Defeat", `Your realm was wiped off the map in ${game.year}.`);
+    endGame("Victory!", `You rule ${mine} of the 20 provinces in ${game.year}. Keep playing to unite all of the Low Countries.`, true, false);
   } else if (count(leader) >= RULES.provincesToWin) {
-    endGame("Defeat", `${REALMS[leader].name} rules ${count(leader)} provinces in ${game.year}. The Low Countries are theirs.`);
+    endGame("Defeat", `${REALMS[leader].name} rules ${count(leader)} provinces in ${game.year}. You can still fight on.`, false, false);
   } else if (game.year >= RULES.endYear) {
-    if (count(leader) === mine) endGame("Victory!", `It is ${RULES.endYear} and you hold the most provinces (${mine}).`);
-    else endGame("Defeat", `It is ${RULES.endYear} and ${REALMS[leader].name} holds the most provinces (${count(leader)} against your ${mine}).`);
+    if (count(leader) <= mine) endGame("Victory!", `It is ${RULES.endYear} and you hold the most provinces (${mine}).`, true, false);
+    else endGame("Defeat", `It is ${RULES.endYear} and ${REALMS[leader].name} holds the most provinces (${count(leader)} against your ${mine}).`, false, false);
   }
 }
 
-function endGame(title, text) {
+// The end screen lives in the bottom panel, so the map stays in view.
+// final: the game is really over (nothing left to conquer or nothing left at all)
+function endGame(title, text, won, final) {
   game.over = true;
-  clearSave();
-  document.getElementById("end-title").textContent = title;
-  document.getElementById("end-text").textContent = text;
-  const s = game.stats;
-  document.getElementById("end-stats").innerHTML =
-    `Playing as ${REALMS[game.player].name}<br>` +
-    `${game.year - RULES.startYear} years · ${s.won} battles won · ${s.lost} lost<br>` +
-    `${s.taken} provinces conquered · most held at once: ${s.peak}`;
+  game.endInfo = { title, text, won, final };
+  if (final) clearSave();
+  game.selected = null;
+  game.order = null;
+  game.confirmEnd = null;
   hide("yearview");
-  document.getElementById("end").style.display = "flex";
+  resetView();
+  render();
+}
+
+function keepPlaying() {
+  game.over = false;
+  game.endless = true;
+  game.endInfo = null;
+  game.message = "The war goes on. Conquer all 20 provinces to unite the Low Countries!";
+  render();
 }
 
 // =====================================================================
@@ -949,7 +1418,8 @@ function saveGame() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       year: game.year, player: game.player, stats: game.stats,
-      realms: game.realms, provinces: game.provinces
+      realms: game.realms, provinces: game.provinces,
+      relations: game.relations, flags: game.flags, endless: game.endless
     }));
   } catch (e) { /* storage not available: just don't save */ }
 }
@@ -969,11 +1439,18 @@ function continueGame(data) {
   Object.assign(game, {
     year: data.year, player: data.player, stats: data.stats,
     realms: data.realms, provinces: data.provinces,
-    selected: null, order: null, over: false, lastTurn: [], confirmEnd: null,
+    relations: data.relations || {}, flags: data.flags || {}, endless: !!data.endless,
+    selected: null, order: null, over: false, lastTurn: [], confirmEnd: null, endInfo: null, offers: [],
     message: `Welcome back. The year is ${data.year}.`
   });
+  // Saves from before diplomacy existed: everyone was at war with everyone
+  if (!data.relations) {
+    initRelations("war");
+    game.flags = { blackDeath: data.year > 1351, hookCod: data.year > 1353 };
+  }
   render();
   focusOnRealm(data.player);
+  checkGameOver();
 }
 
 // =====================================================================
@@ -1090,8 +1567,28 @@ function renderTopbar() {
 
 function renderPanel() {
   const panel = document.getElementById("panel");
+
+  // --- The game is over (or won, with the option to keep playing) ---
+  if (game.over && game.endInfo) {
+    const e = game.endInfo, s = game.stats;
+    panel.innerHTML = `
+      <h2 class="end-title ${e.won ? "win" : "lose"}">${e.title}</h2>
+      <div>${e.text}</div>
+      <div class="end-stats">
+        ${REALMS[game.player].name} · ${game.year - RULES.startYear} years · ${s.won} battles won, ${s.lost} lost ·
+        ${s.taken} provinces conquered · most held at once: ${Math.max(s.peak, provincesOf(game.player).length)}
+      </div>
+      <div class="spacer"></div>
+      <div class="row">
+        ${e.final ? "" : `<button class="act go" data-do="keepplaying">${e.won ? "Keep conquering" : "Fight on"}</button>`}
+        <button class="act ${e.final ? "" : "light"}" data-do="newgame">New game</button>
+      </div>`;
+    return;
+  }
+
   const msg = game.message ? `<div class="msg">${game.message}</div>` : "";
   const endTurnButton = `<button class="act" data-do="endturn">End turn ⏳</button>`;
+  const diploButton = `<button class="act light" data-do="diplomacy">Diplomacy 🤝</button>`;
 
   // --- The player pressed End turn but still has things to do ---
   if (game.confirmEnd) {
@@ -1144,12 +1641,15 @@ function renderPanel() {
   // --- Nothing selected: realm overview ---
   if (!game.selected) {
     const r = REALMS[game.player];
+    const wars = warsOf(game.player).map(nameOf), allies = alliesOf(game.player).map(nameOf);
+    const goal = game.endless ? "Conquer all 20 provinces to unite the Low Countries." : `Own ${RULES.provincesToWin} of the 20 provinces to win.`;
     panel.innerHTML = `
       <h2>${r.name}</h2>
       ${msg}
-      <div class="hint">Tap one of your provinces to recruit or to send its army. Own ${RULES.provincesToWin} of the 20 provinces to win.</div>
+      <div>${wars.length ? `⚔️ At war with ${wars.join(", ")}` : "🕊️ At peace with every realm"}${allies.length ? ` · 🤝 Allied with ${allies.join(", ")}` : ""}</div>
+      <div class="hint">Tap one of your provinces to recruit or to send its army. ${goal}</div>
       <div class="spacer"></div>
-      <div class="row">${endTurnButton}</div>`;
+      <div class="row">${diploButton}${endTurnButton}</div>`;
     return;
   }
 
@@ -1176,8 +1676,13 @@ function renderPanel() {
         `<button class="act light" data-do="castle" ${canBuild(p, "castle") ? "" : "disabled"}>Castle 🏰<br>${RULES.castleCost}💰</button>`;
     }
     if (!p.building && game.realms[game.player].built) hint += " You already built something this year.";
-  } else if (p.neighbors.some(n => game.provinces[n].owner === game.player)) {
-    hint = "To attack, first tap one of your own provinces next to it.";
+  } else if (p.owner === "independent") {
+    hint = p.neighbors.some(n => game.provinces[n].owner === game.player)
+      ? "Independent: you can attack it any time. First tap one of your own provinces next to it." : "Independent.";
+  } else {
+    hint = statusOf(p.owner) + ". " + (atWar(game.player, p.owner)
+      ? (p.neighbors.some(n => game.provinces[n].owner === game.player) ? "To attack, first tap one of your own provinces next to it." : "")
+      : "Declare war in Diplomacy before you can attack.");
   }
 
   panel.innerHTML = `
@@ -1193,7 +1698,7 @@ function renderPanel() {
     ${hint ? `<div class="hint">${hint}</div>` : ""}
     <div class="spacer"></div>
     ${yours ? `<div class="row">${recruitButton}${buildButtons}</div>` : ""}
-    <div class="row">${endTurnButton}</div>`;
+    <div class="row">${yours || p.owner === "independent" ? "" : diploButton}${endTurnButton}</div>`;
 }
 
 // =====================================================================
@@ -1482,7 +1987,9 @@ function tapProvince(id) {
 
   // One of your provinces with a ready army is selected and you tap a neighbor:
   // prepare a move (your own land) or an attack (someone else's)
-  if (sel && sel.owner === game.player && ready(sel) > 0 && sel.neighbors.includes(id)) {
+  const target = game.provinces[id];
+  if (sel && sel.owner === game.player && ready(sel) > 0 && sel.neighbors.includes(id) &&
+      (target.owner === game.player || canAttack(game.player, target))) {
     game.order = { from: sel.id, to: id, count: ready(sel) };
     game.message = null;
     render();
@@ -1507,9 +2014,13 @@ document.getElementById("mapwrap").addEventListener("click", () => {
 // Buttons in the panel
 document.getElementById("panel").addEventListener("click", (e) => {
   const button = e.target.closest("button[data-do]");
-  if (!button || button.disabled || game.over) return;
+  if (!button || button.disabled) return;
   const action = button.dataset.do;
   const order = game.order;
+  if (action === "keepplaying") { keepPlaying(); return; }
+  if (action === "newgame") { clearSave(); game.over = true; game.endInfo = null; showStart(); return; }
+  if (game.over) return;
+  if (action === "diplomacy") { openDiplomacy(); return; }
 
   if (action === "endturn") {
     const warnings = unusedWarnings();
@@ -1550,7 +2061,7 @@ function show(id) { document.getElementById(id).style.display = "flex"; }
 function hide(id) { document.getElementById(id).style.display = "none"; }
 
 function showStart() {
-  hide("end"); hide("menu");
+  hide("menu"); hide("diplo"); hide("eventcard"); hide("battle"); hide("yearview");
   const save = loadSave();
   const button = document.getElementById("continue");
   if (save) {
