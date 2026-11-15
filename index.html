@@ -64,8 +64,10 @@
   /* Last year's attacks, drawn on the map */
   .changed-under { fill: none; stroke: var(--ink); stroke-width: 7; pointer-events: none; }
   .changed { fill: none; stroke: #ffd24a; stroke-width: 4; stroke-dasharray: 9 6; pointer-events: none; }
-  .changed-under.fresh { animation: pulse 0.8s ease-in-out 4; }
-  .changed.fresh { animation: pulse 0.8s ease-in-out 4; }
+  /* Each attack fades in after the one before it, then the captured province flashes */
+  .attack-g { opacity: 0; animation: appear .4s ease-out forwards; }
+  .attack-g .changed, .attack-g .changed-under { animation: pulse 0.7s ease-in-out 3; animation-delay: inherit; }
+  @keyframes appear { from { opacity: 0; } to { opacity: 1; } }
   @keyframes pulse { 50% { stroke-opacity: 0.15; } }
   .arrow-under { stroke: #fff8e0; stroke-width: 9; stroke-linecap: round; pointer-events: none; }
   .arrow { stroke-width: 5; stroke-linecap: round; pointer-events: none; }
@@ -125,11 +127,22 @@
     color: #fff; cursor: pointer; text-align: left;
     display: flex; flex-direction: column; gap: 2px;
   }
-  #report .box { width: 100%; max-width: 380px; text-align: left; }
-  #report ul { list-style: none; margin: 0 0 20px; padding: 0; max-height: 55vh; overflow-y: auto; }
-  #report li { padding: 8px 10px; margin-bottom: 6px; background: var(--parchment-dark); border-radius: 6px; font-size: 16px; border-left: 4px solid var(--ink); }
-  #report li.bad { border-left-color: #b23a3a; }
-  #report li.good { border-left-color: #3f7d3a; }
+  /* The new year: a short look at the map before you play */
+  #yearview { position: absolute; inset: 0; z-index: 15; cursor: pointer; }
+  #year-banner {
+    position: absolute; left: 10px; right: 10px; top: 58px;
+    background: var(--parchment); border: 2px solid var(--ink); border-radius: 10px;
+    padding: 10px 14px 8px; box-shadow: 0 6px 18px rgba(0,0,0,.3);
+    animation: drop .35s ease-out;
+  }
+  @keyframes drop { from { transform: translateY(-20px); opacity: 0; } }
+  #year-title { font-family: 'Cinzel', serif; font-weight: 800; font-size: 20px; }
+  #year-notes { margin: 4px 0 0; padding: 0; list-style: none; font-size: 15px; }
+  #year-notes li { margin-top: 3px; }
+  #year-notes li.bad { color: #9a2c2c; }
+  #year-hint { font-size: 13px; color: var(--ink-soft); margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+  #year-timer { flex: 1; height: 4px; background: rgba(59,42,26,.15); border-radius: 2px; overflow: hidden; }
+  #year-timer i { display: block; height: 100%; background: var(--ink); width: 100%; }
   #end-stats { font-size: 16px !important; }
   .stack { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
   .stack button.act { flex: none; width: 100%; }
@@ -218,7 +231,7 @@
         <li><b>End turn</b> when you're done. The other realms move, then you get your income.</li>
       </ul>
       <h3>The map</h3>
-      <p>Pinch or use + and − to zoom, drag to move around. Arrows show last year's attacks by the other realms (dashed with ✕: beaten back), and a flashing yellow border marks provinces that changed hands.</p>
+      <p>Pinch or use + and − to zoom, drag to move around. At the start of every year the map shows what the other realms did: an arrow for each attack (dashed with ✕ when it was beaten back) and a flashing yellow border on provinces that changed hands. Attacks on you are played out on the battle card first.</p>
       <h3>Money</h3>
       <p>Every regiment costs 1 💰 per year. If you can't pay, soldiers desert.</p>
       <h3>Battles</h3>
@@ -258,11 +271,11 @@
       <button class="act" id="b-continue" style="width:100%">Skip</button>
     </div>
   </div>
-  <div id="report" class="overlay" style="display:none">
-    <div class="box">
-      <h1 id="report-title" style="text-align:center"></h1>
-      <ul id="report-list"></ul>
-      <button class="act" style="width:100%" onclick="closeReport()">Continue</button>
+  <div id="yearview" style="display:none">
+    <div id="year-banner">
+      <div id="year-title"></div>
+      <ul id="year-notes"></ul>
+      <div id="year-hint"><span>Tap to continue</span><div id="year-timer"><i></i></div></div>
     </div>
   </div>
   <div id="end" class="overlay" style="display:none">
@@ -736,8 +749,8 @@ function aiTurn(id) {
 // =====================================================================
 
 function endTurn() {
-  const events = [];   // { text, kind } for the year report
-  game.lastTurn = [];  // every AI attack, to draw on the map
+  const notes = [];    // { text, kind }: short news for the new year banner
+  game.lastTurn = [];  // every AI attack, to show on the map
   game.confirmEnd = null;
 
   // The AI realms take their turns
@@ -745,11 +758,9 @@ function endTurn() {
     if (id === "independent" || id === game.player) continue;
     for (const result of aiTurn(id)) {
       game.lastTurn.push(result);
-      const text = describe(result);
-      if (!text) continue;
-      let kind = "";
-      if (result.defender === game.player) kind = result.won ? "bad" : "good";
-      events.push({ text, kind });
+      // Attacks on you get their own battle card. Other news only when big:
+      // a capital falling or a realm being destroyed.
+      if (result.defender !== game.player && result.note) notes.push({ text: describe(result), kind: "" });
     }
   }
 
@@ -783,7 +794,7 @@ function endTurn() {
     if (id === game.player) {
       report = `Income +${income}, upkeep −${upkeep}.`;
       if (realm.penalty > 0) report += ` (Income halved, ${realm.penalty - 1} more ${realm.penalty - 1 === 1 ? "year" : "years"}.)`;
-      if (deserted > 0) events.push({ text: `You couldn't pay your troops: ${deserted} deserted!`, kind: "bad" });
+      if (deserted > 0) notes.push({ text: `You couldn't pay your troops: ${deserted} deserted!`, kind: "bad" });
     }
     if (realm.penalty > 0) realm.penalty -= 1;
   }
@@ -798,11 +809,10 @@ function endTurn() {
   game.selected = null;
   game.order = null;
   game.message = `The year is ${game.year}. ${report}`;
-  game.freshTurn = true;   // makes the changed provinces flash once
   game.stats.peak = Math.max(game.stats.peak, provincesOf(game.player).length);
   checkGameOver();
   render();
-  if (!game.over) showReport(events);
+  startNewYear(notes);
 }
 
 // Things the player might have forgotten this year. Empty list = nothing.
@@ -830,18 +840,68 @@ function unusedWarnings() {
   return warnings;
 }
 
-// The year report: what the other realms did while you waited
-function showReport(events) {
-  if (events.length === 0) events = [{ text: "A quiet year. Nobody went to war.", kind: "" }];
-  document.getElementById("report-title").textContent = `Anno ${game.year}`;
-  document.getElementById("report-list").innerHTML =
-    events.map(e => `<li class="${e.kind}">${e.text}</li>`).join("") +
-    (game.lastTurn.length ? `<li style="border:none;background:none;padding-left:0;font-style:italic">The attacks are marked on the map.</li>` : "");
-  document.getElementById("report").style.display = "flex";
+// =====================================================================
+// THE NEW YEAR
+// 1. Every attack on you is played out on the battle card, one by one.
+// 2. Then the map shows all of last year's attacks for a few seconds
+//    (or until you tap), with a small banner for news worth reading.
+// =====================================================================
+
+const yearView = { timer: null, savedView: null };
+
+function startNewYear(notes) {
+  const attacksOnMe = game.lastTurn.filter(r => r.defender === game.player);
+  const next = () => {
+    if (attacksOnMe.length) showBattle(attacksOnMe.shift(), next);
+    else if (!game.over) showYearOverview(notes);
+  };
+  next();
 }
-function closeReport() {
-  document.getElementById("report").style.display = "none";
+
+function showYearOverview(notes) {
+  const attacks = game.lastTurn.length;
+  if (attacks === 0 && notes.length === 0) notes = [{ text: "A quiet year. Nobody went to war.", kind: "" }];
+
+  document.getElementById("year-title").textContent = `Anno ${game.year}`;
+  document.getElementById("year-notes").innerHTML =
+    notes.map(n => `<li class="${n.kind}">${n.text}</li>`).join("");
+
+  // Zoom the map so every attack is in view (your own zoom comes back after)
+  yearView.savedView = { x: view.x, y: view.y, w: view.w, h: view.h };
+  if (attacks > 0) {
+    const pts = game.lastTurn.flatMap(r => [game.provinces[r.from], game.provinces[r.to]]);
+    const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+    const w = Math.max(...xs) - Math.min(...xs) + 140, h = Math.max(...ys) - Math.min(...ys) + 180;
+    const zoom = Math.max(1, Math.min(1.6, view.base.w / w, view.base.h / h));
+    zoomTo((Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2 - 20, zoom);
+  }
+
+  // Show the attacks on the map, then close by itself after a few seconds
+  game.showYear = true;
+  render();
+  const seconds = 2.5 + Math.min(attacks, 10) * 0.35 + notes.length * 1.2;
+  const bar = document.querySelector("#year-timer i");
+  bar.style.transition = "none";
+  bar.style.width = "100%";
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    bar.style.transition = `width ${seconds}s linear`;
+    bar.style.width = "0%";
+  }));
+  clearTimeout(yearView.timer);
+  yearView.timer = setTimeout(closeYearOverview, seconds * 1000);
+  show("yearview");
 }
+
+function closeYearOverview() {
+  clearTimeout(yearView.timer);
+  hide("yearview");
+  if (!game.showYear) return;
+  game.showYear = false;
+  if (yearView.savedView) { Object.assign(view, yearView.savedView); applyView(); }
+  render();
+}
+
+document.getElementById("yearview").addEventListener("click", closeYearOverview);
 
 function checkGameOver() {
   if (game.over) return;
@@ -872,7 +932,7 @@ function endGame(title, text) {
     `Playing as ${REALMS[game.player].name}<br>` +
     `${game.year - RULES.startYear} years · ${s.won} battles won · ${s.lost} lost<br>` +
     `${s.taken} provinces conquered · most held at once: ${s.peak}`;
-  document.getElementById("report").style.display = "none";
+  hide("yearview");
   document.getElementById("end").style.display = "flex";
 }
 
@@ -958,15 +1018,19 @@ function renderMap() {
   // Rivers on top of the land
   el("path", { d: MAP_SHAPES.rivers, class: "river" }, svg);
 
-  // Last year's AI attacks: flashing border on provinces that changed hands,
-  // and an arrow for every attack (dashed with ✕ when it was beaten back)
-  for (const r of game.lastTurn || []) {
-    if (!r.won) continue;
-    el("path", { d: TERRITORIES[r.to], class: "changed-under" + (game.freshTurn ? " fresh" : "") }, svg);
-    el("path", { d: TERRITORIES[r.to], class: "changed" + (game.freshTurn ? " fresh" : "") }, svg);
+  // At the start of a year: last year's AI attacks, appearing one by one.
+  // An arrow for every attack (dashed with ✕ when it was beaten back)
+  // and a flashing border on provinces that changed hands.
+  if (game.showYear) {
+    game.lastTurn.forEach((r, i) => {
+      const g = el("g", { class: "attack-g", style: `animation-delay: ${0.3 + i * 0.35}s` }, svg);
+      if (r.won) {
+        el("path", { d: TERRITORIES[r.to], class: "changed-under" }, g);
+        el("path", { d: TERRITORIES[r.to], class: "changed" }, g);
+      }
+      drawArrow(r, g);
+    });
   }
-  for (const r of game.lastTurn || []) drawArrow(r);
-  game.freshTurn = false;
 
   // Selected province drawn again on top, so its outline is fully visible
   if (sel) el("path", { d: TERRITORIES[sel.id], class: "terr-outline" }, svg);
@@ -992,7 +1056,7 @@ function renderMap() {
   }
 }
 
-function drawArrow(r) {
+function drawArrow(r, parent) {
   const a = game.provinces[r.from], b = game.provinces[r.to];
   const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
   const ux = dx / len, uy = dy / len;
@@ -1000,15 +1064,15 @@ function drawArrow(r) {
   const x1 = a.x + ux * 18, y1 = a.y + uy * 18;
   const x2 = b.x - ux * 24, y2 = b.y - uy * 24;
   const color = REALMS[r.attacker].color;
-  el("line", { x1, y1, x2, y2, class: "arrow-under" }, svg);
-  el("line", { x1, y1, x2, y2, class: "arrow" + (r.won ? "" : " failed"), stroke: color }, svg);
+  el("line", { x1, y1, x2, y2, class: "arrow-under" }, parent);
+  el("line", { x1, y1, x2, y2, class: "arrow" + (r.won ? "" : " failed"), stroke: color }, parent);
   // Arrow head: a triangle at the end, pointing at the target
   const s = 11, px = -uy, py = ux;
   const tip = [x2 + ux * s, y2 + uy * s];
   const left = [x2 + px * s * 0.8, y2 + py * s * 0.8];
   const right = [x2 - px * s * 0.8, y2 - py * s * 0.8];
-  el("polygon", { points: [tip, left, right].map(p => p.join(",")).join(" "), fill: color, class: "arrow-head" }, svg);
-  if (!r.won) el("text", { x: (x1 + x2) / 2, y: (y1 + y2) / 2, class: "arrow-x" }, svg).textContent = "✕";
+  el("polygon", { points: [tip, left, right].map(p => p.join(",")).join(" "), fill: color, class: "arrow-head" }, parent);
+  if (!r.won) el("text", { x: (x1 + x2) / 2, y: (y1 + y2) / 2, class: "arrow-x" }, parent).textContent = "✕";
 }
 
 function renderTopbar() {
@@ -1152,9 +1216,11 @@ function showBattle(r, onDone) {
   const att = REALMS[r.attacker], def = REALMS[r.defender];
   const at = (ms, fn) => battle.timers.push(setTimeout(fn, ms));
 
-  $("b-title").textContent = `Battle of ${r.place}`;
-  $("b-att-name").textContent = att.short;
-  $("b-def-name").textContent = def.short;
+  $("b-title").textContent = r.defender === game.player
+    ? `${capitalize(att.short)} attacks ${r.place}!`
+    : `Battle of ${r.place}`;
+  $("b-att-name").textContent = capitalize(att.short);
+  $("b-def-name").textContent = capitalize(def.short);
   $("b-att").style.setProperty("--side", att.color);
   $("b-def").style.setProperty("--side", def.color);
   $("b-att-count").textContent = r.sent;
@@ -1250,9 +1316,15 @@ function finishBattle() {
   const mine = r.attacker === game.player;
   const good = (r.won && mine) || (!r.won && !mine);
   $("b-result").className = good ? "good" : "bad";
-  $("b-result").innerHTML = r.won
-    ? `<b>Victory!</b> ${r.place} is taken.${r.note ? `<br><small>${r.note.trim()}</small>` : ""}`
-    : `<b>Defeat.</b> The attack on ${r.place} failed.`;
+  if (mine) {
+    $("b-result").innerHTML = r.won
+      ? `<b>Victory!</b> ${r.place} is taken.${r.note ? `<br><small>${r.note.trim()}</small>` : ""}`
+      : `<b>Defeat.</b> The attack on ${r.place} failed.`;
+  } else {
+    $("b-result").innerHTML = r.won
+      ? `<b>${r.place} has fallen.</b>${r.note ? `<br><small>${r.note.trim()}</small>` : ""}`
+      : `<b>Held!</b> ${r.place} beat back the attack.`;
+  }
   $("b-continue").textContent = "Continue";
   try { navigator.vibrate(good ? 40 : [60, 60, 60]); } catch (e) {}
 }
