@@ -2418,8 +2418,8 @@ function toggleSound() {
 // the leaderboard, and feedback messages. No cookies.
 // =====================================================================
 
-const ONLINE = { url: "", key: "" };
-const GAME_VERSION = "2026-11-15";
+const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
+const GAME_VERSION = "2026-11-16";
 const online = () => Boolean(ONLINE.url && ONLINE.key);
 
 async function api(path, options = {}) {
@@ -2427,7 +2427,6 @@ async function api(path, options = {}) {
     ...options,
     headers: {
       apikey: ONLINE.key,
-      Authorization: `Bearer ${ONLINE.key}`,
       "Content-Type": "application/json",
       Prefer: "return=minimal",
       ...(options.headers || {})

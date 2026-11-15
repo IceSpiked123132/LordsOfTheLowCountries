@@ -40,13 +40,13 @@
 </main>
 <script>
 // Same values as ONLINE in source/template.html
-const ONLINE = { url: "", key: "" };
+const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
 
 const REALM_NAMES = { holland: "Holland", utrecht: "Utrecht", gelre: "Gelre", brabant: "Brabant" };
 
 async function get(view) {
   const res = await fetch(`${ONLINE.url}/rest/v1/${view}?select=*`, {
-    headers: { apikey: ONLINE.key, Authorization: `Bearer ${ONLINE.key}` }
+    headers: { apikey: ONLINE.key }
   });
   if (!res.ok) throw new Error(`${view}: ${res.status}`);
   return res.json();
