@@ -55,7 +55,23 @@
   /* The map. The svg is allowed to draw outside its box (overflow: visible),
      so on any screen shape the edges show more real map instead of a hard cut. */
   #mapwrap { flex: 1; min-height: 0; position: relative; background: var(--sea); overflow: hidden; }
-  svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  svg { width: 100%; height: 100%; display: block; overflow: visible; touch-action: none; }
+  #zoom-ctrl { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
+  #zoom-ctrl button {
+    width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--ink);
+    background: var(--parchment); color: var(--ink); font-size: 20px; font-weight: 800; cursor: pointer; opacity: .9;
+  }
+  /* Last year's attacks, drawn on the map */
+  .changed-under { fill: none; stroke: var(--ink); stroke-width: 7; pointer-events: none; }
+  .changed { fill: none; stroke: #ffd24a; stroke-width: 4; stroke-dasharray: 9 6; pointer-events: none; }
+  .changed-under.fresh { animation: pulse 0.8s ease-in-out 4; }
+  .changed.fresh { animation: pulse 0.8s ease-in-out 4; }
+  @keyframes pulse { 50% { stroke-opacity: 0.15; } }
+  .arrow-under { stroke: #fff8e0; stroke-width: 9; stroke-linecap: round; pointer-events: none; }
+  .arrow { stroke-width: 5; stroke-linecap: round; pointer-events: none; }
+  .arrow.failed { stroke-dasharray: 7 6; }
+  .arrow-head { stroke: #fff8e0; stroke-width: 2; pointer-events: none; }
+  .arrow-x { font-size: 22px; font-weight: 800; fill: #fff8e0; stroke: var(--ink); stroke-width: 1.5; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
   .land { fill: #d8caa3; stroke: #a89468; stroke-width: 1; }
   .terr { stroke: var(--ink); stroke-width: 1; stroke-opacity: .6; fill-opacity: .75; cursor: pointer; }
   .terr.neighbor { fill-opacity: .98; stroke-width: 2; stroke-opacity: 1; }
@@ -123,13 +139,54 @@
   #help p, #help li { font-size: 16px; color: var(--ink); margin: 0 0 6px; }
   #help ul { margin: 0; padding-left: 20px; }
   #continue { background: var(--ink); color: var(--parchment); }
+  #panel ul.warn { margin: 0; padding-left: 20px; }
+  #panel ul.warn li { margin-bottom: 4px; }
+
+  /* Battle screen */
+  #battle { background: rgba(43, 33, 24, 0.82); z-index: 20; }
+  #battle .card {
+    width: 100%; max-width: 380px; background: var(--parchment); border-radius: 12px;
+    border: 3px solid var(--ink); padding: 18px 16px 16px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+  }
+  #b-title { font-family: 'Cinzel', serif; font-weight: 800; font-size: 22px; margin-bottom: 14px; }
+  .b-sides { display: flex; align-items: stretch; gap: 8px; }
+  .b-vs { align-self: center; font-family: 'Cinzel', serif; font-weight: 800; color: var(--ink-soft); }
+  .b-side {
+    flex: 1; border-radius: 8px; padding: 10px 8px; background: var(--parchment-dark);
+    border-top: 6px solid var(--side); position: relative; transition: opacity .3s, transform .3s;
+  }
+  .b-side.win { transform: scale(1.04); box-shadow: 0 0 0 3px #ffd24a; }
+  .b-side.lose { opacity: .55; }
+  .b-name { font-family: 'Cinzel', serif; font-weight: 800; font-size: 15px; }
+  .b-count { font-family: 'Cinzel', serif; font-weight: 800; font-size: 44px; line-height: 1.1; }
+  .b-sub { font-size: 13px; color: var(--ink-soft); min-height: 34px; }
+  .b-bar { height: 10px; background: rgba(59,42,26,.15); border-radius: 5px; margin: 8px 0 4px; overflow: hidden; }
+  .b-bar i { display: block; height: 100%; width: 0; background: var(--side); transition: width .07s linear; }
+  .b-str { font-size: 14px; }
+  .b-loss {
+    position: absolute; top: 34px; right: 10px; font-family: 'Cinzel', serif; font-weight: 800;
+    font-size: 22px; color: #b23a3a; opacity: 0;
+  }
+  .b-loss.show { animation: rise 1s ease-out forwards; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(-6px); } }
+  #b-result { min-height: 52px; margin: 14px 0 12px; font-size: 17px; }
+  #b-result b { font-family: 'Cinzel', serif; font-size: 20px; }
+  #b-result.good b { color: #3f7d3a; }
+  #b-result.bad b { color: #b23a3a; }
   .realm-btn small { font-family: 'EB Garamond', serif; font-weight: 400; font-size: 14px; opacity: .9; }
 </style>
 </head>
 <body>
 <div id="app">
   <div id="topbar"></div>
-  <div id="mapwrap"><svg id="map" viewBox="__VIEWBOX__"></svg></div>
+  <div id="mapwrap">
+    <svg id="map" viewBox="__VIEWBOX__"></svg>
+    <div id="zoom-ctrl">
+      <button data-zoom="in" aria-label="Zoom in">+</button>
+      <button data-zoom="out" aria-label="Zoom out">−</button>
+      <button data-zoom="reset" aria-label="Show whole map">⟲</button>
+    </div>
+  </div>
   <div id="panel"></div>
 
   <div id="start" class="overlay">
@@ -160,6 +217,8 @@
         <li><b>Build:</b> a farm (+1 💰 per year) or a castle (defenders ×1.5). One building per province, one per year.</li>
         <li><b>End turn</b> when you're done. The other realms move, then you get your income.</li>
       </ul>
+      <h3>The map</h3>
+      <p>Pinch or use + and − to zoom, drag to move around. Arrows show last year's attacks by the other realms (dashed with ✕: beaten back), and a flashing yellow border marks provinces that changed hands.</p>
       <h3>Money</h3>
       <p>Every regiment costs 1 💰 per year. If you can't pay, soldiers desert.</p>
       <h3>Battles</h3>
@@ -171,6 +230,32 @@
         <li>Lose your capital 👑 and your income is halved for 5 years. Retake it to end that early.</li>
       </ul>
       <button class="act" style="width:100%;margin-top:16px" onclick="closeHelp()">Got it</button>
+    </div>
+  </div>
+  <div id="battle" class="overlay" style="display:none">
+    <div class="card">
+      <div id="b-title"></div>
+      <div class="b-sides">
+      <div class="b-side" id="b-att">
+        <div class="b-name" id="b-att-name"></div>
+        <div class="b-count" id="b-att-count"></div>
+        <div class="b-sub" id="b-att-sub"></div>
+        <div class="b-bar"><i id="b-att-bar"></i></div>
+        <div class="b-str" id="b-att-str"></div>
+        <div class="b-loss" id="b-att-loss"></div>
+      </div>
+        <div class="b-vs">vs</div>
+      <div class="b-side" id="b-def">
+        <div class="b-name" id="b-def-name"></div>
+        <div class="b-count" id="b-def-count"></div>
+        <div class="b-sub" id="b-def-sub"></div>
+        <div class="b-bar"><i id="b-def-bar"></i></div>
+        <div class="b-str" id="b-def-str"></div>
+        <div class="b-loss" id="b-def-loss"></div>
+      </div>
+      </div>
+      <div id="b-result"></div>
+      <button class="act" id="b-continue" style="width:100%">Skip</button>
     </div>
   </div>
   <div id="report" class="overlay" style="display:none">
@@ -297,6 +382,8 @@ function newGame(playerRealm) {
   game.message = null;
   game.over = false;
   game.stats = { won: 0, lost: 0, taken: 0, peak: 0 };
+  game.lastTurn = [];
+  game.confirmEnd = null;
 
   for (const id in REALMS) {
     game.realms[id] = {
@@ -341,6 +428,7 @@ function newGame(playerRealm) {
   game.stats.peak = provincesOf(playerRealm).length;
 
   render();
+  focusOnRealm(playerRealm);
 }
 
 // Small helpers
@@ -434,9 +522,16 @@ function attack(from, to, count) {
   const defenders = to.army;
   from.army -= count;
 
+  const bonus = defenseBonus(from, to);
   const attackStrength = count * random(RULES.luckMin, RULES.luckMax);
-  const defenseStrength = defenseSize(to) * defenseBonus(from, to) * random(RULES.luckMin, RULES.luckMax);
-  const result = { attacker, defender, place: to.name, sent: count, defenders, won: false, attackLoss: 0, defenseLoss: 0, note: "" };
+  const defenseStrength = defenseSize(to) * bonus * random(RULES.luckMin, RULES.luckMax);
+  const result = {
+    attacker, defender, from: from.id, to: to.id, place: to.name,
+    sent: count, defenders, militia: RULES.militia, defenseSize: defenseSize(to),
+    bonus, castle: to.building === "castle", river: to.riverBorders.includes(from.id),
+    attackStrength, defenseStrength,
+    won: false, attackLoss: 0, defenseLoss: 0, note: ""
+  };
 
   // Higher strength wins, ties go to the defender
   if (attackStrength > defenseStrength) {
@@ -609,11 +704,14 @@ function aiTurn(id) {
 
 function endTurn() {
   const events = [];   // { text, kind } for the year report
+  game.lastTurn = [];  // every AI attack, to draw on the map
+  game.confirmEnd = null;
 
   // The AI realms take their turns
   for (const id in REALMS) {
     if (id === "independent" || id === game.player) continue;
     for (const result of aiTurn(id)) {
+      game.lastTurn.push(result);
       const text = describe(result);
       if (!text) continue;
       let kind = "";
@@ -667,10 +765,36 @@ function endTurn() {
   game.selected = null;
   game.order = null;
   game.message = `The year is ${game.year}. ${report}`;
+  game.freshTurn = true;   // makes the changed provinces flash once
   game.stats.peak = Math.max(game.stats.peak, provincesOf(game.player).length);
   checkGameOver();
   render();
   if (!game.over) showReport(events);
+}
+
+// Things the player might have forgotten this year. Empty list = nothing.
+function unusedWarnings() {
+  const me = game.player, realm = game.realms[me], mine = provincesOf(me);
+  const warnings = [];
+
+  const targets = new Set();
+  for (const p of mine) {
+    if (ready(p) === 0) continue;
+    for (const n of p.neighbors.map(n => game.provinces[n])) {
+      if (n.owner !== me && winChance(p, n, ready(p)) >= 0.75) targets.add(n.name);
+    }
+  }
+  if (targets.size) {
+    const names = [...targets];
+    warnings.push(`Your armies could probably take ${names.slice(0, 3).join(", ")}${names.length > 3 ? ` and ${names.length - 3} more` : ""}.`);
+  }
+  if (!realm.built && mine.some(p => !p.building) && realm.gold >= RULES.farmCost) {
+    warnings.push(`You haven't built anything this year, and you have ${realm.gold} 💰.`);
+  }
+  if (realm.manpower >= RULES.maxManpower && realm.gold >= RULES.recruitGold) {
+    warnings.push(`Your manpower is full (${RULES.maxManpower}/${RULES.maxManpower}), so next year's new men are wasted unless you recruit.`);
+  }
+  return warnings;
 }
 
 // The year report: what the other realms did while you waited
@@ -678,7 +802,8 @@ function showReport(events) {
   if (events.length === 0) events = [{ text: "A quiet year. Nobody went to war.", kind: "" }];
   document.getElementById("report-title").textContent = `Anno ${game.year}`;
   document.getElementById("report-list").innerHTML =
-    events.map(e => `<li class="${e.kind}">${e.text}</li>`).join("");
+    events.map(e => `<li class="${e.kind}">${e.text}</li>`).join("") +
+    (game.lastTurn.length ? `<li style="border:none;background:none;padding-left:0;font-style:italic">The attacks are marked on the map.</li>` : "");
   document.getElementById("report").style.display = "flex";
 }
 function closeReport() {
@@ -751,10 +876,11 @@ function continueGame(data) {
   Object.assign(game, {
     year: data.year, player: data.player, stats: data.stats,
     realms: data.realms, provinces: data.provinces,
-    selected: null, order: null, over: false,
+    selected: null, order: null, over: false, lastTurn: [], confirmEnd: null,
     message: `Welcome back. The year is ${data.year}.`
   });
   render();
+  focusOnRealm(data.player);
 }
 
 // =====================================================================
@@ -799,6 +925,16 @@ function renderMap() {
   // Rivers on top of the land
   el("path", { d: MAP_SHAPES.rivers, class: "river" }, svg);
 
+  // Last year's AI attacks: flashing border on provinces that changed hands,
+  // and an arrow for every attack (dashed with ✕ when it was beaten back)
+  for (const r of game.lastTurn || []) {
+    if (!r.won) continue;
+    el("path", { d: TERRITORIES[r.to], class: "changed-under" + (game.freshTurn ? " fresh" : "") }, svg);
+    el("path", { d: TERRITORIES[r.to], class: "changed" + (game.freshTurn ? " fresh" : "") }, svg);
+  }
+  for (const r of game.lastTurn || []) drawArrow(r);
+  game.freshTurn = false;
+
   // Selected province drawn again on top, so its outline is fully visible
   if (sel) el("path", { d: TERRITORIES[sel.id], class: "terr-outline" }, svg);
 
@@ -823,6 +959,25 @@ function renderMap() {
   }
 }
 
+function drawArrow(r) {
+  const a = game.provinces[r.from], b = game.provinces[r.to];
+  const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
+  const ux = dx / len, uy = dy / len;
+  // Start and stop a bit away from the city markers
+  const x1 = a.x + ux * 18, y1 = a.y + uy * 18;
+  const x2 = b.x - ux * 24, y2 = b.y - uy * 24;
+  const color = REALMS[r.attacker].color;
+  el("line", { x1, y1, x2, y2, class: "arrow-under" }, svg);
+  el("line", { x1, y1, x2, y2, class: "arrow" + (r.won ? "" : " failed"), stroke: color }, svg);
+  // Arrow head: a triangle at the end, pointing at the target
+  const s = 11, px = -uy, py = ux;
+  const tip = [x2 + ux * s, y2 + uy * s];
+  const left = [x2 + px * s * 0.8, y2 + py * s * 0.8];
+  const right = [x2 - px * s * 0.8, y2 - py * s * 0.8];
+  el("polygon", { points: [tip, left, right].map(p => p.join(",")).join(" "), fill: color, class: "arrow-head" }, svg);
+  if (!r.won) el("text", { x: (x1 + x2) / 2, y: (y1 + y2) / 2, class: "arrow-x" }, svg).textContent = "✕";
+}
+
 function renderTopbar() {
   const r = REALMS[game.player];
   const s = game.realms[game.player];
@@ -840,6 +995,19 @@ function renderPanel() {
   const panel = document.getElementById("panel");
   const msg = game.message ? `<div class="msg">${game.message}</div>` : "";
   const endTurnButton = `<button class="act" data-do="endturn">End turn ⏳</button>`;
+
+  // --- The player pressed End turn but still has things to do ---
+  if (game.confirmEnd) {
+    panel.innerHTML = `
+      <h2>End the year?</h2>
+      <ul class="warn">${game.confirmEnd.map(w => `<li>${w}</li>`).join("")}</ul>
+      <div class="spacer"></div>
+      <div class="row">
+        <button class="act light" data-do="cancelend">Go back</button>
+        <button class="act" data-do="endanyway">End turn anyway</button>
+      </div>`;
+    return;
+  }
 
   // --- A move or attack is waiting for confirmation ---
   if (game.order) {
@@ -932,12 +1100,275 @@ function renderPanel() {
 }
 
 // =====================================================================
+// BATTLE SCREEN
+// Plays a short animation of a battle the player started: both armies,
+// the luck roll, the losses, and the result. The battle itself has
+// already been decided by attack(); this only shows it.
+// =====================================================================
+
+const battle = { timers: [], result: null, onDone: null, finished: false };
+
+function showBattle(r, onDone) {
+  battle.timers.forEach(clearTimeout);
+  battle.timers = [];
+  battle.result = r;
+  battle.onDone = onDone;
+  battle.finished = false;
+
+  const $ = (id) => document.getElementById(id);
+  const att = REALMS[r.attacker], def = REALMS[r.defender];
+  const at = (ms, fn) => battle.timers.push(setTimeout(fn, ms));
+
+  $("b-title").textContent = `Battle of ${r.place}`;
+  $("b-att-name").textContent = att.short;
+  $("b-def-name").textContent = def.short;
+  $("b-att").style.setProperty("--side", att.color);
+  $("b-def").style.setProperty("--side", def.color);
+  $("b-att-count").textContent = r.sent;
+  $("b-def-count").textContent = r.defenders;
+  $("b-att-sub").textContent = r.sent === 1 ? "regiment" : "regiments";
+  const why = [];
+  if (r.castle) why.push("castle 🏰");
+  if (r.river) why.push("river 🌊");
+  $("b-def-sub").textContent =
+    `${r.defenders === 1 ? "regiment" : "regiments"} + ${r.militia} militia` +
+    (why.length ? ` · ×${r.bonus.toFixed(2).replace(/0$/, "")} ${why.join(" ")}` : "");
+  for (const side of ["att", "def"]) {
+    $(`b-${side}`).classList.remove("win", "lose");
+    $(`b-${side}-bar`).style.width = "0%";
+    $(`b-${side}-str`).textContent = "strength ?";
+    $(`b-${side}-loss`).textContent = "";
+    $(`b-${side}-loss`).classList.remove("show");
+  }
+  $("b-result").textContent = "";
+  $("b-result").className = "";
+  $("b-continue").textContent = "Skip";
+
+  // The biggest strength either side could possibly roll, for the bars
+  const attackMax = r.sent * RULES.luckMax;
+  const defenseMax = r.defenseSize * r.bonus * RULES.luckMax;
+  const top = Math.max(attackMax, defenseMax, r.attackStrength, r.defenseStrength);
+  const setStrength = (side, value) => {
+    $(`b-${side}-bar`).style.width = `${Math.round(100 * value / top)}%`;
+    $(`b-${side}-str`).textContent = `strength ${value.toFixed(1)}`;
+  };
+
+  // 1. The luck roll: strengths flicker, then settle on the real result
+  for (let t = 350; t < 1350; t += 70) {
+    at(t, () => {
+      setStrength("att", r.sent * random(RULES.luckMin, RULES.luckMax));
+      setStrength("def", r.defenseSize * r.bonus * random(RULES.luckMin, RULES.luckMax));
+    });
+  }
+  at(1400, () => {
+    setStrength("att", r.attackStrength);
+    setStrength("def", r.defenseStrength);
+    $("b-att").classList.add(r.won ? "win" : "lose");
+    $("b-def").classList.add(r.won ? "lose" : "win");
+  });
+
+  // 2. The losses: both counts tick down
+  at(1900, () => {
+    countDown("b-att-count", r.sent, r.sent - r.attackLoss);
+    countDown("b-def-count", r.defenders, r.defenders - r.defenseLoss);
+    showLoss("att", r.attackLoss);
+    showLoss("def", r.defenseLoss);
+  });
+
+  // 3. The result
+  at(2700, finishBattle);
+  show("battle");
+}
+
+function countDown(id, from, to) {
+  const steps = from - to;
+  for (let i = 1; i <= steps; i++) {
+    battle.timers.push(setTimeout(() => {
+      document.getElementById(id).textContent = from - i;
+    }, i * Math.min(120, 600 / steps)));
+  }
+}
+
+function showLoss(side, n) {
+  const e = document.getElementById(`b-${side}-loss`);
+  e.textContent = n > 0 ? `−${n}` : "no losses";
+  e.classList.add("show");
+}
+
+// Jump to the end state (also used when the player taps Skip)
+function finishBattle() {
+  battle.timers.forEach(clearTimeout);
+  battle.timers = [];
+  battle.finished = true;
+  const r = battle.result;
+  const $ = (id) => document.getElementById(id);
+
+  $("b-att-bar").style.width = `${Math.round(100 * r.attackStrength / Math.max(r.attackStrength, r.defenseStrength))}%`;
+  $("b-def-bar").style.width = `${Math.round(100 * r.defenseStrength / Math.max(r.attackStrength, r.defenseStrength))}%`;
+  $("b-att-str").textContent = `strength ${r.attackStrength.toFixed(1)}`;
+  $("b-def-str").textContent = `strength ${r.defenseStrength.toFixed(1)}`;
+  $("b-att").classList.add(r.won ? "win" : "lose");
+  $("b-def").classList.add(r.won ? "lose" : "win");
+  $("b-att-count").textContent = r.sent - r.attackLoss;
+  $("b-def-count").textContent = r.defenders - r.defenseLoss;
+  showLoss("att", r.attackLoss);
+  showLoss("def", r.defenseLoss);
+
+  const mine = r.attacker === game.player;
+  const good = (r.won && mine) || (!r.won && !mine);
+  $("b-result").className = good ? "good" : "bad";
+  $("b-result").innerHTML = r.won
+    ? `<b>Victory!</b> ${r.place} is taken.${r.note ? `<br><small>${r.note.trim()}</small>` : ""}`
+    : `<b>Defeat.</b> The attack on ${r.place} failed.`;
+  $("b-continue").textContent = "Continue";
+  try { navigator.vibrate(good ? 40 : [60, 60, 60]); } catch (e) {}
+}
+
+document.getElementById("b-continue").addEventListener("click", () => {
+  if (!battle.finished) { finishBattle(); return; }
+  hide("battle");
+  if (battle.onDone) battle.onDone();
+});
+
+// =====================================================================
+// ZOOM AND DRAG
+// Pinch with two fingers to zoom, drag with one finger to move the map.
+// On a computer: mouse wheel to zoom, drag to move. The + − ⟲ buttons
+// in the corner of the map work everywhere.
+// We do this by changing which part of the map the svg shows (its viewBox).
+// =====================================================================
+
+const view = { base: null, x: 0, y: 0, w: 0, h: 0 };
+const MAX_ZOOM = 5;
+
+function resetView() {
+  if (!view.base) {
+    const [x, y, w, h] = svg.getAttribute("viewBox").split(" ").map(Number);
+    view.base = { x, y, w, h };
+  }
+  Object.assign(view, view.base);
+  applyView();
+}
+
+function applyView() {
+  const b = view.base;
+  view.w = Math.min(b.w, Math.max(b.w / MAX_ZOOM, view.w));
+  view.h = view.w * b.h / b.w;
+  view.x = Math.min(b.x + b.w - view.w, Math.max(b.x, view.x));
+  view.y = Math.min(b.y + b.h - view.h, Math.max(b.y, view.y));
+  svg.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.h}`);
+}
+
+// Screen position (pixels) to map position
+function toMap(clientX, clientY) {
+  const pt = svg.createSVGPoint();
+  pt.x = clientX;
+  pt.y = clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+// Zoom in (factor > 1) or out (factor < 1), keeping the point under the finger still
+function zoomAt(factor, clientX, clientY) {
+  const p = toMap(clientX, clientY);
+  const newW = Math.min(view.base.w, Math.max(view.base.w / MAX_ZOOM, view.w / factor));
+  const k = newW / view.w;
+  view.x = p.x - (p.x - view.x) * k;
+  view.y = p.y - (p.y - view.y) * k;
+  view.w = newW;
+  applyView();
+}
+
+// Zoom in on a spot of the map, for example your capital at the start
+function zoomTo(mapX, mapY, zoom) {
+  view.w = view.base.w / zoom;
+  view.h = view.base.h / zoom;
+  view.x = mapX - view.w / 2;
+  view.y = mapY - view.h / 2;
+  applyView();
+}
+
+function panBy(dxPixels, dyPixels) {
+  const scale = svg.getScreenCTM().a;   // pixels per map unit
+  view.x -= dxPixels / scale;
+  view.y -= dyPixels / scale;
+  applyView();
+}
+
+const pointers = new Map();
+let dragStart = null, dragged = false, pinchDistance = null;
+
+svg.addEventListener("pointerdown", (e) => {
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 1) { dragStart = { x: e.clientX, y: e.clientY }; dragged = false; }
+});
+
+svg.addEventListener("pointermove", (e) => {
+  const prev = pointers.get(e.pointerId);
+  if (!prev) return;
+  const now = { x: e.clientX, y: e.clientY };
+  pointers.set(e.pointerId, now);
+
+  if (pointers.size === 1) {
+    // A finger moved more than a few pixels: it's a drag, not a tap
+    if (!dragged && Math.hypot(now.x - dragStart.x, now.y - dragStart.y) > 8) dragged = true;
+    if (dragged) panBy(now.x - prev.x, now.y - prev.y);
+  } else if (pointers.size === 2) {
+    const [a, b] = [...pointers.values()];
+    const distance = Math.hypot(a.x - b.x, a.y - b.y);
+    if (pinchDistance) zoomAt(distance / pinchDistance, (a.x + b.x) / 2, (a.y + b.y) / 2);
+    pinchDistance = distance;
+    dragged = true;
+  }
+});
+
+function pointerGone(e) {
+  pointers.delete(e.pointerId);
+  if (pointers.size < 2) pinchDistance = null;
+}
+svg.addEventListener("pointerup", pointerGone);
+svg.addEventListener("pointercancel", pointerGone);
+svg.addEventListener("pointerleave", pointerGone);
+
+// After a drag or pinch, the finger lifting must not count as a tap
+svg.addEventListener("click", (e) => {
+  if (dragged) { e.stopPropagation(); e.preventDefault(); dragged = false; }
+}, true);
+
+svg.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  zoomAt(e.deltaY < 0 ? 1.2 : 1 / 1.2, e.clientX, e.clientY);
+}, { passive: false });
+
+document.getElementById("zoom-ctrl").addEventListener("click", (e) => {
+  e.stopPropagation();
+  const button = e.target.closest("button");
+  if (!button) return;
+  const box = svg.getBoundingClientRect();
+  const cx = box.left + box.width / 2, cy = box.top + box.height / 2;
+  if (button.dataset.zoom === "in") zoomAt(1.5, cx, cy);
+  if (button.dataset.zoom === "out") zoomAt(1 / 1.5, cx, cy);
+  if (button.dataset.zoom === "reset") resetView();
+});
+
+// Start a game zoomed in on your own realm
+function focusOnRealm(realm) {
+  const lands = provincesOf(realm);
+  if (!lands.length) return resetView();
+  const xs = lands.map(p => p.x), ys = lands.map(p => p.y);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  resetView();
+  zoomTo(cx, cy, 1.6);
+}
+
+// =====================================================================
 // 7. INPUT
 // What happens when the player taps the map or a button.
 // =====================================================================
 
 function tapProvince(id) {
   if (game.over) return;
+  game.confirmEnd = null;
 
   // Tapping the map while an order is open cancels it
   if (game.order) { game.order = null; render(); return; }
@@ -964,6 +1395,7 @@ document.getElementById("mapwrap").addEventListener("click", () => {
   if (game.over) return;
   game.selected = null;
   game.order = null;
+  game.confirmEnd = null;
   render();
 });
 
@@ -974,7 +1406,14 @@ document.getElementById("panel").addEventListener("click", (e) => {
   const action = button.dataset.do;
   const order = game.order;
 
-  if (action === "endturn") { endTurn(); return; }
+  if (action === "endturn") {
+    const warnings = unusedWarnings();
+    if (warnings.length) { game.confirmEnd = warnings; game.order = null; render(); return; }
+    endTurn();
+    return;
+  }
+  if (action === "endanyway") { endTurn(); return; }
+  if (action === "cancelend") game.confirmEnd = null;
   if (action === "recruit") { recruit(game.provinces[game.selected]); game.message = null; }
   if (action === "farm" || action === "castle") { build(game.provinces[game.selected], action); game.message = null; }
   if (action === "less") order.count -= 1;
@@ -987,9 +1426,12 @@ document.getElementById("panel").addEventListener("click", (e) => {
       moveArmy(from, to, order.count);
       game.selected = to.id;
     } else {
-      game.message = describe(attack(from, to, order.count));
+      const result = attack(from, to, order.count);
+      game.message = describe(result);
       game.selected = (to.owner === game.player) ? to.id : from.id;
-      checkGameOver();
+      render();
+      showBattle(result, () => { checkGameOver(); render(); });
+      return;
     }
   }
   render();
