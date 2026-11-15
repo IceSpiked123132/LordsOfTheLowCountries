@@ -1,7 +1,7 @@
 // Keeps the game working offline once it's installed.
 // It loads the newest version when online, and the saved copy when offline.
-const CACHE = "lords-v1";
-const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
+const CACHE = "lords-v2";
+const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png", "fonts/cinzel.woff2", "fonts/eb-garamond.woff2"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)));

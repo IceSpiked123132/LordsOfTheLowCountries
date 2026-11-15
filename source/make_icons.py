@@ -24,5 +24,6 @@ def icon(n, out):
     im.resize((n, n), Image.LANCZOS).save(f"{out}/icon-{n}.png")
 
 folder = sys.argv[1] if len(sys.argv) > 1 else "."
+icon(180, folder)
 icon(192, folder)
 icon(512, folder)

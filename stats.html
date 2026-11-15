@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Lords of the Low Countries: statistics</title>
+<style>
+  @font-face { font-family: 'Cinzel'; src: url('fonts/cinzel.woff2') format('woff2'); font-weight: 400 900; }
+  @font-face { font-family: 'EB Garamond'; src: url('fonts/eb-garamond.woff2') format('woff2'); font-weight: 400 800; }
+  body { margin: 0; background: #efe3c4; color: #3b2a1a; font-family: 'EB Garamond', Georgia, serif; font-size: 17px; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1, h2 { font-family: 'Cinzel', serif; }
+  h1 { margin: 0 0 4px; font-size: 28px; }
+  h2 { font-size: 18px; margin: 28px 0 10px; }
+  .muted { color: #6b5338; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .tile { background: #fffaf0; border: 2px solid #3b2a1a; border-radius: 10px; padding: 10px 12px; }
+  .tile b { display: block; font-family: 'Cinzel', serif; font-size: 28px; }
+  table { width: 100%; border-collapse: collapse; background: #fffaf0; border: 2px solid #3b2a1a; border-radius: 10px; overflow: hidden; }
+  th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid #d9c79c; }
+  th { font-family: 'Cinzel', serif; font-size: 13px; background: #d9c79c; }
+  td.num, th.num { text-align: right; }
+  .bar { height: 12px; background: #b23a3a; border-radius: 3px; min-width: 2px; }
+  #error { color: #9a2c2c; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Statistics</h1>
+  <div class="muted">Lords of the Low Countries · anonymous totals from every game played · <span id="updated"></span></div>
+  <div id="error"></div>
+  <h2>Overall</h2>
+  <div class="tiles" id="tiles"></div>
+  <h2>Per realm and difficulty</h2>
+  <table id="realms"></table>
+  <h2>Last 60 days</h2>
+  <table id="daily"></table>
+  <p class="muted">Raw data, leaderboard entries and feedback messages are in the Supabase dashboard (Table Editor).</p>
+</main>
+<script>
+// Same values as ONLINE in source/template.html
+const ONLINE = { url: "", key: "" };
+
+const REALM_NAMES = { holland: "Holland", utrecht: "Utrecht", gelre: "Gelre", brabant: "Brabant" };
+
+async function get(view) {
+  const res = await fetch(`${ONLINE.url}/rest/v1/${view}?select=*`, {
+    headers: { apikey: ONLINE.key, Authorization: `Bearer ${ONLINE.key}` }
+  });
+  if (!res.ok) throw new Error(`${view}: ${res.status}`);
+  return res.json();
+}
+
+const fmt = (v) => (v === null || v === undefined ? "–" : v);
+
+async function load() {
+  if (!ONLINE.url) {
+    document.getElementById("error").textContent = "The online database isn't set up yet.";
+    return;
+  }
+  try {
+    const [[o], realms, daily] = await Promise.all([get("stats_overview"), get("stats_realms"), get("stats_daily")]);
+    const tiles = [
+      ["Games started", o.games_started], ["Games finished", o.games_finished],
+      ["Victories", o.victories], ["Countries united", o.countries_united],
+      ["Started last 7 days", o.started_last_7_days], ["Avg. years to victory", o.avg_years_to_victory],
+      ["Leaderboard entries", o.leaderboard_entries], ["Feedback messages", o.feedback_messages]
+    ];
+    document.getElementById("tiles").innerHTML = tiles.map(([label, v]) => `<div class="tile"><b>${fmt(v)}</b>${label}</div>`).join("");
+
+    document.getElementById("realms").innerHTML =
+      `<tr><th>Realm</th><th>Difficulty</th><th class="num">Started</th><th class="num">Finished</th><th class="num">Won</th><th class="num">Win rate</th><th class="num">Avg. years</th></tr>` +
+      realms.map(r => `<tr><td>${REALM_NAMES[r.realm]}</td><td>${r.difficulty}</td><td class="num">${r.started}</td><td class="num">${r.finished}</td>
+        <td class="num">${r.won}</td><td class="num">${r.finished ? Math.round(100 * r.won / r.finished) + "%" : "–"}</td><td class="num">${fmt(r.avg_years_to_victory)}</td></tr>`).join("");
+
+    const top = Math.max(1, ...daily.map(d => d.started));
+    document.getElementById("daily").innerHTML =
+      `<tr><th>Day</th><th class="num">Started</th><th class="num">Finished</th><th class="num">Won</th><th style="width:40%"></th></tr>` +
+      daily.map(d => `<tr><td>${d.day}</td><td class="num">${d.started}</td><td class="num">${d.finished}</td><td class="num">${d.won}</td>
+        <td><div class="bar" style="width:${Math.round(100 * d.started / top)}%"></div></td></tr>`).join("");
+    document.getElementById("updated").textContent = "loaded " + new Date().toLocaleString();
+  } catch (e) {
+    document.getElementById("error").textContent = "Couldn't load the statistics: " + e.message;
+  }
+}
+load();
+</script>
+</body>
+</html>

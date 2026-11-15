@@ -8,10 +8,27 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
 <title>Lords of the Low Countries</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=EB+Garamond:wght@400;600&display=swap" rel="stylesheet">
+<meta name="description" content="A free medieval strategy game on the real map of the Low Countries, 1350. Lead Holland, Utrecht, Gelre or Brabant through war, diplomacy and the Black Death. Plays in your browser, no install.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Lords of the Low Countries">
+<meta property="og:description" content="A free medieval strategy game on the real map of the Low Countries, 1350. Conquer, make alliances, survive the Black Death. Plays in your browser.">
+<meta property="og:url" content="https://icespiked123132.github.io/LordsOfTheLowCountries/">
+<meta property="og:image" content="https://icespiked123132.github.io/LordsOfTheLowCountries/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lords of the Low Countries">
+<meta name="twitter:description" content="A free medieval strategy game on the real map of the Low Countries, 1350.">
+<meta name="twitter:image" content="https://icespiked123132.github.io/LordsOfTheLowCountries/og-image.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="Lords">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
+  /* Fonts are stored with the game: they work offline, and no request goes to Google */
+  @font-face { font-family: 'Cinzel'; src: url('fonts/cinzel.woff2') format('woff2'); font-weight: 400 900; font-display: swap; }
+  @font-face { font-family: 'EB Garamond'; src: url('fonts/eb-garamond.woff2') format('woff2'); font-weight: 400 800; font-display: swap; }
+
   /* ---------- Look and feel ---------- */
   :root {
     --parchment: #efe3c4;
@@ -172,6 +189,26 @@
   .diff button.on { background: var(--ink); color: var(--parchment); }
   .diff-text { font-size: 14px; color: var(--ink-soft); min-height: 36px; text-align: center; }
   .crest { display: inline-block; vertical-align: middle; flex: none; }
+
+  /* Leaderboard, feedback and share screens */
+  #board, #feedback, #sharebox { justify-content: flex-start; overflow-y: auto; padding-top: calc(20px + env(safe-area-inset-top)); }
+  #board .box, #feedback .box, #sharebox .box { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+  #board h1, #feedback h1, #sharebox h1 { text-align: center; margin: 0 0 4px; }
+  #board-form { display: none; flex-direction: column; gap: 8px; background: var(--parchment-dark); border-radius: 8px; padding: 10px; }
+  #board-form input, #feedback textarea, #feedback input {
+    flex: 1; min-width: 0; font-family: 'EB Garamond', serif; font-size: 17px; padding: 8px 10px;
+    border: 2px solid var(--ink); border-radius: 8px; background: #fffaf0; color: var(--ink);
+  }
+  #feedback textarea { min-height: 140px; resize: vertical; }
+  #board-list { list-style: none; margin: 0; padding: 0; }
+  #board-list li { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-bottom: 1px solid rgba(59,42,26,.15); }
+  #board-list li.me { background: #fff3c4; border-radius: 6px; }
+  #board-list .rank { width: 26px; text-align: right; font-family: 'Cinzel', serif; font-weight: 800; }
+  #board-list .who { flex: 1; display: flex; flex-direction: column; font-size: 17px; }
+  #board-list .who small { font-size: 13px; color: var(--ink-soft); }
+  #board-list .yrs { font-family: 'Cinzel', serif; font-weight: 800; }
+  #board-status, #fb-status { color: var(--ink-soft); font-style: italic; text-align: center; }
+  #share-img { width: 100%; border: 3px solid var(--ink); border-radius: 6px; -webkit-touch-callout: default; user-select: auto; }
   #topbar .realm .crest { margin: -4px 0; }
   .b-name { display: flex; align-items: center; justify-content: center; gap: 6px; }
   .dip-name { display: flex; align-items: center; gap: 8px; }
@@ -290,7 +327,10 @@
       <div class="section-label">CHOOSE YOUR REALM</div>
       <div id="realm-buttons" class="realm-grid"></div>
       <div id="start-msg"></div>
-      <button class="act light" style="flex:none;width:200px;min-height:40px" onclick="showHelp()">How to play</button>
+      <div class="row" style="width:100%">
+        <button class="act light" style="min-height:42px" onclick="showHelp()">How to play</button>
+        <button class="act light" id="start-board" style="min-height:42px;display:none" onclick="openBoard(false)">Leaderboard 🏆</button>
+      </div>
     </div>
   </div>
   <div id="menu" class="overlay" style="display:none">
@@ -301,6 +341,7 @@
       <button class="act light" onclick="closeMenu(); openDiplomacy()">Diplomacy 🤝</button>
       <button class="act light" onclick="showHelp()">How to play</button>
       <button class="act light" id="sound-btn" onclick="toggleSound()">Sound: on 🔊</button>
+      <button class="act light" onclick="closeMenu(); openFeedback()">Send feedback 💬</button>
       <button class="act light" onclick="quitToStart()">Main menu (game is saved)</button>
     </div>
   </div>
@@ -344,6 +385,8 @@
         <li>A conquered province pays nothing for 3 years while it calms down.</li>
         <li>Lose your capital 👑 and your income drops by a quarter for 3 years. Retake it to end that early.</li>
       </ul>
+      <h3>Credits</h3>
+      <p>Made by IceSpiked123132, with Claude. Map data: Natural Earth (public domain). Fonts: Cinzel and EB Garamond (SIL Open Font License). The coats of arms are drawn for this game after the medieval arms of Holland, Utrecht, Gelre and Brabant.</p>
       <button class="act" style="width:100%;margin-top:16px" onclick="closeHelp()">Got it</button>
       <button class="act light" style="width:100%;margin-top:8px" onclick="closeHelp(); restartGuide()">Show the first-game tips again</button>
     </div>
@@ -379,6 +422,40 @@
       <div id="year-title"></div>
       <ul id="year-notes"></ul>
       <div id="year-hint"><span>Tap to continue</span><div id="year-timer"><i></i></div></div>
+    </div>
+  </div>
+  <div id="board" class="overlay" style="display:none">
+    <div class="box">
+      <h1>🏆 Leaderboard</h1>
+      <div id="board-form"></div>
+      <div class="diff" id="board-cat"></div>
+      <div class="diff" id="board-diff"></div>
+      <div id="board-status"></div>
+      <ol id="board-list"></ol>
+      <button class="act" style="width:100%" onclick="hide('board')">Close</button>
+    </div>
+  </div>
+  <div id="feedback" class="overlay" style="display:none">
+    <div class="box">
+      <h1>Feedback 💬</h1>
+      <div>Found a bug, have an idea, or just want to say what you think? Every message is read.</div>
+      <div id="fb-form" style="flex-direction:column;gap:10px">
+        <textarea id="fb-text" maxlength="2000" placeholder="Your message"></textarea>
+        <input id="fb-contact" maxlength="100" placeholder="Email or social handle, if you'd like an answer (optional)">
+        <button class="act go" id="fb-send" onclick="sendFeedback()">Send</button>
+      </div>
+      <div id="fb-offline" class="msg">The feedback form isn't switched on yet. You can leave a message on <a href="https://github.com/IceSpiked123132/LordsOfTheLowCountries/issues" target="_blank" rel="noopener">GitHub</a>.</div>
+      <div id="fb-status"></div>
+      <button class="act light" onclick="hide('feedback')">Close</button>
+    </div>
+  </div>
+  <div id="sharebox" class="overlay" style="display:none">
+    <div class="box">
+      <h1>Share your game</h1>
+      <img id="share-img" alt="Your final map and result">
+      <div class="hint" style="text-align:center">Press and hold the image to save or share it.</div>
+      <a id="share-download" class="act" download="lords-of-the-low-countries.png" style="text-align:center;text-decoration:none;line-height:46px">Download the image</a>
+      <button class="act light" onclick="hide('sharebox')">Close</button>
     </div>
   </div>
   <div id="diplo" class="overlay" style="display:none">
@@ -605,6 +682,7 @@ function newGame(playerRealm, difficulty) {
   game.lastTurn = [];
   game.confirmEnd = null;
   game.endless = false;   // true after "Keep playing"
+  game.submitted = {};    // leaderboard entries already sent this game
   game.endInfo = null;
   game.flags = {};        // events that already happened
   game.offers = [];       // AI peace offers waiting for the player
@@ -655,6 +733,7 @@ function newGame(playerRealm, difficulty) {
   render();
   focusOnRealm(playerRealm);
   startGuide();
+  logEvent("start");
 }
 
 // Small helpers
@@ -1586,6 +1665,7 @@ function endGame(title, text, won, final) {
   playSound(won ? "victory" : "defeat");
   game.endInfo = { title, text, won, final };
   if (final) clearSave();
+  logFinish(won, final);
   game.selected = null;
   game.order = null;
   game.confirmEnd = null;
@@ -1702,7 +1782,7 @@ function crest(id, size) {
   if (a.type === "cross") charge = `<path d="M43 8 H57 V104 H43 Z M10 46 H90 V60 H10 Z" fill="${a.charge}"/>`;
   if (a.type === "tower") charge = `<path d="M34 92 V44 H30 V30 H38 V36 H46 V30 H54 V36 H62 V30 H70 V44 H66 V92 Z M45 92 V76 C45 70 55 70 55 76 V92 Z" fill="${a.charge}" fill-rule="evenodd"/>`;
   const clip = `crest-clip-${id}-${Math.random().toString(36).slice(2, 7)}`;
-  return `<svg class="crest" style="width:${size}px;height:${Math.round(size * 1.1)}px" viewBox="0 0 100 110" aria-hidden="true">
+  return `<svg xmlns="http://www.w3.org/2000/svg" class="crest" width="${size}" height="${Math.round(size * 1.1)}" style="width:${size}px;height:${Math.round(size * 1.1)}px" viewBox="0 0 100 110" aria-hidden="true">
     <defs>
       <clipPath id="${clip}"><path d="${shield}"/></clipPath>
       <linearGradient id="${clip}-shine" x1="0" y1="0" x2="1" y2="1">
@@ -1879,6 +1959,10 @@ function renderPanel() {
         ${s.taken} provinces conquered · most held at once: ${Math.max(s.peak, provincesOf(game.player).length)}
       </div>
       <div class="spacer"></div>
+      <div class="row">
+        <button class="act light" data-do="share">Share 📤</button>
+        ${online() ? `<button class="act light" data-do="${e.won && !(game.submitted || {})[e.final ? "united" : "victory"] ? "addscore" : "board"}">Leaderboard 🏆</button>` : ""}
+      </div>
       <div class="row">
         ${e.final ? "" : `<button class="act go" data-do="keepplaying">${e.won ? "Keep conquering" : "Fight on"}</button>`}
         <button class="act ${e.final ? "" : "light"}" data-do="newgame">New game</button>
@@ -2323,6 +2407,268 @@ function toggleSound() {
 }
 
 // =====================================================================
+// ONLINE: LEADERBOARD, STATISTICS AND FEEDBACK
+// Uses a free Supabase database (see source/supabase-setup.sql).
+// Until ONLINE.url and ONLINE.key are filled in, all of this stays hidden
+// and the game works exactly as before. The key below is the public
+// "anon" key: it can only add rows and read the leaderboard, as set up
+// by the database rules.
+// What is sent: anonymous game starts and endings (realm, difficulty,
+// result, years, provinces, battles) with no player ID, names typed into
+// the leaderboard, and feedback messages. No cookies.
+// =====================================================================
+
+const ONLINE = { url: "", key: "" };
+const GAME_VERSION = "2026-11-15";
+const online = () => Boolean(ONLINE.url && ONLINE.key);
+
+async function api(path, options = {}) {
+  const res = await fetch(`${ONLINE.url}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      apikey: ONLINE.key,
+      Authorization: `Bearer ${ONLINE.key}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+      ...(options.headers || {})
+    }
+  });
+  if (!res.ok) throw new Error(`Server answered ${res.status}`);
+  return options.method === "POST" ? null : res.json();
+}
+
+// Anonymous statistics: one row when a game starts, one when it ends
+function logEvent(kind, extra = {}) {
+  if (!online()) return;
+  api("events", {
+    method: "POST",
+    body: JSON.stringify({ kind, realm: game.player, difficulty: game.difficulty, version: GAME_VERSION, ...extra })
+  }).catch(() => {});
+}
+
+function logFinish(won, final) {
+  const s = game.stats;
+  logEvent("finish", {
+    result: final ? (won ? "united" : "destroyed") : (won ? "victory" : "defeat"),
+    years: game.year - RULES.startYear,
+    provinces: provincesOf(game.player).length,
+    battles_won: s.won, battles_lost: s.lost
+  });
+}
+
+// --- Leaderboard ---
+const board = { difficulty: "normal", category: "victory", highlight: null, submitting: false };
+
+function openBoard(submit) {
+  board.difficulty = submit ? game.difficulty : (board.difficulty || chosenDifficulty);
+  board.category = submit ? (game.endInfo && game.endInfo.final ? "united" : "victory") : board.category;
+  board.submitting = Boolean(submit);
+  renderBoardForm();
+  loadBoard();
+  show("board");
+}
+
+function renderBoardForm() {
+  const form = document.getElementById("board-form");
+  if (!board.submitting) { form.style.display = "none"; return; }
+  let name = "";
+  try { name = localStorage.getItem("lords-name") || ""; } catch (e) {}
+  const years = game.year - RULES.startYear;
+  form.innerHTML = `
+    <div>${crest(game.player, 28)} <b>${REALMS[game.player].name}</b>: ${board.category === "united" ? "united the Low Countries" : "victory"} in ${years} ${years === 1 ? "year" : "years"} (${diff().label.toLowerCase()})</div>
+    <div class="row">
+      <input id="board-name" maxlength="20" placeholder="Your name" value="${name.replace(/"/g, "&quot;")}">
+      <button class="act go" id="board-submit">Add</button>
+    </div>`;
+  form.style.display = "flex";
+  document.getElementById("board-submit").onclick = submitScore;
+}
+
+async function submitScore() {
+  const input = document.getElementById("board-name");
+  const name = input.value.trim().slice(0, 20);
+  if (!name) { input.focus(); return; }
+  try { localStorage.setItem("lords-name", name); } catch (e) {}
+  const years = game.year - RULES.startYear;
+  const button = document.getElementById("board-submit");
+  button.disabled = true;
+  try {
+    await api("scores", { method: "POST", body: JSON.stringify({
+      name, realm: game.player, difficulty: game.difficulty, category: board.category,
+      years, provinces: provincesOf(game.player).length
+    }) });
+    game.submitted = game.submitted || {};
+    game.submitted[board.category] = true;
+    board.submitting = false;
+    board.highlight = { name, years };
+    renderBoardForm();
+    loadBoard();
+    render();
+  } catch (e) {
+    button.disabled = false;
+    document.getElementById("board-status").textContent = "Couldn't reach the leaderboard. Check your internet and try again.";
+  }
+}
+
+async function loadBoard() {
+  document.getElementById("board-diff").innerHTML = Object.entries(DIFFICULTY)
+    .map(([id, d]) => `<button class="${id === board.difficulty ? "on" : ""}" data-board-diff="${id}">${d.label}</button>`).join("");
+  document.getElementById("board-cat").innerHTML = [["victory", "Fastest victory"], ["united", "Whole country"]]
+    .map(([id, label]) => `<button class="${id === board.category ? "on" : ""}" data-board-cat="${id}">${label}</button>`).join("");
+  const list = document.getElementById("board-list");
+  const status = document.getElementById("board-status");
+  list.innerHTML = "";
+  status.textContent = "Loading…";
+  try {
+    const rows = await api(`scores?select=name,realm,years,created_at&difficulty=eq.${board.difficulty}&category=eq.${board.category}&order=years.asc,created_at.asc&limit=25`);
+    status.textContent = rows.length ? "" : "No one is on this board yet. Be the first!";
+    const h = board.highlight;
+    list.innerHTML = rows.map((r, i) => `
+      <li class="${h && h.name === r.name && h.years === r.years ? "me" : ""}">
+        <span class="rank">${i + 1}</span>${crest(r.realm, 22)}
+        <span class="who">${escapeHtml(r.name)}<small>${REALMS[r.realm].name} · ${new Date(r.created_at).toLocaleDateString()}</small></span>
+        <span class="yrs">${r.years} yrs</span>
+      </li>`).join("");
+  } catch (e) {
+    status.textContent = "The leaderboard can't be reached right now (are you offline?).";
+  }
+}
+
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+document.getElementById("board").addEventListener("click", (e) => {
+  const d = e.target.closest("[data-board-diff]"), c = e.target.closest("[data-board-cat]");
+  if (d) { board.difficulty = d.dataset.boardDiff; loadBoard(); }
+  if (c) { board.category = c.dataset.boardCat; loadBoard(); }
+});
+
+// --- Feedback ---
+function openFeedback() {
+  document.getElementById("fb-text").value = "";
+  document.getElementById("fb-status").textContent = "";
+  document.getElementById("fb-send").disabled = false;
+  document.getElementById("fb-offline").style.display = online() ? "none" : "block";
+  document.getElementById("fb-form").style.display = online() ? "flex" : "none";
+  show("feedback");
+}
+
+async function sendFeedback() {
+  const message = document.getElementById("fb-text").value.trim().slice(0, 2000);
+  const contact = document.getElementById("fb-contact").value.trim().slice(0, 100);
+  const status = document.getElementById("fb-status");
+  if (!message) { status.textContent = "Write a few words first."; return; }
+  document.getElementById("fb-send").disabled = true;
+  try {
+    await api("feedback", { method: "POST", body: JSON.stringify({
+      message, contact: contact || null, realm: game.player || null,
+      year: game.player ? game.year : null, difficulty: game.player ? game.difficulty : null, version: GAME_VERSION
+    }) });
+    status.textContent = "Thank you! Your message has been sent.";
+    document.getElementById("fb-text").value = "";
+  } catch (e) {
+    document.getElementById("fb-send").disabled = false;
+    status.textContent = "Couldn't send it. Check your internet and try again.";
+  }
+}
+
+// =====================================================================
+// SHARE YOUR GAME
+// Draws the final map, your coat of arms and your result into an image
+// and opens the phone's share menu (or shows the image to save).
+// =====================================================================
+
+const SITE_URL = "https://icespiked123132.github.io/LordsOfTheLowCountries/";
+
+function svgToImage(svgText) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgText);
+  });
+}
+
+// The map as a standalone picture (no CSS needed)
+function mapSvg() {
+  const b = view.base;
+  let out = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${b.x} ${b.y} ${b.w} ${b.h}">`;
+  out += `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" fill="#9fb7c0"/>`;
+  out += `<path d="${MAP_SHAPES.land}" fill="#d8caa3" stroke="#a89468" stroke-width="1"/>`;
+  for (const p of allProvinces()) {
+    out += `<path d="${TERRITORIES[p.id]}" fill="${REALMS[p.owner].color}" fill-opacity="${p.owner === game.player ? 0.95 : 0.6}" stroke="#3b2a1a" stroke-opacity=".6"/>`;
+  }
+  out += `<path d="${MAP_SHAPES.rivers}" fill="none" stroke="#5f8fa3" stroke-width="3" stroke-linecap="round"/>`;
+  for (const p of allProvinces()) {
+    if (isCapital(p)) out += `<text x="${p.x}" y="${p.y + 6}" font-size="18" text-anchor="middle">👑</text>`;
+  }
+  return out + "</svg>";
+}
+
+async function buildShareImage() {
+  const W = 1080, H = 1350;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const c = canvas.getContext("2d");
+  try { await Promise.all([document.fonts.load("800 60px Cinzel"), document.fonts.load("36px 'EB Garamond'")]); } catch (e) {}
+
+  // Parchment
+  const g = c.createRadialGradient(W / 2, H * 0.45, 100, W / 2, H * 0.45, H * 0.8);
+  g.addColorStop(0, "#f6edd5"); g.addColorStop(1, "#cbb683");
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.fillStyle = "#3b2a1a"; c.textAlign = "center";
+  c.font = "600 26px Cinzel"; c.fillText("A N N O   D O M I N I   " + game.year, W / 2, 78);
+  c.font = "800 62px Cinzel"; c.fillText("Lords of the Low Countries", W / 2, 152);
+
+  // The map, framed
+  const map = await svgToImage(mapSvg());
+  const mh = 820, mw = Math.round(mh * view.base.w / view.base.h);
+  const mx = (W - mw) / 2, my = 190;
+  c.fillStyle = "#3b2a1a"; c.fillRect(mx - 6, my - 6, mw + 12, mh + 12);
+  c.drawImage(map, mx, my, mw, mh);
+
+  // Coat of arms and result
+  const arms = await svgToImage(crest(game.player, 150));
+  c.drawImage(arms, 80, 1050, 150, 165);
+  const e = game.endInfo || { title: "Anno " + game.year, won: true };
+  const years = game.year - RULES.startYear, s = game.stats;
+  c.textAlign = "left";
+  c.fillStyle = e.won ? "#2f6b2a" : "#9a2c2c";
+  c.font = "800 56px Cinzel"; c.fillText(e.title, 260, 1102);
+  c.fillStyle = "#3b2a1a";
+  c.font = "600 36px 'EB Garamond'";
+  c.fillText(`${REALMS[game.player].name} · ${provincesOf(game.player).length} of ${allProvinces().length} provinces`, 260, 1152);
+  c.fillText(`${years} ${years === 1 ? "year" : "years"} · ${s.won} battles won · ${diff().label} difficulty`, 260, 1198);
+  c.textAlign = "center";
+  c.font = "600 28px Cinzel"; c.fillStyle = "#6b5338";
+  c.fillText("Play free: " + SITE_URL.replace("https://", "").replace(/\/$/, ""), W / 2, 1300);
+
+  return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+}
+
+async function shareGame() {
+  const button = document.querySelector("[data-do=share]");
+  if (button) { button.disabled = true; button.textContent = "Drawing…"; }
+  try {
+    const blob = await buildShareImage();
+    const file = new File([blob], "lords-of-the-low-countries.png", { type: "image/png" });
+    const text = `I played Lords of the Low Countries as ${REALMS[game.player].name}. Can you do better?`;
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: "Lords of the Low Countries", text: `${text} ${SITE_URL}` });
+    } else {
+      const url = URL.createObjectURL(blob);
+      document.getElementById("share-img").src = url;
+      document.getElementById("share-download").href = url;
+      show("sharebox");
+    }
+  } catch (e) {
+    // Closing the share menu without sharing also lands here: nothing to do
+  }
+  if (button) { button.disabled = false; button.textContent = "Share 📤"; }
+}
+
+// =====================================================================
 // ZOOM AND DRAG
 // Pinch with two fingers to zoom, drag with one finger to move the map.
 // On a computer: mouse wheel to zoom, drag to move. The + − ⟲ buttons
@@ -2502,6 +2848,9 @@ document.getElementById("panel").addEventListener("click", (e) => {
   const action = button.dataset.do;
   const order = game.order;
   if (action === "keepplaying") { keepPlaying(); return; }
+  if (action === "share") { shareGame(); return; }
+  if (action === "addscore") { openBoard(true); return; }
+  if (action === "board") { openBoard(false); return; }
   if (action === "newgame") { clearSave(); game.over = true; game.endInfo = null; showStart(); return; }
   if (game.over) return;
   if (action === "diplomacy") { openDiplomacy(); return; }
@@ -2633,6 +2982,9 @@ function confirmNewGame() {
 }
 
 document.getElementById("sound-btn").textContent = `Sound: ${sound.on ? "on 🔊" : "off 🔇"}`;
+if (online()) document.getElementById("start-board").style.display = "";
+// iPhones only allow sound after a first touch: wake the sound system on the first tap
+document.addEventListener("pointerdown", () => { if (sound.on) audio(); }, { once: true });
 showStart();
 
 // Installable app: lets "Add to Home Screen" work offline (only where the
