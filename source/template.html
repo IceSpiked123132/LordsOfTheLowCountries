@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#3b2a1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Lords of the Low Countries</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=EB+Garamond:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Look and feel ---------- */
+  :root {
+    --parchment: #efe3c4;
+    --parchment-dark: #d9c79c;
+    --ink: #3b2a1a;
+    --ink-soft: #6b5338;
+    --sea: #9fb7c0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; height: 100%;
+    overscroll-behavior: none;      /* no pull-to-refresh in the middle of a war */
+    touch-action: manipulation;     /* no double-tap zoom */
+    -webkit-user-select: none; user-select: none;
+    background: #2b2118;
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+  }
+  #app {
+    max-width: 480px; height: 100%; height: 100dvh; margin: 0 auto;
+    display: flex; flex-direction: column;
+    background: var(--parchment); position: relative; overflow: hidden;
+  }
+  h1, h2, h3 { font-family: 'Cinzel', serif; }
+
+  /* Top bar with the player's realm stats */
+  #topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; background: var(--ink); color: var(--parchment);
+    padding-top: calc(10px + env(safe-area-inset-top));
+    font-size: 15px;
+  }
+  .menu-btn {
+    background: none; border: 1px solid var(--parchment); color: var(--parchment);
+    border-radius: 6px; font-size: 18px; width: 36px; height: 32px; padding: 0; cursor: pointer;
+  }
+  #topbar .realm { font-family: 'Cinzel', serif; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  #topbar .swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--parchment); }
+  #topbar .stats { display: flex; gap: 12px; }
+
+  /* The map. The svg is allowed to draw outside its box (overflow: visible),
+     so on any screen shape the edges show more real map instead of a hard cut. */
+  #mapwrap { flex: 1; min-height: 0; position: relative; background: var(--sea); overflow: hidden; }
+  svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .land { fill: #d8caa3; stroke: #a89468; stroke-width: 1; }
+  .terr { stroke: var(--ink); stroke-width: 1; stroke-opacity: .6; fill-opacity: .75; cursor: pointer; }
+  .terr.neighbor { fill-opacity: .98; stroke-width: 2; stroke-opacity: 1; }
+  .terr-outline { fill: none; stroke: #fff8e0; stroke-width: 5; stroke-linejoin: round; pointer-events: none; }
+  .terr-outline.target { stroke: #ffd24a; stroke-dasharray: 9 6; }
+  .river { fill: none; stroke: #5f8fa3; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+  .order-line { stroke: #fff8e0; stroke-width: 6; stroke-linecap: round; pointer-events: none; }
+  .city circle { fill: var(--ink); stroke: var(--parchment); stroke-width: 2; cursor: pointer; }
+  .city .army { font-family: 'Cinzel', serif; font-size: 17px; font-weight: 800; fill: #fff; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .city .label { font-size: 16px; font-weight: 600; fill: var(--ink); text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: var(--parchment); stroke-width: 4px; }
+  .city .capital, .city .bldg { font-size: 17px; text-anchor: middle; pointer-events: none; }
+
+  /* Info and action panel at the bottom */
+  #panel {
+    min-height: 215px; padding: 10px 14px calc(14px + env(safe-area-inset-bottom));
+    background: var(--parchment-dark); border-top: 3px solid var(--ink);
+    font-size: 16px; display: flex; flex-direction: column; gap: 6px;
+  }
+  #panel h2 { margin: 0; font-size: 19px; }
+  #panel .sub { color: var(--ink-soft); }
+  #panel .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; }
+  #panel .hint { color: var(--ink-soft); font-style: italic; }
+  #panel .msg { background: var(--parchment); border-left: 4px solid var(--ink); padding: 6px 10px; border-radius: 4px; }
+  #panel .spacer { flex: 1; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  button.act {
+    flex: 1; min-height: 46px; padding: 6px 10px;
+    font-family: 'Cinzel', serif; font-weight: 800; font-size: 14px;
+    color: var(--parchment); background: var(--ink);
+    border: 2px solid var(--ink); border-radius: 8px; cursor: pointer;
+  }
+  button.act.light { background: var(--parchment); color: var(--ink); }
+  button.act.go { background: #7a2e22; border-color: #7a2e22; }
+  button.act:disabled { opacity: .4; }
+  button.step { flex: 0 0 46px; font-size: 20px; }
+  .count { min-width: 64px; text-align: center; font-family: 'Cinzel', serif; font-weight: 800; font-size: 18px; }
+
+  /* Full-screen overlays: start screen and end screen */
+  .overlay {
+    position: absolute; inset: 0; z-index: 10;
+    background: var(--parchment);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px; text-align: center;
+  }
+  .overlay h1 { font-size: 28px; margin: 0 0 4px; }
+  .overlay p { margin: 0 0 22px; color: var(--ink-soft); font-size: 18px; }
+  .realm-btn {
+    width: 100%; max-width: 320px; margin: 6px 0; padding: 14px;
+    border: 2px solid var(--ink); border-radius: 8px;
+    font-family: 'Cinzel', serif; font-weight: 800; font-size: 16px;
+    color: #fff; cursor: pointer; text-align: left;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  #report .box { width: 100%; max-width: 380px; text-align: left; }
+  #report ul { list-style: none; margin: 0 0 20px; padding: 0; max-height: 55vh; overflow-y: auto; }
+  #report li { padding: 8px 10px; margin-bottom: 6px; background: var(--parchment-dark); border-radius: 6px; font-size: 16px; border-left: 4px solid var(--ink); }
+  #report li.bad { border-left-color: #b23a3a; }
+  #report li.good { border-left-color: #3f7d3a; }
+  #end-stats { font-size: 16px !important; }
+  .stack { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+  .stack button.act { flex: none; width: 100%; }
+  #help .box { width: 100%; max-width: 400px; text-align: left; overflow-y: auto; max-height: 100%; }
+  #help h1 { text-align: center; }
+  #help h3 { margin: 14px 0 4px; font-size: 16px; }
+  #help p, #help li { font-size: 16px; color: var(--ink); margin: 0 0 6px; }
+  #help ul { margin: 0; padding-left: 20px; }
+  #continue { background: var(--ink); color: var(--parchment); }
+  .realm-btn small { font-family: 'EB Garamond', serif; font-weight: 400; font-size: 14px; opacity: .9; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar"></div>
+  <div id="mapwrap"><svg id="map" viewBox="__VIEWBOX__"></svg></div>
+  <div id="panel"></div>
+
+  <div id="start" class="overlay">
+    <h1>Lords of the<br>Low Countries</h1>
+    <p>Anno Domini 1350. Choose your realm.</p>
+    <button id="continue" class="realm-btn" style="display:none"></button>
+    <div id="realm-buttons" style="width:100%;display:flex;flex-direction:column;align-items:center"></div>
+    <button class="act light" style="flex:none;width:200px;margin-top:16px;min-height:40px" onclick="showHelp()">How to play</button>
+  </div>
+  <div id="menu" class="overlay" style="display:none">
+    <h1>Paused</h1>
+    <p id="menu-text"></p>
+    <div class="stack">
+      <button class="act" onclick="closeMenu()">Resume</button>
+      <button class="act light" onclick="showHelp()">How to play</button>
+      <button class="act light" onclick="quitToStart()">Main menu (game is saved)</button>
+    </div>
+  </div>
+  <div id="help" class="overlay" style="display:none">
+    <div class="box">
+      <h1>How to play</h1>
+      <h3>Goal</h3>
+      <p>Own 12 of the 20 provinces, or hold the most when the year 1400 comes. You lose if you have no provinces left or another realm reaches 12.</p>
+      <h3>Your turn</h3>
+      <ul>
+        <li><b>Recruit:</b> tap your province, press Recruit (5 💰, 1 ⚔️ manpower).</li>
+        <li><b>Move or attack:</b> tap your province, then a neighbor. Pick how many regiments to send. Each regiment acts once per year.</li>
+        <li><b>Build:</b> a farm (+1 💰 per year) or a castle (defenders ×1.5). One building per province, one per year.</li>
+        <li><b>End turn</b> when you're done. The other realms move, then you get your income.</li>
+      </ul>
+      <h3>Money</h3>
+      <p>Every regiment costs 1 💰 per year. If you can't pay, soldiers desert.</p>
+      <h3>Battles</h3>
+      <ul>
+        <li>Strength is regiments × a bit of luck. The stronger side wins; ties go to the defender.</li>
+        <li>Every province has 1 free militia defending it.</li>
+        <li>Defenders behind a river 🌊 fight ×1.25, behind a castle ×1.5 (both: about ×1.9).</li>
+        <li>A conquered province pays nothing for 3 years while it calms down.</li>
+        <li>Lose your capital 👑 and your income is halved for 5 years. Retake it to end that early.</li>
+      </ul>
+      <button class="act" style="width:100%;margin-top:16px" onclick="closeHelp()">Got it</button>
+    </div>
+  </div>
+  <div id="report" class="overlay" style="display:none">
+    <div class="box">
+      <h1 id="report-title" style="text-align:center"></h1>
+      <ul id="report-list"></ul>
+      <button class="act" style="width:100%" onclick="closeReport()">Continue</button>
+    </div>
+  </div>
+  <div id="end" class="overlay" style="display:none">
+    <h1 id="end-title"></h1>
+    <p id="end-text"></p>
+    <p id="end-stats"></p>
+    <button class="act" style="flex:none;width:220px" onclick="showStart()">Play again</button>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// 1. GAME DATA AND RULES
+// Everything about the world lives in these objects. To tweak balance,
+// change the numbers here.
+// =====================================================================
+
+const RULES = {
+  startGold: 20,
+  startManpower: 5,
+  maxManpower: 10,
+  recruitGold: 5,        // gold per regiment
+  recruitManpower: 1,    // manpower per regiment
+  upkeep: 1,             // gold per regiment per turn
+  luckMin: 0.8,          // battle strength is regiments x a random number
+  luckMax: 1.2,          //   between luckMin and luckMax
+  castleBonus: 1.5,      // defender bonus with a castle
+  riverBonus: 1.25,      // defender bonus when attacked across a river
+  militia: 1,            // free local defenders in every province (never destroyed)
+  capitalPenaltyTurns: 5,// turns of halved income after losing your capital
+  unrestYears: 3,        // a conquered province pays no gold or manpower for this many years
+  farmCost: 15,          // a farm gives +1 income in its province
+  farmBonus: 1,
+  castleCost: 20,        // a castle multiplies defenders by castleBonus
+  aiMarginMin: 1.1,      // the AI only attacks when it's this much stronger;
+  aiMarginMax: 1.6,      //   each year each realm picks a number in between (its mood)
+  provincesToWin: 12,
+  startYear: 1350,
+  endYear: 1400
+};
+
+const REALMS = {
+  holland: { short: "Holland", name: "County of Holland",    color: "#b23a3a", capital: "haarlem",  note: "Rich coastal towns" },
+  utrecht: { short: "the Bishopric", name: "Bishopric of Utrecht", color: "#c9a227", capital: "utrecht",  note: "Small, central (hard mode)" },
+  gelre:   { short: "Gelre", name: "Duchy of Gelre",       color: "#3f7d3a", capital: "nijmegen", note: "Rivers and manpower" },
+  brabant: { short: "Brabant", name: "Duchy of Brabant",     color: "#2f5d9e", capital: "brussels", note: "The wealthiest realm" },
+  independent: { short: "the independents", name: "Independent", color: "#8a8478", capital: null }
+};
+
+// x and y are positions on the map (based on real geography).
+// income = gold per turn, manpower = manpower per turn.
+// labelAbove puts the name above the city instead of below (to avoid overlap).
+const PROVINCES = {
+  // County of Holland
+  alkmaar:   { name: "Alkmaar",   owner: "holland", x: 117, y: 150, income: 1, manpower: 2 },
+  haarlem:   { name: "Haarlem",   owner: "holland", x: 101, y: 214, income: 2, manpower: 1 },
+  leiden:    { name: "Leiden",    owner: "holland", x: 79,  y: 273, income: 2, manpower: 1 },
+  delft:     { name: "Delft",     owner: "holland", x: 55,  y: 328, income: 2, manpower: 1 },
+  dordrecht: { name: "Dordrecht", owner: "holland", x: 105, y: 352, income: 3, manpower: 1 },
+  // Bishopric of Utrecht
+  utrecht:   { name: "Utrecht",   owner: "utrecht", x: 173, y: 288, income: 3, manpower: 2 },
+  amersfoort:{ name: "Amersfoort",owner: "utrecht", x: 220, y: 262, income: 1, manpower: 2, labelAbove: true },
+  zwolle:    { name: "Zwolle",    owner: "utrecht", x: 318, y: 186, income: 2, manpower: 1 },
+  deventer:  { name: "Deventer",  owner: "utrecht", x: 329, y: 243, income: 2, manpower: 1 },
+  // Duchy of Gelre
+  zutphen:   { name: "Zutphen",   owner: "gelre",   x: 362, y: 302, income: 2, manpower: 2 },
+  arnhem:    { name: "Arnhem",    owner: "gelre",   x: 290, y: 300, income: 2, manpower: 1 },
+  nijmegen:  { name: "Nijmegen",  owner: "gelre",   x: 284, y: 365, income: 3, manpower: 2 },
+  roermond:  { name: "Roermond",  owner: "gelre",   x: 304, y: 486, income: 1, manpower: 2 },
+  // Duchy of Brabant
+  hertogenbosch: { name: "Den Bosch", owner: "brabant", x: 200, y: 386, income: 2, manpower: 1 },
+  breda:     { name: "Breda",     owner: "brabant", x: 122, y: 410, income: 1, manpower: 2 },
+  antwerp:   { name: "Antwerp",   owner: "brabant", x: 65,  y: 480, income: 3, manpower: 1 },
+  brussels:  { name: "Brussels",  owner: "brabant", x: 70,  y: 561, income: 3, manpower: 2 },
+  leuven:    { name: "Leuven",    owner: "brabant", x: 160, y: 545, income: 2, manpower: 1 },
+  // Independent
+  friesland: { name: "Friesland", owner: "independent", x: 260, y: 70, income: 1, manpower: 2 },
+  groningen: { name: "Groningen", owner: "independent", x: 365, y: 60, income: 2, manpower: 1 }
+};
+
+// Which provinces border each other. Each pair is listed once.
+// A third value of true means the border is a major river:
+// defenders get a bonus when attacked across it.
+// (Generated from the territory shapes below.)
+const BORDERS = [
+__BORDERS__
+];
+
+// The land each province controls, as drawn shapes on the map.
+const TERRITORIES = __TERRITORIES__;
+
+// Map outline: land and river shapes, already converted to map positions.
+const MAP_SHAPES = __MAP_SHAPES__;
+
+// =====================================================================
+// 2. GAME STATE
+// One central object holds everything that changes during a game.
+// =====================================================================
+
+const game = {
+  year: RULES.startYear,
+  player: null,     // which realm the player controls
+  selected: null,   // which province is tapped
+  order: null,      // a move or attack waiting for confirmation: { from, to, count }
+  message: null,    // last thing that happened (battle result, turn report)
+  over: false,
+  stats: {},        // battles won and lost, for the end screen
+  realms: {},       // gold, manpower and capital per realm
+  provinces: {}     // ownership, buildings and armies per province
+};
+
+function newGame(playerRealm) {
+  game.year = RULES.startYear;
+  game.player = playerRealm;
+  game.selected = null;
+  game.order = null;
+  game.message = null;
+  game.over = false;
+  game.stats = { won: 0, lost: 0, taken: 0, peak: 0 };
+
+  for (const id in REALMS) {
+    game.realms[id] = {
+      gold: RULES.startGold,
+      manpower: RULES.startManpower,
+      capital: REALMS[id].capital,       // can move if the capital is lost
+      homeCapital: REALMS[id].capital,   // the original capital
+      penalty: 0,                        // turns of halved income left
+      built: false                       // already built something this year
+    };
+  }
+
+  // Copy the province data and give each one a neighbor list
+  for (const id in PROVINCES) {
+    game.provinces[id] = {
+      ...PROVINCES[id],
+      id,
+      building: null,    // "farm" or "castle"
+      unrest: 0,         // years of unrest left after being conquered
+      army: 0,           // regiments stationed here
+      spent: 0,          // regiments that already moved, fought or were recruited this turn
+      neighbors: [],
+      riverBorders: []   // neighbors that lie across a major river
+    };
+  }
+  for (const [a, b, river] of BORDERS) {
+    game.provinces[a].neighbors.push(b);
+    game.provinces[b].neighbors.push(a);
+    if (river) {
+      game.provinces[a].riverBorders.push(b);
+      game.provinces[b].riverBorders.push(a);
+    }
+  }
+
+  // Starting armies: 3 regiments in each capital, 2 in independent provinces,
+  // 1 everywhere else
+  for (const p of allProvinces()) {
+    if (p.owner === "independent") p.army = 2;
+    else if (REALMS[p.owner].capital === p.id) p.army = 3;
+    else p.army = 1;
+  }
+  game.stats.peak = provincesOf(playerRealm).length;
+
+  render();
+}
+
+// Small helpers
+const allProvinces = () => Object.values(game.provinces);
+const provincesOf = (realm) => allProvinces().filter(p => p.owner === realm);
+const armyOf = (realm) => provincesOf(realm).reduce((sum, p) => sum + p.army, 0);
+const ready = (p) => p.army - p.spent;   // regiments that can still act this turn
+const isCapital = (p) => game.realms[p.owner].capital === p.id;
+const random = (min, max) => min + Math.random() * (max - min);
+const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);
+
+const provinceIncome = (p) => p.unrest > 0 ? 0 : p.income + (p.building === "farm" ? RULES.farmBonus : 0);
+const provinceManpower = (p) => p.unrest > 0 ? 0 : p.manpower;
+
+function incomeOf(realm) {
+  const base = provincesOf(realm).reduce((sum, p) => sum + provinceIncome(p), 0);
+  return game.realms[realm].penalty > 0 ? Math.floor(base / 2) : base;
+}
+function upkeepOf(realm) {
+  return armyOf(realm) * RULES.upkeep;
+}
+
+// =====================================================================
+// 3. ACTIONS
+// Everything the player can do. The AI will use the same functions later.
+// =====================================================================
+
+function canRecruit(p) {
+  const r = game.realms[p.owner];
+  return r.gold >= RULES.recruitGold && r.manpower >= RULES.recruitManpower;
+}
+
+function recruit(p) {
+  if (!canRecruit(p)) return;
+  const r = game.realms[p.owner];
+  r.gold -= RULES.recruitGold;
+  r.manpower -= RULES.recruitManpower;
+  p.army += 1;
+  p.spent += 1;   // new recruits can't move until next turn
+}
+
+const buildCost = (type) => type === "farm" ? RULES.farmCost : RULES.castleCost;
+
+// One building per province, one building per realm per year
+function canBuild(p, type) {
+  const r = game.realms[p.owner];
+  return !p.building && !r.built && r.gold >= buildCost(type);
+}
+
+function build(p, type) {
+  if (!canBuild(p, type)) return;
+  const r = game.realms[p.owner];
+  r.gold -= buildCost(type);
+  r.built = true;
+  p.building = type;
+}
+
+// Move regiments between two of your own provinces
+function moveArmy(from, to, count) {
+  from.army -= count;
+  to.army += count;
+  to.spent += count;   // they can't move again this turn
+}
+
+// Everyone defending a province: its regiments plus the local militia
+const defenseSize = (p) => p.army + RULES.militia;
+
+// How much stronger the defenders of "to" are when attacked from "from"
+function defenseBonus(from, to) {
+  let bonus = 1;
+  if (to.building === "castle") bonus *= RULES.castleBonus;
+  if (to.riverBorders.includes(from.id)) bonus *= RULES.riverBonus;
+  return bonus;
+}
+
+// Estimates the chance to win by playing the battle 2000 times
+function winChance(from, to, count) {
+  const bonus = defenseBonus(from, to);
+  let wins = 0;
+  for (let i = 0; i < 2000; i++) {
+    const attack = count * random(RULES.luckMin, RULES.luckMax);
+    const defense = defenseSize(to) * bonus * random(RULES.luckMin, RULES.luckMax);
+    if (attack > defense) wins++;
+  }
+  return wins / 2000;
+}
+
+// Attack a province. Returns a battle result; describe() turns it into text.
+function attack(from, to, count) {
+  const attacker = from.owner, defender = to.owner;
+  const defenders = to.army;
+  from.army -= count;
+
+  const attackStrength = count * random(RULES.luckMin, RULES.luckMax);
+  const defenseStrength = defenseSize(to) * defenseBonus(from, to) * random(RULES.luckMin, RULES.luckMax);
+  const result = { attacker, defender, place: to.name, sent: count, defenders, won: false, attackLoss: 0, defenseLoss: 0, note: "" };
+
+  // Higher strength wins, ties go to the defender
+  if (attackStrength > defenseStrength) {
+    // The winner loses half the defenders (militia included, rounded up), but always keeps one
+    const losses = Math.max(0, Math.min(Math.ceil(defenseSize(to) / 2), count - 1));
+    result.won = true;
+    result.attackLoss = losses;
+    result.defenseLoss = defenders;
+    result.note = capture(to, attacker, count - losses);
+  } else {
+    const losses = Math.max(0, Math.min(Math.ceil(count / 2), defenders - 1));
+    to.army -= losses;
+    result.attackLoss = count;
+    result.defenseLoss = losses;
+  }
+
+  // Keep score for the end screen
+  if (attacker === game.player) {
+    if (result.won) { game.stats.won++; game.stats.taken++; } else game.stats.lost++;
+  } else if (defender === game.player) {
+    if (result.won) game.stats.lost++; else game.stats.won++;
+  }
+  return result;
+}
+
+// Turns a battle result into a sentence from the player's point of view.
+// Returns null for battles the player doesn't need to hear about.
+function describe(r) {
+  const me = game.player;
+  const them = (id) => REALMS[id].short;
+  const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  let text;
+  if (r.attacker === me) {
+    if (r.won && r.defenders === 0) text = `You took ${r.place}. Only the local militia stood in your way.`;
+    else if (r.won) text = `Victory at ${r.place}! You lost ${r.attackLoss}, they lost ${r.defenseLoss}.`;
+    else text = `Defeat at ${r.place}. Your ${plural(r.sent, "regiment")} ${r.sent === 1 ? "was" : "were"} destroyed, they lost ${r.defenseLoss}.`;
+  } else if (r.defender === me) {
+    if (r.won && r.defenders === 0) text = `${them(r.attacker)} took ${r.place}, which only had its militia to defend it.`;
+    else if (r.won) text = `${them(r.attacker)} took ${r.place}! Your ${plural(r.defenders, "regiment")} fell, they lost ${r.attackLoss}.`;
+    else text = `${them(r.attacker)} attacked ${r.place} with ${r.sent} and was beaten back. You lost ${r.defenseLoss}.`;
+  } else {
+    if (!r.won) return null;
+    text = `${them(r.attacker)} took ${r.place} from ${them(r.defender)}.`;
+  }
+  return capitalize(text + r.note);
+}
+
+// A province changes hands. Handles capitals too.
+function capture(p, newOwner, survivors) {
+  const oldOwner = p.owner;
+  const wasCapital = game.realms[oldOwner].capital === p.id;
+  let text = "";
+
+  p.owner = newOwner;
+  p.army = survivors;
+  p.unrest = (p.id === game.realms[newOwner].homeCapital) ? 0 : RULES.unrestYears;
+  p.spent = survivors;
+
+  // The old owner lost its capital: it moves to their richest province
+  // and their income is halved for a few turns
+  if (wasCapital) {
+    const left = provincesOf(oldOwner).sort((a, b) => b.income - a.income);
+    const old = game.realms[oldOwner];
+    old.capital = left.length ? left[0].id : null;
+    old.penalty = left.length ? RULES.capitalPenaltyTurns : 0;
+    text += left.length
+      ? ` ${capitalize(REALMS[oldOwner].short)} lost its capital and moves its court to ${left[0].name}.`
+      : ` ${capitalize(REALMS[oldOwner].short)} is destroyed.`;
+  } else if (provincesOf(oldOwner).length === 0 && oldOwner !== "independent") {
+    text += ` ${capitalize(REALMS[oldOwner].short)} is destroyed.`;
+  }
+
+  // The new owner retook its original capital: the penalty ends
+  const mine = game.realms[newOwner];
+  if (mine.homeCapital === p.id && mine.capital !== p.id) {
+    mine.capital = p.id;
+    mine.penalty = 0;
+    text += ` ${capitalize(REALMS[newOwner].short)} retook its capital!`;
+  }
+  return text;
+}
+
+// =====================================================================
+// 4. THE AI
+// Deliberately simple. Each AI realm, on its turn:
+//   1. recruits at its most threatened border, as long as it can still
+//      pay upkeep afterwards
+//   2. attacks the weakest neighbor it is clearly stronger than
+//   3. moves idle armies from safe provinces toward the border
+//   4. builds a castle where it's outnumbered, otherwise a farm
+// =====================================================================
+
+function aiTurn(id) {
+  const results = [];
+  const lands = () => provincesOf(id);
+  const enemiesNear = (p) => p.neighbors.map(n => game.provinces[n]).filter(n => n.owner !== id);
+  const threat = (p) => enemiesNear(p).reduce((sum, n) => sum + n.army, 0);
+  const frontier = () => lands().filter(p => enemiesNear(p).length > 0);
+  if (lands().length === 0) return results;
+  const margin = random(RULES.aiMarginMin, RULES.aiMarginMax);   // bold or careful this year
+
+  // 1. Recruit at the border province facing the most enemy troops,
+  //    but only as long as income still covers upkeep
+  const front = frontier().sort((a, b) => threat(b) - threat(a))[0] || lands()[0];
+  while (canRecruit(front) && incomeOf(id) - (armyOf(id) + 1) * RULES.upkeep >= 0) {
+    recruit(front);
+  }
+
+  // 2. Attack: keep picking the weakest target it can clearly beat
+  for (let tries = 0; tries < 10; tries++) {
+    let best = null;
+    for (const from of lands()) {
+      if (ready(from) === 0) continue;
+      for (const to of enemiesNear(from)) {
+        const needed = defenseSize(to) * defenseBonus(from, to) * margin;
+        if (ready(from) < needed) continue;
+        // Leave one regiment at home if the attack still works without it
+        const count = (from.army === ready(from) && ready(from) - 1 >= needed) ? ready(from) - 1 : ready(from);
+        // Prefer weak targets, and rich ones when it's close
+        const score = defenseSize(to) * defenseBonus(from, to) - provinceIncome(to) * 0.1 + random(0, 0.5);
+        if (!best || score < best.score) best = { from, to, count, score };
+      }
+    }
+    if (!best) break;
+    results.push(attack(best.from, best.to, best.count));
+  }
+
+  // 3. Move idle armies one step closer to the border.
+  //    dist = how many steps each province is from the border.
+  const dist = {};
+  let queue = frontier();
+  for (const p of queue) dist[p.id] = 0;
+  while (queue.length) {
+    const next = [];
+    for (const p of queue) {
+      for (const n of p.neighbors.map(n => game.provinces[n])) {
+        if (n.owner === id && dist[n.id] === undefined) { dist[n.id] = dist[p.id] + 1; next.push(n); }
+      }
+    }
+    queue = next;
+  }
+  for (const p of lands()) {
+    if (!(dist[p.id] > 0) || ready(p) === 0) continue;
+    const step = p.neighbors.map(n => game.provinces[n])
+      .find(n => n.owner === id && dist[n.id] < dist[p.id]);
+    if (step) moveArmy(p, step, ready(p));
+  }
+
+  // 4. Build: a castle where the enemy outnumbers us, otherwise a farm
+  //    (keeping a little gold aside for recruiting)
+  const realm = game.realms[id];
+  const danger = frontier()
+    .filter(p => !p.building && threat(p) > p.army)
+    .sort((a, b) => threat(b) - threat(a))[0];
+  if (danger && canBuild(danger, "castle")) {
+    build(danger, "castle");
+  } else {
+    const field = lands().filter(p => !p.building).sort((a, b) => b.income - a.income)[0];
+    if (field && realm.gold >= RULES.farmCost + RULES.recruitGold) build(field, "farm");
+  }
+
+  return results;
+}
+
+// =====================================================================
+// 5. END OF TURN
+// The AI realms move, then income, upkeep and manpower for everyone,
+// then the next year starts.
+// =====================================================================
+
+function endTurn() {
+  const events = [];   // { text, kind } for the year report
+
+  // The AI realms take their turns
+  for (const id in REALMS) {
+    if (id === "independent" || id === game.player) continue;
+    for (const result of aiTurn(id)) {
+      const text = describe(result);
+      if (!text) continue;
+      let kind = "";
+      if (result.defender === game.player) kind = result.won ? "bad" : "good";
+      events.push({ text, kind });
+    }
+  }
+
+  // Income, upkeep and manpower
+  let report = "";
+  for (const id in REALMS) {
+    if (id === "independent") continue;
+    const realm = game.realms[id];
+    const lands = provincesOf(id);
+    realm.built = false;
+    if (lands.length === 0) continue;
+
+    const income = incomeOf(id);
+    const upkeep = upkeepOf(id);
+    realm.gold += income - upkeep;
+
+    // Can't pay? One regiment deserts for every gold you're short.
+    let deserted = 0;
+    while (realm.gold < 0) {
+      const biggest = lands.reduce((a, b) => (b.army > a.army ? b : a));
+      if (biggest.army === 0) break;
+      biggest.army -= 1;
+      deserted += 1;
+      realm.gold += 1;
+    }
+    if (realm.gold < 0) realm.gold = 0;
+
+    const newMen = lands.reduce((sum, p) => sum + provinceManpower(p), 0);
+    realm.manpower = Math.min(RULES.maxManpower, realm.manpower + newMen);
+
+    if (id === game.player) {
+      report = `Income +${income}, upkeep −${upkeep}.`;
+      if (realm.penalty > 0) report += ` (Income halved, ${realm.penalty - 1} more ${realm.penalty - 1 === 1 ? "year" : "years"}.)`;
+      if (deserted > 0) events.push({ text: `You couldn't pay your troops: ${deserted} deserted!`, kind: "bad" });
+    }
+    if (realm.penalty > 0) realm.penalty -= 1;
+  }
+
+  // Everyone can move again, and unrest calms down
+  for (const p of allProvinces()) {
+    p.spent = 0;
+    if (p.unrest > 0) p.unrest -= 1;
+  }
+
+  game.year += 1;
+  game.selected = null;
+  game.order = null;
+  game.message = `The year is ${game.year}. ${report}`;
+  game.stats.peak = Math.max(game.stats.peak, provincesOf(game.player).length);
+  checkGameOver();
+  render();
+  if (!game.over) showReport(events);
+}
+
+// The year report: what the other realms did while you waited
+function showReport(events) {
+  if (events.length === 0) events = [{ text: "A quiet year. Nobody went to war.", kind: "" }];
+  document.getElementById("report-title").textContent = `Anno ${game.year}`;
+  document.getElementById("report-list").innerHTML =
+    events.map(e => `<li class="${e.kind}">${e.text}</li>`).join("");
+  document.getElementById("report").style.display = "flex";
+}
+function closeReport() {
+  document.getElementById("report").style.display = "none";
+}
+
+function checkGameOver() {
+  if (game.over) return;
+  const realms = Object.keys(REALMS).filter(id => id !== "independent");
+  const count = (id) => provincesOf(id).length;
+  const mine = count(game.player);
+  const leader = realms.slice().sort((a, b) => count(b) - count(a))[0];
+
+  if (mine >= RULES.provincesToWin) {
+    endGame("Victory!", `You rule ${mine} of the 20 provinces in the year ${game.year}. The Low Countries are yours.`);
+  } else if (mine === 0) {
+    endGame("Defeat", `Your realm was wiped off the map in ${game.year}.`);
+  } else if (count(leader) >= RULES.provincesToWin) {
+    endGame("Defeat", `${REALMS[leader].name} rules ${count(leader)} provinces in ${game.year}. The Low Countries are theirs.`);
+  } else if (game.year >= RULES.endYear) {
+    if (count(leader) === mine) endGame("Victory!", `It is ${RULES.endYear} and you hold the most provinces (${mine}).`);
+    else endGame("Defeat", `It is ${RULES.endYear} and ${REALMS[leader].name} holds the most provinces (${count(leader)} against your ${mine}).`);
+  }
+}
+
+function endGame(title, text) {
+  game.over = true;
+  clearSave();
+  document.getElementById("end-title").textContent = title;
+  document.getElementById("end-text").textContent = text;
+  const s = game.stats;
+  document.getElementById("end-stats").innerHTML =
+    `Playing as ${REALMS[game.player].name}<br>` +
+    `${game.year - RULES.startYear} years · ${s.won} battles won · ${s.lost} lost<br>` +
+    `${s.taken} provinces conquered · most held at once: ${s.peak}`;
+  document.getElementById("report").style.display = "none";
+  document.getElementById("end").style.display = "flex";
+}
+
+// =====================================================================
+// SAVING
+// The game is stored in the phone's browser storage, so you can close it
+// and continue later. Only one save at a time.
+// =====================================================================
+
+const SAVE_KEY = "lords-of-the-low-countries-save-v1";
+
+function saveGame() {
+  if (!game.player || game.over) return;
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      year: game.year, player: game.player, stats: game.stats,
+      realms: game.realms, provinces: game.provinces
+    }));
+  } catch (e) { /* storage not available: just don't save */ }
+}
+
+function loadSave() {
+  try {
+    const data = JSON.parse(localStorage.getItem(SAVE_KEY));
+    return data && data.player ? data : null;
+  } catch (e) { return null; }
+}
+
+function clearSave() {
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+}
+
+function continueGame(data) {
+  Object.assign(game, {
+    year: data.year, player: data.player, stats: data.stats,
+    realms: data.realms, provinces: data.provinces,
+    selected: null, order: null, over: false,
+    message: `Welcome back. The year is ${data.year}.`
+  });
+  render();
+}
+
+// =====================================================================
+// 6. DRAWING
+// render() redraws the whole screen from the game state.
+// =====================================================================
+
+const svg = document.getElementById("map");
+const SVGNS = "http://www.w3.org/2000/svg";
+
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+function render() {
+  renderMap();
+  renderTopbar();
+  renderPanel();
+  saveGame();   // the game saves itself after every action
+}
+
+function renderMap() {
+  svg.innerHTML = "";
+  const sel = game.selected ? game.provinces[game.selected] : null;
+  const order = game.order;
+
+  // The real coastline (the Zuiderzee is open water, as in 1350).
+  // Land outside the playable area stays plain.
+  el("path", { d: MAP_SHAPES.land, class: "land" }, svg);
+
+  // Territories, filled in the owner's color
+  for (const p of allProvinces()) {
+    let cls = "terr";
+    if (sel && sel.id !== p.id && sel.neighbors.includes(p.id)) cls += " neighbor";
+    const t = el("path", { d: TERRITORIES[p.id], fill: REALMS[p.owner].color, class: cls }, svg);
+    t.addEventListener("click", (e) => { e.stopPropagation(); tapProvince(p.id); });
+  }
+
+  // Rivers on top of the land
+  el("path", { d: MAP_SHAPES.rivers, class: "river" }, svg);
+
+  // Selected province drawn again on top, so its outline is fully visible
+  if (sel) el("path", { d: TERRITORIES[sel.id], class: "terr-outline" }, svg);
+
+  // A pending move or attack: outline the target and draw a line to it
+  if (order) {
+    const a = game.provinces[order.from], b = game.provinces[order.to];
+    el("path", { d: TERRITORIES[b.id], class: "terr-outline target" }, svg);
+    el("line", { x1: a.x, y1: a.y, x2: b.x, y2: b.y, class: "order-line" }, svg);
+  }
+
+  // City markers with army size, crown for capitals, and names
+  for (const p of allProvinces()) {
+    const g = el("g", { class: "city" }, svg);
+    const r = p.army > 0 ? 15 : 7;
+    el("circle", { cx: p.x, cy: p.y, r }, g);
+    if (p.army > 0) el("text", { x: p.x, y: p.y + 1, class: "army" }, g).textContent = p.army;
+    if (isCapital(p)) el("text", { x: p.x + 15, y: p.y - 12, class: "capital" }, g).textContent = "👑";
+    if (p.building) el("text", { x: p.x - 16, y: p.y - 12, class: "bldg" }, g).textContent = p.building === "farm" ? "🌾" : "🏰";
+    const labelY = p.labelAbove ? p.y - r - 7 : p.y + r + 16;
+    el("text", { x: p.x, y: labelY, class: "label" }, g).textContent = p.name;
+    g.addEventListener("click", (e) => { e.stopPropagation(); tapProvince(p.id); });
+  }
+}
+
+function renderTopbar() {
+  const r = REALMS[game.player];
+  const s = game.realms[game.player];
+  const net = incomeOf(game.player) - upkeepOf(game.player);
+  document.getElementById("topbar").innerHTML = `
+    <div class="realm"><button class="menu-btn" data-do="menu">☰</button><span class="swatch" style="background:${r.color}"></span>${game.year}</div>
+    <div class="stats">
+      <span>💰 ${s.gold} <small>(${net >= 0 ? "+" : "−"}${Math.abs(net)})</small></span>
+      <span>⚔️ ${s.manpower}/${RULES.maxManpower}</span>
+      <span>🗺️ ${provincesOf(game.player).length}/20</span>
+    </div>`;
+}
+
+function renderPanel() {
+  const panel = document.getElementById("panel");
+  const msg = game.message ? `<div class="msg">${game.message}</div>` : "";
+  const endTurnButton = `<button class="act" data-do="endturn">End turn ⏳</button>`;
+
+  // --- A move or attack is waiting for confirmation ---
+  if (game.order) {
+    const from = game.provinces[game.order.from], to = game.provinces[game.order.to];
+    const count = game.order.count;
+    const isMove = to.owner === game.player;
+    let details;
+    if (isMove) {
+      details = `<div>Move regiments from ${from.name} to ${to.name}.</div>`;
+    } else {
+      const bonus = defenseBonus(from, to);
+      const why = [];
+      if (to.building === "castle") why.push("castle");
+      if (to.riverBorders.includes(from.id)) why.push("river 🌊");
+      const chance = Math.round(winChance(from, to, count) * 100);
+      details = `
+        <div>🛡️ Defenders: ${to.army} + ${RULES.militia} militia${bonus > 1 ? ` (×${bonus.toFixed(2).replace(/0$/, "")} for ${why.join(" and ")})` : ""}</div>
+        <div>🎲 Chance to win: about <b>${chance}%</b></div>`;
+    }
+    panel.innerHTML = `
+      <h2>${isMove ? "Move to" : "Attack"} ${to.name}</h2>
+      ${details}
+      <div class="row">
+        <span>Send:</span>
+        <button class="act light step" data-do="less" ${count <= 1 ? "disabled" : ""}>−</button>
+        <span class="count">${count} / ${ready(from)}</span>
+        <button class="act light step" data-do="more" ${count >= ready(from) ? "disabled" : ""}>+</button>
+      </div>
+      <div class="spacer"></div>
+      <div class="row">
+        <button class="act light" data-do="cancel">Cancel</button>
+        <button class="act go" data-do="confirm">${isMove ? "Move" : "Attack ⚔️"}</button>
+      </div>`;
+    return;
+  }
+
+  // --- Nothing selected: realm overview ---
+  if (!game.selected) {
+    const r = REALMS[game.player];
+    panel.innerHTML = `
+      <h2>${r.name}</h2>
+      ${msg}
+      <div class="hint">Tap one of your provinces to recruit or to send its army. Own ${RULES.provincesToWin} of the 20 provinces to win.</div>
+      <div class="spacer"></div>
+      <div class="row">${endTurnButton}</div>`;
+    return;
+  }
+
+  // --- A province is selected ---
+  const p = game.provinces[game.selected];
+  const owner = REALMS[p.owner];
+  const yours = p.owner === game.player;
+  const neighborNames = p.neighbors
+    .map(n => game.provinces[n].name + (p.riverBorders.includes(n) ? " 🌊" : ""))
+    .join(", ");
+  const armyText = yours && p.army > 0 ? `${p.army} (${ready(p)} ready)` : `${p.army}`;
+
+  let hint = "";
+  let recruitButton = "";
+  let buildButtons = "";
+  if (yours) {
+    hint = ready(p) > 0
+      ? "Tap a neighboring province to move or attack."
+      : (p.army > 0 ? "This army has already acted this year." : "");
+    recruitButton = `<button class="act light" data-do="recruit" ${canRecruit(p) ? "" : "disabled"}>Recruit<br>${RULES.recruitGold}💰 ${RULES.recruitManpower}⚔️</button>`;
+    if (!p.building) {
+      buildButtons =
+        `<button class="act light" data-do="farm" ${canBuild(p, "farm") ? "" : "disabled"}>Farm 🌾<br>${RULES.farmCost}💰</button>` +
+        `<button class="act light" data-do="castle" ${canBuild(p, "castle") ? "" : "disabled"}>Castle 🏰<br>${RULES.castleCost}💰</button>`;
+    }
+    if (!p.building && game.realms[game.player].built) hint += " You already built something this year.";
+  } else if (p.neighbors.some(n => game.provinces[n].owner === game.player)) {
+    hint = "To attack, first tap one of your own provinces next to it.";
+  }
+
+  panel.innerHTML = `
+    <h2>${p.name} ${isCapital(p) ? "👑" : ""} <small class="sub" style="font-family:'EB Garamond',serif;font-weight:400;font-size:15px;color:${owner.color}">${owner.name}</small></h2>
+    ${msg}
+    <div class="grid">
+      <div>💰 Income: ${provinceIncome(p)}</div>
+      <div>⚔️ Manpower: ${p.manpower}</div>
+      <div>🛡️ Army: ${armyText}</div>
+      <div>🏗️ ${p.building === "farm" ? "Farm 🌾 (+1 💰)" : p.building === "castle" ? "Castle 🏰 (×1.5 🛡️)" : "No building"}</div>
+    </div>
+    <div class="sub">Borders: ${neighborNames}</div>
+    ${hint ? `<div class="hint">${hint}</div>` : ""}
+    <div class="spacer"></div>
+    ${yours ? `<div class="row">${recruitButton}${buildButtons}</div>` : ""}
+    <div class="row">${endTurnButton}</div>`;
+}
+
+// =====================================================================
+// 7. INPUT
+// What happens when the player taps the map or a button.
+// =====================================================================
+
+function tapProvince(id) {
+  if (game.over) return;
+
+  // Tapping the map while an order is open cancels it
+  if (game.order) { game.order = null; render(); return; }
+
+  const sel = game.selected ? game.provinces[game.selected] : null;
+
+  // One of your provinces with a ready army is selected and you tap a neighbor:
+  // prepare a move (your own land) or an attack (someone else's)
+  if (sel && sel.owner === game.player && ready(sel) > 0 && sel.neighbors.includes(id)) {
+    game.order = { from: sel.id, to: id, count: ready(sel) };
+    game.message = null;
+    render();
+    return;
+  }
+
+  // Otherwise just select it (tap again to deselect)
+  game.selected = (game.selected === id) ? null : id;
+  game.message = null;
+  render();
+}
+
+// Tapping the sea clears the selection
+document.getElementById("mapwrap").addEventListener("click", () => {
+  if (game.over) return;
+  game.selected = null;
+  game.order = null;
+  render();
+});
+
+// Buttons in the panel
+document.getElementById("panel").addEventListener("click", (e) => {
+  const button = e.target.closest("button[data-do]");
+  if (!button || button.disabled || game.over) return;
+  const action = button.dataset.do;
+  const order = game.order;
+
+  if (action === "endturn") { endTurn(); return; }
+  if (action === "recruit") { recruit(game.provinces[game.selected]); game.message = null; }
+  if (action === "farm" || action === "castle") { build(game.provinces[game.selected], action); game.message = null; }
+  if (action === "less") order.count -= 1;
+  if (action === "more") order.count += 1;
+  if (action === "cancel") game.order = null;
+  if (action === "confirm") {
+    const from = game.provinces[order.from], to = game.provinces[order.to];
+    game.order = null;
+    if (to.owner === game.player) {
+      moveArmy(from, to, order.count);
+      game.selected = to.id;
+    } else {
+      game.message = describe(attack(from, to, order.count));
+      game.selected = (to.owner === game.player) ? to.id : from.id;
+      checkGameOver();
+    }
+  }
+  render();
+});
+
+// =====================================================================
+// 8. START SCREEN
+// =====================================================================
+
+function show(id) { document.getElementById(id).style.display = "flex"; }
+function hide(id) { document.getElementById(id).style.display = "none"; }
+
+function showStart() {
+  hide("end"); hide("menu");
+  const save = loadSave();
+  const button = document.getElementById("continue");
+  if (save) {
+    const owned = Object.values(save.provinces).filter(p => p.owner === save.player).length;
+    button.innerHTML = `<span>Continue</span><small>${REALMS[save.player].name} · ${save.year} · ${owned} provinces</small>`;
+    button.style.display = "flex";
+    button.onclick = () => { hide("start"); continueGame(save); };
+  } else {
+    button.style.display = "none";
+  }
+  show("start");
+}
+
+document.getElementById("topbar").addEventListener("click", (e) => {
+  if (!e.target.closest("[data-do=menu]") || game.over) return;
+  document.getElementById("menu-text").textContent =
+    `${REALMS[game.player].name}, ${game.year}. Your game is saved automatically.`;
+  show("menu");
+});
+function closeMenu() { hide("menu"); }
+function quitToStart() { saveGame(); showStart(); }
+function showHelp() { show("help"); }
+function closeHelp() { hide("help"); }
+
+const buttons = document.getElementById("realm-buttons");
+for (const id of ["holland", "utrecht", "gelre", "brabant"]) {
+  const r = REALMS[id];
+  const count = Object.values(PROVINCES).filter(p => p.owner === id).length;
+  const b = document.createElement("button");
+  b.className = "realm-btn";
+  b.style.background = r.color;
+  b.innerHTML = `<span>${r.name}</span><small>${count} provinces · ${r.note}</small>`;
+  b.onclick = () => {
+    if (loadSave() && !confirmNewGame()) return;
+    hide("start");
+    newGame(id);
+  };
+  buttons.appendChild(b);
+}
+
+// Starting a new game overwrites the save: ask with a second tap
+let newGameArmed = false;
+function confirmNewGame() {
+  if (newGameArmed) { newGameArmed = false; return true; }
+  newGameArmed = true;
+  document.querySelector("#start p").textContent = "This replaces your saved game. Tap a realm again to confirm.";
+  setTimeout(() => {
+    newGameArmed = false;
+    document.querySelector("#start p").textContent = "Anno Domini 1350. Choose your realm.";
+  }, 4000);
+  return false;
+}
+
+showStart();
+
+// Installable app: lets "Add to Home Screen" work offline (only where the
+// game is hosted as its own website, not inside the claude.ai preview)
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
