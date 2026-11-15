@@ -1,0 +1,16 @@
+{
+  "name": "Lords of the Low Countries",
+  "short_name": "Lords",
+  "description": "A small medieval strategy game set in the Low Countries, 1350.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#efe3c4",
+  "theme_color": "#3b2a1a",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
