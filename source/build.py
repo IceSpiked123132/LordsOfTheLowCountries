@@ -11,7 +11,9 @@ adm1 = load('adm1')
 land = unary_union([shape(f['geometry']).buffer(0).intersection(GEO) for f in load('ne_10m_land') if shape(f['geometry']).intersects(GEO)])
 lakes = [shape(f['geometry']) for f in load('ne_10m_lakes') if f['properties'].get('name') in ('IJsselmeer','Lauwerszee')]
 flevo = [shape(f['geometry']) for f in adm1 if f['properties'].get('name')=='Flevoland' and f['properties'].get('admin')=='Netherlands']
-water = unary_union(lakes + flevo)
+# The Afsluitdijk (1932) is cut out too: in 1350 the Zuiderzee was open sea
+afsluitdijk = LineString([(5.035, 52.938), (5.17, 53.005), (5.33, 53.072), (5.385, 53.098)]).buffer(0.013)
+water = unary_union(lakes + flevo + [afsluitdijk])
 land = P(land.difference(water)).intersection(BIG)
 nl = unary_union([shape(f['geometry']).buffer(0).intersection(GEO) for f in load('ne_10m_admin_0_countries') if f['properties']['ADMIN']=='Netherlands'])
 be = unary_union([shape(f['geometry']).buffer(0) for f in adm1 if f['properties'].get('admin')=='Belgium'
@@ -20,8 +22,8 @@ play = P(unary_union([nl, be]).difference(water)).buffer(0.8).buffer(-0.8).inter
 rivers = P(unary_union([shape(f['geometry']).intersection(GEO) for f in load('ne_10m_rivers_lake_centerlines')
     if f['properties'].get('name') in ('IJssel','Nederrijn','Lek','Rhine','Waal','Schelde','Maas') and shape(f['geometry']).intersects(GEO)])).intersection(BIG)
 src = open(TPL).read()
-seeds = {m[0]: (float(m[1]), float(m[2])) for m in re.findall(r'(\w+):\s*\{ name: "[^"]+",\s*owner: "\w+",\s*x: (\d+),\s*y: (\d+)', src)}
-ids = list(seeds); assert len(ids) == 20, len(ids)
+seeds = {m[0]: (float(m[1]), float(m[2])) for m in re.findall(r'(\w+):\s*\{ name: "[^"]+",\s*owner: "\w+",\s*x: (-?\d+),\s*y: (-?\d+)', src)}
+ids = list(seeds); assert len(ids) >= 20, len(ids)
 vor = shapely.voronoi_polygons(MultiPoint([seeds[i] for i in ids]), extend_to=BIG.buffer(300))
 cells = {}
 for poly in vor.geoms:

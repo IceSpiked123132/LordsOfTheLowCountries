@@ -251,7 +251,7 @@
     <div class="box">
       <h1>How to play</h1>
       <h3>Goal</h3>
-      <p>Own 12 of the 20 provinces, or hold the most when the year 1400 comes. You lose if another realm gets there first. Either way you can keep playing, all the way to uniting the whole country. The game only ends for good when you hold all 20, or none.</p>
+      <p>Own 16 of the 31 provinces, or hold the most when the year 1400 comes. You lose if another realm gets there first. Either way you can keep playing, all the way to uniting the whole country. The game only ends for good when you hold all 31, or none.</p>
       <h3>Your turn</h3>
       <ul>
         <li><b>Recruit:</b> tap your province, press Recruit (5 💰, 1 ⚔️ manpower).</li>
@@ -264,21 +264,28 @@
       <h3>Diplomacy</h3>
       <ul>
         <li>You can only attack realms you're at war with (and the grey independents, always). Open Diplomacy 🤝 to declare war, offer peace or propose an alliance.</li>
+        <li>After a declaration, the armies need a year to mobilize: nobody can attack until the next year.</li>
         <li>Peace means a 10-year truce. Everyone keeps what they hold.</li>
         <li>If someone declares war on your ally, you join in, and the other way around.</li>
-        <li>Grow to 8 provinces and your neighbors may form a coalition against you.</li>
+        <li>Grow to 12 provinces and your neighbors may form a coalition against you.</li>
       </ul>
       <h3>Events</h3>
-      <p>History happens: the Black Death (1351), the Hook and Cod wars in Holland (1353), plague, storm floods, good harvests and mercenaries. A conquered province left without soldiers may revolt.</p>
+      <p>Some years bring an event: harvests, volunteers, Hanseatic merchants, mercenaries, but also storm floods, plague, noble feuds (in Holland: the Hook and Cod wars) and maybe even the Black Death. Fortune is fair: after a bad event you're safe for a few years, and a realm that has lost ground only gets good events.</p>
+      <h3>Losing ground</h3>
+      <ul>
+        <li>Your home provinces are defended by 2 militia instead of 1.</li>
+        <li>A province that was taken from you may rise up and come back to you if the conqueror leaves it without soldiers. Taking back your own provinces causes no unrest.</li>
+        <li>With fewer provinces than you started with, recruits cost only 3 💰.</li>
+      </ul>
       <h3>Money</h3>
       <p>Every regiment costs 1 💰 per year. If you can't pay, soldiers desert.</p>
       <h3>Battles</h3>
       <ul>
         <li>Strength is regiments × a bit of luck. The stronger side wins; ties go to the defender.</li>
-        <li>Every province has 1 free militia defending it.</li>
+        <li>Every province has free militia defending it: 1, or 2 in a realm's own home provinces.</li>
         <li>Defenders behind a river 🌊 fight ×1.25, behind a castle ×1.5 (both: about ×1.9).</li>
         <li>A conquered province pays nothing for 3 years while it calms down.</li>
-        <li>Lose your capital 👑 and your income is halved for 5 years. Retake it to end that early.</li>
+        <li>Lose your capital 👑 and your income drops by a quarter for 3 years. Retake it to end that early.</li>
       </ul>
       <button class="act" style="width:100%;margin-top:16px" onclick="closeHelp()">Got it</button>
     </div>
@@ -353,19 +360,25 @@ const RULES = {
   castleBonus: 1.5,      // defender bonus with a castle
   riverBonus: 1.25,      // defender bonus when attacked across a river
   militia: 1,            // free local defenders in every province (never destroyed)
-  capitalPenaltyTurns: 5,// turns of halved income after losing your capital
+  homeMilitia: 1,        // extra militia in a realm's own home provinces
+  capitalPenaltyTurns: 3,// years of income -25% after losing your capital
   unrestYears: 3,        // a conquered province pays no gold or manpower for this many years
   farmCost: 15,          // a farm gives +1 income in its province
   farmBonus: 1,
   castleCost: 20,        // a castle multiplies defenders by castleBonus
   aiMarginMin: 1.1,      // the AI only attacks when it's this much stronger;
   aiMarginMax: 1.6,      //   each year each realm picks a number in between (its mood)
-  provincesToWin: 12,    // a victory (you can keep playing to conquer all 20)
+  provincesToWin: 16,    // a victory (you can keep playing to conquer them all)
   truceYears: 10,        // after a peace treaty, no war between the two for this long
-  coalitionAt: 8,        // a realm this big makes its neighbors gang up on it
-  aiWarChance: 0.45,     // yearly chance an AI looks for a new war
+  coalitionAt: 12,        // a realm this big makes its neighbors gang up on it
+  aiWarChance: 0.45,
+  aiWarRatio: 1.0,       // the AI declares war on realms no stronger than this times its own army     // yearly chance an AI looks for a new war
   revoltChance: 0.15,    // yearly chance an unguarded, freshly conquered province revolts
-  eventChance: 0.45,     // yearly chance of a random event (flood, harvest, mercenaries)
+  uprisingChance: 0.12,  // yearly chance an unguarded conquered home province goes back to its realm
+  underdogRecruitGold: 3,// recruit price for a realm with fewer provinces than it started with
+  badLuckCooldown: 6,    // years without bad events for the player after one hits
+  blackDeathChance: 0.02,// yearly chance of the Black Death (once per game at most)
+  eventChance: 0.45,     // yearly chance of a random event for one realm
   startYear: 1350,
   endYear: 1400
 };
@@ -382,31 +395,42 @@ const REALMS = {
 // income = gold per turn, manpower = manpower per turn.
 // labelAbove puts the name above the city instead of below (to avoid overlap).
 const PROVINCES = {
-  // County of Holland
+  // County of Holland (with Zeeland, ruled by the same count since 1299)
   alkmaar:   { name: "Alkmaar",   owner: "holland", x: 117, y: 150, income: 1, manpower: 2 },
   haarlem:   { name: "Haarlem",   owner: "holland", x: 101, y: 214, income: 2, manpower: 1 },
+  amsterdam: { name: "Amsterdam", owner: "holland", x: 142, y: 228, income: 1, manpower: 1 },
   leiden:    { name: "Leiden",    owner: "holland", x: 79,  y: 273, income: 2, manpower: 1 },
   delft:     { name: "Delft",     owner: "holland", x: 55,  y: 328, income: 2, manpower: 1 },
   dordrecht: { name: "Dordrecht", owner: "holland", x: 105, y: 352, income: 3, manpower: 1 },
-  // Bishopric of Utrecht
+  middelburg:{ name: "Middelburg",owner: "holland", x: -50, y: 418, income: 2, manpower: 1, labelAbove: true },
+  // Bishopric of Utrecht (the Nedersticht around Utrecht, the Oversticht in the east)
   utrecht:   { name: "Utrecht",   owner: "utrecht", x: 173, y: 288, income: 3, manpower: 2 },
-  amersfoort:{ name: "Amersfoort",owner: "utrecht", x: 220, y: 262, income: 1, manpower: 2, labelAbove: true },
+  amersfoort:{ name: "Amersfoort",owner: "utrecht", x: 222, y: 266, income: 1, manpower: 2 },
   zwolle:    { name: "Zwolle",    owner: "utrecht", x: 318, y: 186, income: 2, manpower: 1 },
   deventer:  { name: "Deventer",  owner: "utrecht", x: 329, y: 243, income: 2, manpower: 1 },
+  drenthe:   { name: "Drenthe",   owner: "utrecht", x: 395, y: 125, income: 1, manpower: 2 },
+  twente:    { name: "Twente",    owner: "utrecht", x: 440, y: 240, income: 2, manpower: 2 },
   // Duchy of Gelre
+  harderwijk:{ name: "Harderwijk",owner: "gelre",   x: 256, y: 218, income: 1, manpower: 1, labelAbove: true },
   zutphen:   { name: "Zutphen",   owner: "gelre",   x: 362, y: 302, income: 2, manpower: 2 },
   arnhem:    { name: "Arnhem",    owner: "gelre",   x: 290, y: 300, income: 2, manpower: 1 },
+  tiel:      { name: "Tiel",      owner: "gelre",   x: 222, y: 334, income: 1, manpower: 2 },
   nijmegen:  { name: "Nijmegen",  owner: "gelre",   x: 284, y: 365, income: 3, manpower: 2 },
-  roermond:  { name: "Roermond",  owner: "gelre",   x: 304, y: 486, income: 1, manpower: 2 },
+  venlo:     { name: "Venlo",     owner: "gelre",   x: 331, y: 440, income: 2, manpower: 1 },
+  roermond:  { name: "Roermond",  owner: "gelre",   x: 304, y: 492, income: 1, manpower: 2 },
   // Duchy of Brabant
-  hertogenbosch: { name: "Den Bosch", owner: "brabant", x: 200, y: 386, income: 2, manpower: 1 },
+  hertogenbosch: { name: "Den Bosch", owner: "brabant", x: 196, y: 386, income: 2, manpower: 1 },
   breda:     { name: "Breda",     owner: "brabant", x: 122, y: 410, income: 1, manpower: 2 },
+  bergen:    { name: "Bergen op Zoom", owner: "brabant", x: 45, y: 420, income: 2, manpower: 1 },
+  eindhoven: { name: "Eindhoven", owner: "brabant", x: 230, y: 440, income: 1, manpower: 2 },
   antwerp:   { name: "Antwerp",   owner: "brabant", x: 65,  y: 480, income: 3, manpower: 1 },
   brussels:  { name: "Brussels",  owner: "brabant", x: 70,  y: 561, income: 3, manpower: 2 },
-  leuven:    { name: "Leuven",    owner: "brabant", x: 160, y: 545, income: 1, manpower: 1 },
+  leuven:    { name: "Leuven",    owner: "brabant", x: 150, y: 548, income: 1, manpower: 1 },
   // Independent
   friesland: { name: "Friesland", owner: "independent", x: 260, y: 70, income: 1, manpower: 2 },
-  groningen: { name: "Groningen", owner: "independent", x: 365, y: 60, income: 2, manpower: 1 }
+  groningen: { name: "Groningen", owner: "independent", x: 365, y: 60, income: 2, manpower: 1 },
+  hasselt:   { name: "Hasselt",   owner: "independent", x: 212, y: 532, income: 1, manpower: 2 },
+  maastricht:{ name: "Maastricht",owner: "independent", x: 262, y: 566, income: 2, manpower: 1 }
 };
 
 // Which provinces border each other. Each pair is listed once.
@@ -471,6 +495,7 @@ function newGame(playerRealm) {
   for (const id in PROVINCES) {
     game.provinces[id] = {
       ...PROVINCES[id],
+      core: PROVINCES[id].owner,   // the realm this province belongs to at heart
       id,
       building: null,    // "farm" or "castle"
       unrest: 0,         // years of unrest left after being conquered
@@ -489,12 +514,11 @@ function newGame(playerRealm) {
     }
   }
 
-  // Starting armies: 3 regiments in each capital, 2 in independent provinces,
-  // 1 everywhere else
+  // Starting armies: 3 regiments in each capital, 2 in independent provinces.
+  // Other home provinces start with only their militia.
   for (const p of allProvinces()) {
     if (p.owner === "independent") p.army = 2;
     else if (REALMS[p.owner].capital === p.id) p.army = 3;
-    else p.army = 1;
   }
   game.stats.peak = provincesOf(playerRealm).length;
 
@@ -516,7 +540,7 @@ const provinceManpower = (p) => p.unrest > 0 ? 0 : p.manpower;
 
 function incomeOf(realm) {
   const base = provincesOf(realm).reduce((sum, p) => sum + provinceIncome(p), 0);
-  return game.realms[realm].penalty > 0 ? Math.floor(base / 2) : base;
+  return game.realms[realm].penalty > 0 ? Math.floor(base * 0.75) : base;
 }
 function upkeepOf(realm) {
   return armyOf(realm) * RULES.upkeep;
@@ -527,15 +551,18 @@ function upkeepOf(realm) {
 // Everything the player can do. The AI will use the same functions later.
 // =====================================================================
 
+// Recruits are cheaper for a realm that has lost ground
+const recruitCost = (realm) => behind(realm) ? RULES.underdogRecruitGold : RULES.recruitGold;
+
 function canRecruit(p) {
   const r = game.realms[p.owner];
-  return r.gold >= RULES.recruitGold && r.manpower >= RULES.recruitManpower;
+  return r.gold >= recruitCost(p.owner) && r.manpower >= RULES.recruitManpower;
 }
 
 function recruit(p) {
   if (!canRecruit(p)) return;
   const r = game.realms[p.owner];
-  r.gold -= RULES.recruitGold;
+  r.gold -= recruitCost(p.owner);
   r.manpower -= RULES.recruitManpower;
   p.army += 1;
   p.spent += 1;   // new recruits can't move until next turn
@@ -565,7 +592,9 @@ function moveArmy(from, to, count) {
 }
 
 // Everyone defending a province: its regiments plus the local militia
-const defenseSize = (p) => p.army + RULES.militia;
+// Militia: 1 everywhere, 2 in a realm's own home provinces
+const militiaOf = (p) => RULES.militia + (p.owner !== "independent" && p.core === p.owner ? RULES.homeMilitia : 0);
+const defenseSize = (p) => p.army + militiaOf(p);
 
 // How much stronger the defenders of "to" are when attacked from "from"
 function defenseBonus(from, to) {
@@ -598,7 +627,7 @@ function attack(from, to, count) {
   const defenseStrength = defenseSize(to) * bonus * random(RULES.luckMin, RULES.luckMax);
   const result = {
     attacker, defender, from: from.id, to: to.id, place: to.name,
-    sent: count, defenders, militia: RULES.militia, defenseSize: defenseSize(to),
+    sent: count, defenders, militia: militiaOf(to), defenseSize: defenseSize(to),
     bonus, castle: to.building === "castle", river: to.riverBorders.includes(from.id),
     attackStrength, defenseStrength,
     won: false, attackLoss: 0, defenseLoss: 0, note: ""
@@ -659,7 +688,8 @@ function capture(p, newOwner, survivors) {
 
   p.owner = newOwner;
   p.army = survivors;
-  p.unrest = (p.id === game.realms[newOwner].homeCapital) ? 0 : RULES.unrestYears;
+  // Taking back one of your own home provinces causes no unrest
+  p.unrest = (p.core === newOwner) ? 0 : RULES.unrestYears;
   p.spent = survivors;
 
   // The old owner lost its capital: it moves to their richest province
@@ -689,26 +719,31 @@ function capture(p, newOwner, survivors) {
 // =====================================================================
 // 4. THE AI
 // Deliberately simple. Each AI realm, on its turn:
-//   1. recruits at its most threatened border, as long as it can still
-//      pay upkeep afterwards
-//   2. attacks the weakest neighbor it is clearly stronger than
-//   3. moves idle armies from safe provinces toward the border
+//   1. recruits where its wars are (or at its most threatened border),
+//      as long as it can still pay upkeep afterwards
+//   2. attacks the weakest target it is clearly stronger than
+//   3. gathers spare regiments toward the front, so it can strike with a
+//      real army (home provinces are guarded by their militia, conquered
+//      ones keep 1 soldier against uprisings)
 //   4. builds a castle where it's outnumbered, otherwise a farm
 // =====================================================================
 
 function aiTurn(id) {
   const results = [];
   const lands = () => provincesOf(id);
-  // Neighbors that aren't ours or an ally's (at peace or at war: we keep an eye on both)
-  const enemiesNear = (p) => p.neighbors.map(n => game.provinces[n]).filter(n => n.owner !== id && !allied(id, n.owner));
-  const threat = (p) => enemiesNear(p).reduce((sum, n) => sum + n.army, 0);
-  const frontier = () => lands().filter(p => enemiesNear(p).length > 0);
   if (lands().length === 0) return results;
   const margin = random(RULES.aiMarginMin, RULES.aiMarginMax);   // bold or careful this year
+  const near = (p) => p.neighbors.map(n => game.provinces[n]);
+  // Places to fight: realms we're at war with (also while mobilizing) and the independents
+  const hostile = (q) => q.owner !== id && (q.owner === "independent" || rel(id, q.owner).state === "war");
+  const fronts = () => lands().filter(p => near(p).some(hostile));
+  const threat = (p) => near(p).filter(q => q.owner !== id && !allied(id, q.owner)).reduce((s, q) => s + q.army, 0);
+  const keep = (p) => (p.core !== id ? 1 : 0);   // soldiers a province should keep at home
+  const spare = (p) => Math.max(0, ready(p) - Math.max(0, keep(p) - (p.army - ready(p))));
 
-  // 1. Recruit at the border province facing the most enemy troops,
-  //    but only as long as income still covers upkeep
-  const front = frontier().sort((a, b) => threat(b) - threat(a))[0] || lands()[0];
+  // 1. Recruit where the fighting is, or else at the most threatened border
+  const front = fronts().sort((a, b) => threat(b) - threat(a))[0]
+    || lands().slice().sort((a, b) => threat(b) - threat(a))[0];
   while (canRecruit(front) && incomeOf(id) - (armyOf(id) + 1) * RULES.upkeep >= 0) {
     recruit(front);
   }
@@ -717,12 +752,11 @@ function aiTurn(id) {
   for (let tries = 0; tries < 10; tries++) {
     let best = null;
     for (const from of lands()) {
-      if (ready(from) === 0) continue;
-      for (const to of enemiesNear(from).filter(to => canAttack(id, to))) {
+      const count = spare(from);
+      if (count === 0) continue;
+      for (const to of near(from).filter(to => canAttack(id, to))) {
         const needed = defenseSize(to) * defenseBonus(from, to) * margin;
-        if (ready(from) < needed) continue;
-        // Leave one regiment at home if the attack still works without it
-        const count = (from.army === ready(from) && ready(from) - 1 >= needed) ? ready(from) - 1 : ready(from);
+        if (count < needed) continue;
         // Prefer weak targets, and rich ones when it's close
         const score = defenseSize(to) * defenseBonus(from, to) - provinceIncome(to) * 0.1 + random(0, 0.5);
         if (!best || score < best.score) best = { from, to, count, score };
@@ -732,32 +766,33 @@ function aiTurn(id) {
     results.push(attack(best.from, best.to, best.count));
   }
 
-  // 3. Move idle armies one step closer to the border.
-  //    dist = how many steps each province is from the border.
+  // 3. Gather spare regiments one step closer to the front.
+  //    dist = how many steps each province is from the nearest front province.
+  let goals = fronts();
+  if (goals.length === 0) goals = lands().filter(p => threat(p) > 0);
   const dist = {};
-  let queue = frontier();
+  let queue = goals;
   for (const p of queue) dist[p.id] = 0;
   while (queue.length) {
     const next = [];
     for (const p of queue) {
-      for (const n of p.neighbors.map(n => game.provinces[n])) {
+      for (const n of near(p)) {
         if (n.owner === id && dist[n.id] === undefined) { dist[n.id] = dist[p.id] + 1; next.push(n); }
       }
     }
     queue = next;
   }
   for (const p of lands()) {
-    if (!(dist[p.id] > 0) || ready(p) === 0) continue;
-    const step = p.neighbors.map(n => game.provinces[n])
-      .find(n => n.owner === id && dist[n.id] < dist[p.id]);
-    if (step) moveArmy(p, step, ready(p));
+    if (!(dist[p.id] > 0) || spare(p) === 0) continue;
+    const step = near(p).find(n => n.owner === id && dist[n.id] < dist[p.id]);
+    if (step) moveArmy(p, step, spare(p));
   }
 
   // 4. Build: a castle where the enemy outnumbers us, otherwise a farm
   //    (keeping a little gold aside for recruiting)
   const realm = game.realms[id];
-  const danger = frontier()
-    .filter(p => !p.building && threat(p) > p.army)
+  const danger = lands()
+    .filter(p => !p.building && threat(p) > p.army + militiaOf(p))
     .sort((a, b) => threat(b) - threat(a))[0];
   if (danger && canBuild(danger, "castle")) {
     build(danger, "castle");
@@ -825,7 +860,7 @@ function endTurn() {
 
     if (id === game.player) {
       report = `Income +${income}, upkeep −${upkeep}.`;
-      if (realm.penalty > 0) report += ` (Income halved, ${realm.penalty - 1} more ${realm.penalty - 1 === 1 ? "year" : "years"}.)`;
+      if (realm.penalty > 0) report += ` (Income −25% without your capital, ${realm.penalty - 1} more ${realm.penalty - 1 === 1 ? "year" : "years"}.)`;
       if (deserted > 0) notes.push({ text: `You couldn't pay your troops: ${deserted} deserted!`, kind: "bad" });
     }
     if (realm.penalty > 0) realm.penalty -= 1;
@@ -874,8 +909,12 @@ function unusedWarnings() {
   if (!realm.built && mine.some(p => !p.building) && realm.gold >= RULES.farmCost) {
     warnings.push(`You haven't built anything this year, and you have ${realm.gold} 💰.`);
   }
-  if (realm.manpower >= RULES.maxManpower && realm.gold >= RULES.recruitGold) {
+  if (realm.manpower >= RULES.maxManpower && realm.gold >= recruitCost(me)) {
     warnings.push(`Your manpower is full (${RULES.maxManpower}/${RULES.maxManpower}), so next year's new men are wasted unless you recruit.`);
+  }
+  const exposed = mine.filter(p => p.army === 0 && p.core !== me).map(p => p.name);
+  if (exposed.length) {
+    warnings.push(`${exposed.slice(0, 3).join(", ")}${exposed.length > 3 ? ` and ${exposed.length - 3} more` : ""} ${exposed.length === 1 ? "has" : "have"} no soldiers and could rise up against you.`);
   }
   return warnings;
 }
@@ -907,7 +946,10 @@ function rel(a, b) {
 }
 const atWar = (a, b) => a !== b && (a === "independent" || b === "independent" || rel(a, b).state === "war");
 const allied = (a, b) => a !== b && a !== "independent" && b !== "independent" && rel(a, b).state === "alliance";
-const canAttack = (realm, p) => p.owner !== realm && atWar(realm, p.owner);
+// Attacks need a war, and a war can only be fought from the year after it
+// was declared (the armies first have to mobilize)
+const mobilizing = (a, b) => a !== "independent" && b !== "independent" && rel(a, b).state === "war" && game.year <= rel(a, b).since;
+const canAttack = (realm, p) => p.owner !== realm && atWar(realm, p.owner) && !mobilizing(realm, p.owner);
 const warsOf = (a) => REALM_IDS.filter(b => b !== a && alive(b) && rel(a, b).state === "war");
 const alliesOf = (a) => REALM_IDS.filter(b => b !== a && alive(b) && allied(a, b));
 const bordering = (a, b) => provincesOf(a).some(p => p.neighbors.some(n => game.provinces[n].owner === b));
@@ -925,7 +967,7 @@ function declareWar(a, b, notes, coalition) {
   Object.assign(r, { state: "war", truce: 0, since: game.year, score: { [a]: 0, [b]: 0 } });
   const kind = (b === game.player) ? "bad" : "";
   let text;
-  if (a === game.player) text = `You declare war on ${nameOf(b)}.`;
+  if (a === game.player) text = `You declare war on ${nameOf(b)}. The armies are mobilizing: fighting starts in ${game.year + 1}.`;
   else if (coalition) text = `${capitalize(nameOf(a))} joins the coalition against ${who(b)}!`;
   else text = `${capitalize(nameOf(a))} declares war on ${who(b)}!`;
   notes.push({ text, kind, warOnMe: b === game.player });
@@ -985,7 +1027,7 @@ function aiDiplomacy(id, notes) {
     const lead = (r.score[id] || 0) - (r.score[b] || 0);
     if (b === game.player) {
       const losing = lead < 0 || myArmy < armyOf(b) * 0.7;
-      if (years >= 2 && (losing || years >= 8) && game.year - r.lastOffer >= 3) {
+      if (years >= 2 && (losing || years >= 5) && game.year - r.lastOffer >= 3) {
         r.lastOffer = game.year;
         game.offers.push(id);
       }
@@ -1008,7 +1050,7 @@ function aiDiplomacy(id, notes) {
     const target = REALM_IDS
       .filter(b => b !== id && alive(b) && bordering(id, b) && rel(id, b).state === "peace" && rel(id, b).truce === 0)
       .sort((a, b) => strength(a) - strength(b))[0];
-    if (target && myArmy >= 1.2 * strength(target)) {
+    if (target && myArmy >= RULES.aiWarRatio * strength(target)) {
       declareWar(id, target, notes, false);
       return;
     }
@@ -1027,7 +1069,7 @@ function proposePeace(b) {
   const me = game.player, r = rel(me, b);
   const years = game.year - r.since;
   const lead = (r.score[b] || 0) - (r.score[me] || 0);   // > 0: they're winning
-  const ok = (years >= 1 && lead <= 0) || armyOf(b) < armyOf(me) * 0.8 || years >= 8;
+  const ok = (years >= 1 && lead <= 0) || armyOf(b) < armyOf(me) * 0.8 || years >= 5;
   if (!ok) return { ok, text: `${capitalize(nameOf(b))} refuses. They think they're winning this war.` };
   const notes = [];
   makePeace(me, b, notes);
@@ -1054,6 +1096,7 @@ const diplo = { armed: null, message: "" };
 
 function statusOf(b) {
   const r = rel(game.player, b);
+  if (r.state === "war" && game.year <= r.since) return `⚔️ <b>War declared</b> · armies mobilizing, fighting starts in ${r.since + 1}`;
   if (r.state === "war") {
     return `⚔️ <b>At war</b> since ${r.since} · provinces taken: you ${r.score[game.player] || 0}, them ${r.score[b] || 0}`;
   }
@@ -1125,102 +1168,139 @@ function closeDiplomacy() { hide("diplo"); render(); }
 // HISTORICAL AND RANDOM EVENTS
 // Run at the start of every year. Events that matter to the player become
 // cards (some with a choice); smaller news goes into the year banner.
+// Fairness rules:
+//   - A realm that is behind (fewer provinces than it started with) never
+//     gets bad events, and gets good ones more often.
+//   - After a bad event, the player is safe from bad luck for a few years.
+//   - The Black Death hits everyone, at a random year (or not at all).
 // =====================================================================
 
-const COASTAL = ["alkmaar", "haarlem", "leiden", "delft", "dordrecht", "friesland", "groningen", "antwerp", "zwolle"];
+const COASTAL = ["alkmaar", "haarlem", "amsterdam", "leiden", "delft", "dordrecht", "middelburg", "bergen",
+                 "friesland", "groningen", "antwerp", "zwolle", "harderwijk"];
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
-function runEvents(notes, cards) {
-  const me = game.player, y = game.year, flags = game.flags;
+// How many provinces each realm started with (its home provinces)
+const START_COUNT = {};
+for (const p of Object.values(PROVINCES)) START_COUNT[p.owner] = (START_COUNT[p.owner] || 0) + 1;
+const behind = (id) => id !== "independent" && provincesOf(id).length < START_COUNT[id];
 
-  // The Black Death (1351): no new soldiers, big armies lose a third
-  if (!flags.blackDeath && y >= 1351) {
+function runEvents(notes, cards) {
+  const me = game.player, flags = game.flags;
+  flags.feud = flags.feud || {};
+  const badLuckAllowed = (id) => !behind(id) && (id !== me || game.year - (flags.lastBad || 0) >= RULES.badLuckCooldown);
+  const badLuck = (id) => { if (id === me) flags.lastBad = game.year; };
+
+  // 1. Unguarded conquered provinces may rise up. Home provinces of a
+  //    realm that still exists go back to it; others become independent.
+  for (const p of allProvinces()) {
+    if (p.owner === "independent" || p.army > 0) continue;
+    const owner = p.owner;
+    if (p.core !== owner && alive(p.core) && Math.random() < RULES.uprisingChance) {
+      const note = capture(p, p.core, 1);
+      if (owner === me) notes.push({ text: `${p.name} rose up and went back to ${nameOf(p.core)}!${note}`, kind: "bad" });
+      else if (p.core === me) notes.push({ text: `${p.name} rose up against ${nameOf(owner)} and is yours again!${note}`, kind: "good" });
+    } else if (p.unrest > 0 && Math.random() < RULES.revoltChance) {
+      const note = capture(p, "independent", 1);
+      if (owner === me) notes.push({ text: `${p.name} rose in revolt and declared itself independent!${note}`, kind: "bad" });
+    }
+  }
+
+  // 2. The Black Death: once at most, in a random year, and it hits everyone
+  if (!flags.blackDeath && game.year >= 1352 && Math.random() < RULES.blackDeathChance) {
     flags.blackDeath = true;
+    flags.lastBad = game.year;   // no extra bad luck right after
     for (const id of REALM_IDS) game.realms[id].manpower = 0;
-    for (const p of allProvinces()) if (p.army >= 2) p.army -= Math.floor(p.army / 3);
+    for (const p of allProvinces()) if (p.army >= 3) p.army -= Math.floor(p.army / 3);
     cards.push({
       emoji: "💀", title: "The Black Death",
-      text: "The great pestilence reaches the Low Countries. Every large army loses a third of its men, and no realm can find new soldiers this year (all manpower drops to 0)."
+      text: "The great pestilence sweeps through the Low Countries. Armies of 3 or more regiments lose a third of their men, and no realm can raise new soldiers this year. Every realm suffers alike."
     });
+    return;
   }
 
-  // The Hook and Cod wars (1353): Holland's nobles split into two factions
-  if (!flags.hookCod && y >= 1353 && alive("holland")) {
-    flags.hookCod = true;
-    const rebels = provincesOf("holland").filter(p => !isCapital(p)).sort((a, b) => a.army - b.army).slice(0, 2);
-    const names = rebels.map(p => p.name).join(" and ");
-    const revolt = () => {
-      for (const p of rebels) {
-        capture(p, "independent", 2);
-        p.unrest = 0;
+  // 3. Some years, one realm gets a random event
+  if (Math.random() >= RULES.eventChance) return;
+  const target = pick(REALM_IDS.filter(alive));
+  const realm = game.realms[target];
+  const lands = provincesOf(target);
+  const capital = game.provinces[realm.capital];
+  const options = [];   // { weight, run }
+
+  // --- Good events ---
+  options.push({ weight: 3, run: () => {
+    const gold = 8 + Math.floor(Math.random() * 8);
+    realm.gold += gold;
+    if (target === me) cards.push({ emoji: "🌾", title: "A rich harvest", text: `The granaries are full. Your treasury gains ${gold} 💰.` });
+  }});
+  options.push({ weight: behind(target) ? 4 : 2, run: () => {
+    realm.manpower = Math.min(RULES.maxManpower, realm.manpower + 3);
+    capital.army += 1;
+    if (target === me) cards.push({ emoji: "🛡️", title: "Volunteers", text: `Men from across your lands flock to ${capital.name} to defend the realm: +1 regiment there and +3 manpower.` });
+  }});
+  const ports = lands.filter(p => COASTAL.includes(p.id));
+  if (ports.length) options.push({ weight: 2, run: () => {
+    const gold = 3 * ports.length;
+    realm.gold += gold;
+    if (target === me) cards.push({ emoji: "⛵", title: "Hanseatic merchants", text: `Trading ships crowd your harbors. Your ${ports.length} coastal ${ports.length === 1 ? "province brings" : "provinces bring"} in ${gold} 💰 extra.` });
+  }});
+  if (target === me && realm.gold >= 20) options.push({ weight: 2, run: () => {
+    cards.push({
+      emoji: "🗡️", title: "Mercenaries for hire",
+      text: `A company of Free Lances offers its swords: 3 regiments for 20 💰, no manpower needed. They would join you at ${capital.name}.`,
+      choices: [
+        { label: "Hire them (20 💰)", run: () => { realm.gold -= 20; capital.army += 3; return `3 mercenary regiments arrive at ${capital.name}.`; } },
+        { label: "Send them away", run: () => "" }
+      ]
+    });
+  }});
+
+  // --- Bad events (never for a realm that's behind, and not too often for you) ---
+  if (badLuckAllowed(target)) {
+    const coast = lands.filter(p => COASTAL.includes(p.id));
+    if (coast.length) options.push({ weight: 1.5, run: () => {
+      badLuck(target);
+      const p = pick(coast);
+      const farm = p.building === "farm";
+      if (farm) p.building = null;
+      p.unrest = Math.max(p.unrest, 2);
+      const text = `A storm flood strikes ${p.name}.${farm ? " The farm is washed away, and the province" : " The province"} pays nothing for 2 years.`;
+      if (target === me) cards.push({ emoji: "🌊", title: "Storm flood", text });
+      else notes.push({ text, kind: "" });
+    }});
+    const rebel = lands.filter(p => !isCapital(p) && p.core === target).sort((a, b) => a.army - b.army)[0];
+    if (!flags.feud[target] && rebel && lands.length >= 4) options.push({ weight: 1.5, run: () => {
+      flags.feud[target] = true;
+      badLuck(target);
+      const holland = target === "holland";
+      const title = holland ? "The Hook and Cod wars" : "A noble feud";
+      const story = holland
+        ? "Holland's nobles have split into two factions, the Hooks and the Cods, and are ready to fight each other."
+        : `Two of ${nameOf(target)}'s great noble houses are at each other's throats.`;
+      const revolt = () => { capture(rebel, "independent", 2); rebel.unrest = 0; return `${rebel.name} broke away and is now independent.`; };
+      const pay = () => { realm.gold -= 15; return "The nobles are paid off. The realm stays together, for now."; };
+      if (target === me) {
+        const choices = [{ label: `Let them fight (lose ${rebel.name})`, run: revolt }];
+        if (realm.gold >= 15) choices.unshift({ label: "Pay the nobles (15 💰)", run: pay });
+        cards.push({ emoji: holland ? "🪝🐟" : "⚔️", title, text: `${story} Pay them off, or ${rebel.name} will break away and become independent.`, choices });
+      } else if (realm.gold >= 15) {
+        pay();
+        notes.push({ text: `${capitalize(nameOf(target))} buys peace between its quarrelling nobles.`, kind: "" });
+      } else {
+        notes.push({ text: `${holland ? "The Hook and Cod wars" : "A noble feud"} in ${nameOf(target)}: ${revolt()}`, kind: "" });
       }
-      return `${names} broke away from Holland.`;
-    };
-    const pay = () => { game.realms.holland.gold -= 20; return "The nobles are paid off. Holland stays together, for now."; };
-    if (me === "holland") {
-      const choices = [{ label: `Let them fight (lose ${names})`, run: revolt }];
-      if (game.realms.holland.gold >= 20) choices.unshift({ label: "Pay the nobles (20 💰)", run: pay });
-      cards.push({
-        emoji: "🪝🐟", title: "The Hook and Cod wars",
-        text: `Holland's nobles have split into two factions, the Hooks and the Cods, and are ready to fight each other. Pay them off, or ${names} will break away and become independent.`,
-        choices
-      });
-    } else if (game.realms.holland.gold >= 20) {
-      pay();
-      notes.push({ text: "Holland buys peace between its quarrelling Hook and Cod nobles.", kind: "" });
-    } else {
-      notes.push({ text: `Civil war in Holland: ${revolt()}`, kind: "" });
-    }
+    }});
+    options.push({ weight: 1, run: () => {
+      badLuck(target);
+      realm.manpower = Math.floor(realm.manpower / 2);
+      if (target === me) cards.push({ emoji: "⚰️", title: "Plague outbreak", text: "Sickness spreads through your towns. Your manpower is halved." });
+    }});
   }
 
-  // The plague returns (once, in the early 1360s): manpower halved
-  if (!flags.plague2 && y >= 1360 && (y >= 1365 || Math.random() < 0.3)) {
-    flags.plague2 = true;
-    for (const id of REALM_IDS) game.realms[id].manpower = Math.floor(game.realms[id].manpower / 2);
-    cards.push({ emoji: "⚰️", title: "The plague returns", text: "A new wave of plague sweeps the land. Every realm's manpower is halved." });
-  }
-
-  // Revolts: a freshly conquered province without soldiers may rise up
-  for (const p of allProvinces()) {
-    if (p.owner === "independent" || p.unrest === 0 || p.army > 0) continue;
-    if (Math.random() >= RULES.revoltChance) continue;
-    const owner = p.owner;
-    const note = capture(p, "independent", 1);
-    p.unrest = 0;
-    if (owner === me) notes.push({ text: `${p.name} rose in revolt and declared itself independent!${note}`, kind: "bad" });
-  }
-
-  // One random event in some years
-  if (Math.random() < RULES.eventChance) {
-    const roll = Math.random();
-    if (roll < 0.35) {
-      // Storm flood on the coast: farm washed away, no income for 2 years
-      const p = pick(COASTAL.map(id => game.provinces[id]).filter(p => p.owner !== "independent"));
-      if (p) {
-        const farm = p.building === "farm";
-        if (farm) p.building = null;
-        p.unrest = Math.max(p.unrest, 2);
-        const text = `A storm flood strikes ${p.name}.${farm ? " The farm is washed away, and the province" : " The province"} pays nothing for 2 years.`;
-        if (p.owner === me) cards.push({ emoji: "🌊", title: "Storm flood", text });
-        else notes.push({ text, kind: "" });
-      }
-    } else if (roll < 0.65) {
-      // Good harvest: one realm gets extra gold
-      const id = pick(REALM_IDS.filter(alive));
-      game.realms[id].gold += 10;
-      if (id === me) cards.push({ emoji: "🌾", title: "A rich harvest", text: "The granaries are full. Your treasury gains 10 💰." });
-    } else if (game.realms[me].gold >= 25 && alive(me)) {
-      // Mercenaries offer their services to the player
-      const capital = game.provinces[game.realms[me].capital];
-      cards.push({
-        emoji: "🗡️", title: "Mercenaries for hire",
-        text: `A company of Free Lances offers its swords: 3 regiments for 25 💰, no manpower needed. They would join you at ${capital.name}.`,
-        choices: [
-          { label: "Hire them (25 💰)", run: () => { game.realms[me].gold -= 25; capital.army += 3; return `3 mercenary regiments arrive at ${capital.name}.`; } },
-          { label: "Send them away", run: () => "" }
-        ]
-      });
-    }
+  // Pick one option, weighted
+  let roll = Math.random() * options.reduce((s, o) => s + o.weight, 0);
+  for (const o of options) {
+    roll -= o.weight;
+    if (roll <= 0) { o.run(); break; }
   }
 }
 
@@ -1277,7 +1357,7 @@ function startNewYear(notes, cards) {
   const wars = notes.filter(n => n.warOnMe);
   if (wars.length) {
     const others = notes.filter(n => !n.warOnMe);
-    const card = { emoji: "⚔️", title: "War!", text: wars.map(n => n.text).join(" ") };
+    const card = { emoji: "⚔️", title: "War!", text: wars.map(n => n.text).join(" ") + ` Their armies still have to mobilize: use ${game.year} to prepare before they can strike.` };
     return showCard(card, () => startNewYearAfterWar(others, cards, attacksOnMe));
   }
   startNewYearAfterWar(notes, cards, attacksOnMe);
@@ -1346,7 +1426,7 @@ function checkGameOver() {
 
   // These always end the game
   if (mine === total) {
-    return endGame("The Low Countries united!", `In ${game.year} every one of the 20 provinces flies your banner.`, true, true);
+    return endGame("The Low Countries united!", `In ${game.year} every one of the ${total} provinces flies your banner.`, true, true);
   }
   if (mine === 0) {
     return endGame("Defeat", `Your realm was wiped off the map in ${game.year}.`, false, true);
@@ -1354,7 +1434,7 @@ function checkGameOver() {
   // These are a victory or defeat, but you can keep playing
   if (game.endless) return;
   if (mine >= RULES.provincesToWin) {
-    endGame("Victory!", `You rule ${mine} of the 20 provinces in ${game.year}. Keep playing to unite all of the Low Countries.`, true, false);
+    endGame("Victory!", `You rule ${mine} of the ${total} provinces in ${game.year}. Keep playing to unite all of the Low Countries.`, true, false);
   } else if (count(leader) >= RULES.provincesToWin) {
     endGame("Defeat", `${REALMS[leader].name} rules ${count(leader)} provinces in ${game.year}. You can still fight on.`, false, false);
   } else if (game.year >= RULES.endYear) {
@@ -1381,7 +1461,7 @@ function keepPlaying() {
   game.over = false;
   game.endless = true;
   game.endInfo = null;
-  game.message = "The war goes on. Conquer all 20 provinces to unite the Low Countries!";
+  game.message = `The war goes on. Conquer all ${allProvinces().length} provinces to unite the Low Countries!`;
   render();
 }
 
@@ -1391,7 +1471,7 @@ function keepPlaying() {
 // and continue later. Only one save at a time.
 // =====================================================================
 
-const SAVE_KEY = "lords-of-the-low-countries-save-v1";
+const SAVE_KEY = "lords-of-the-low-countries-save-v2";   // v2: the bigger map (v1 saves don't fit)
 
 function saveGame() {
   if (!game.player || game.over) return;
@@ -1541,7 +1621,7 @@ function renderTopbar() {
     <div class="stats">
       <span>💰 ${s.gold} <small>(${net >= 0 ? "+" : "−"}${Math.abs(net)})</small></span>
       <span>⚔️ ${s.manpower}/${RULES.maxManpower}</span>
-      <span>🗺️ ${provincesOf(game.player).length}/20</span>
+      <span>🗺️ ${provincesOf(game.player).length}/${allProvinces().length}</span>
     </div>`;
 }
 
@@ -1598,7 +1678,7 @@ function renderPanel() {
       if (to.riverBorders.includes(from.id)) why.push("river 🌊");
       const chance = Math.round(winChance(from, to, count) * 100);
       details = `
-        <div>🛡️ Defenders: ${to.army} + ${RULES.militia} militia${bonus > 1 ? ` (×${bonus.toFixed(2).replace(/0$/, "")} for ${why.join(" and ")})` : ""}</div>
+        <div>🛡️ Defenders: ${to.army} + ${militiaOf(to)} militia${bonus > 1 ? ` (×${bonus.toFixed(2).replace(/0$/, "")} for ${why.join(" and ")})` : ""}</div>
         <div>🎲 Chance to win: about <b>${chance}%</b></div>`;
     }
     panel.innerHTML = `
@@ -1622,11 +1702,15 @@ function renderPanel() {
   if (!game.selected) {
     const r = REALMS[game.player];
     const wars = warsOf(game.player).map(nameOf), allies = alliesOf(game.player).map(nameOf);
-    const goal = game.endless ? "Conquer all 20 provinces to unite the Low Countries." : `Own ${RULES.provincesToWin} of the 20 provinces to win.`;
+    const danger = behind(game.player)
+      ? `<div class="hint">Your realm has lost ground: recruits cost only ${RULES.underdogRecruitGold} 💰, and fortune favors you.</div>` : "";
+    const total = allProvinces().length;
+    const goal = game.endless ? `Conquer all ${total} provinces to unite the Low Countries.` : `Own ${RULES.provincesToWin} of the ${total} provinces to win.`;
     panel.innerHTML = `
       <h2>${r.name}</h2>
       ${msg}
       <div>${wars.length ? `⚔️ At war with ${wars.join(", ")}` : "🕊️ At peace with every realm"}${allies.length ? ` · 🤝 Allied with ${allies.join(", ")}` : ""}</div>
+      ${danger}
       <div class="hint">Tap one of your provinces to recruit or to send its army. ${goal}</div>
       <div class="spacer"></div>
       <div class="row">${diploButton}${endTurnButton}</div>`;
@@ -1649,7 +1733,7 @@ function renderPanel() {
     hint = ready(p) > 0
       ? "Tap a neighboring province to move or attack."
       : (p.army > 0 ? "This army has already acted this year." : "");
-    recruitButton = `<button class="act light" data-do="recruit" ${canRecruit(p) ? "" : "disabled"}>Recruit<br>${RULES.recruitGold}💰 ${RULES.recruitManpower}⚔️</button>`;
+    recruitButton = `<button class="act light" data-do="recruit" ${canRecruit(p) ? "" : "disabled"}>Recruit<br>${recruitCost(game.player)}💰 ${RULES.recruitManpower}⚔️</button>`;
     if (!p.building) {
       buildButtons =
         `<button class="act light" data-do="farm" ${canBuild(p, "farm") ? "" : "disabled"}>Farm 🌾<br>${RULES.farmCost}💰</button>` +
@@ -1660,9 +1744,9 @@ function renderPanel() {
     hint = p.neighbors.some(n => game.provinces[n].owner === game.player)
       ? "Independent: you can attack it any time. First tap one of your own provinces next to it." : "Independent.";
   } else {
-    hint = statusOf(p.owner) + ". " + (atWar(game.player, p.owner)
+    hint = statusOf(p.owner) + ". " + (canAttack(game.player, p)
       ? (p.neighbors.some(n => game.provinces[n].owner === game.player) ? "To attack, first tap one of your own provinces next to it." : "")
-      : "Declare war in Diplomacy before you can attack.");
+      : atWar(game.player, p.owner) ? "" : "Declare war in Diplomacy before you can attack.");
   }
 
   panel.innerHTML = `
@@ -1674,6 +1758,8 @@ function renderPanel() {
       <div>🛡️ Army: ${armyText}</div>
       <div>🏗️ ${p.building === "farm" ? "Farm 🌾 (+1 💰)" : p.building === "castle" ? "Castle 🏰 (×1.5 🛡️)" : "No building"}</div>
     </div>
+    ${p.owner !== "independent" && p.core === p.owner ? `<div class="sub">🏠 Home province of ${nameOf(p.owner)}: ${militiaOf(p)} militia defend it.</div>` : ""}
+    ${p.owner !== "independent" && p.core !== p.owner ? `<div class="sub">Conquered${p.core !== "independent" ? ` from ${nameOf(p.core)}` : ""}${p.unrest > 0 ? `, restless for ${p.unrest} more ${p.unrest === 1 ? "year" : "years"}` : ""}. Left without soldiers, it may rise up.</div>` : ""}
     <div class="sub">Borders: ${neighborNames}</div>
     ${hint ? `<div class="hint">${hint}</div>` : ""}
     <div class="spacer"></div>
