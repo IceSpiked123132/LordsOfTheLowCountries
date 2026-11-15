@@ -14,7 +14,13 @@ flevo = [shape(f['geometry']) for f in adm1 if f['properties'].get('name')=='Fle
 # The Afsluitdijk (1932) is cut out too: in 1350 the Zuiderzee was open sea
 afsluitdijk = LineString([(5.035, 52.938), (5.17, 53.005), (5.33, 53.072), (5.385, 53.098)]).buffer(0.013)
 water = unary_union(lakes + flevo + [afsluitdijk])
-land = P(land.difference(water)).intersection(BIG)
+land = land.difference(water)
+# Drop leftover bits of the dike floating in the Zuiderzee
+from shapely.geometry import MultiPolygon
+dike_area = box(5.05, 52.93, 5.36, 53.09)
+land = MultiPolygon([g for g in getattr(land, 'geoms', [land])
+                     if g.geom_type == 'Polygon' and not dike_area.contains(g.representative_point())])
+land = P(land).intersection(BIG)
 nl = unary_union([shape(f['geometry']).buffer(0).intersection(GEO) for f in load('ne_10m_admin_0_countries') if f['properties']['ADMIN']=='Netherlands'])
 be = unary_union([shape(f['geometry']).buffer(0) for f in adm1 if f['properties'].get('admin')=='Belgium'
                   and f['properties']['name'] in ('Antwerp','Limburg','Brussels','Flemish Brabant','Walloon Brabant')])

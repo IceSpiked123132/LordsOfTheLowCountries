@@ -57,6 +57,19 @@
   #mapwrap { flex: 1; min-height: 0; position: relative; background: var(--sea); overflow: hidden; }
   #map { width: 100%; height: 100%; display: block; overflow: visible; touch-action: none; }
   #zoom-ctrl { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
+  #guide {
+    position: absolute; left: 8px; right: 58px; bottom: 8px; z-index: 4; display: none;
+    background: var(--parchment); border: 2px solid var(--ink); border-radius: 10px;
+    padding: 8px 12px; font-size: 15px; line-height: 1.3; box-shadow: 0 4px 14px rgba(0,0,0,.3);
+    animation: drop .35s ease-out;
+  }
+  .guide-head { font-family: 'Cinzel', serif; font-weight: 800; font-size: 11px; letter-spacing: .15em; color: var(--ink-soft); margin-bottom: 2px; }
+  .guide-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+  .guide-buttons button {
+    font-family: 'Cinzel', serif; font-weight: 800; font-size: 12px; padding: 6px 12px; border-radius: 6px;
+    border: 2px solid var(--ink); background: var(--parchment); color: var(--ink); cursor: pointer;
+  }
+  .guide-buttons button.on { background: var(--ink); color: var(--parchment); }
   #zoom-ctrl button {
     width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--ink);
     background: var(--parchment); color: var(--ink); font-size: 20px; font-weight: 800; cursor: pointer; opacity: .9;
@@ -255,6 +268,7 @@
   <div id="topbar"></div>
   <div id="mapwrap">
     <svg id="map" viewBox="__VIEWBOX__"></svg>
+    <div id="guide"></div>
     <div id="zoom-ctrl">
       <button data-zoom="in" aria-label="Zoom in">+</button>
       <button data-zoom="out" aria-label="Zoom out">−</button>
@@ -286,6 +300,7 @@
       <button class="act" onclick="closeMenu()">Resume</button>
       <button class="act light" onclick="closeMenu(); openDiplomacy()">Diplomacy 🤝</button>
       <button class="act light" onclick="showHelp()">How to play</button>
+      <button class="act light" id="sound-btn" onclick="toggleSound()">Sound: on 🔊</button>
       <button class="act light" onclick="quitToStart()">Main menu (game is saved)</button>
     </div>
   </div>
@@ -330,6 +345,7 @@
         <li>Lose your capital 👑 and your income drops by a quarter for 3 years. Retake it to end that early.</li>
       </ul>
       <button class="act" style="width:100%;margin-top:16px" onclick="closeHelp()">Got it</button>
+      <button class="act light" style="width:100%;margin-top:8px" onclick="closeHelp(); restartGuide()">Show the first-game tips again</button>
     </div>
   </div>
   <div id="battle" class="overlay" style="display:none">
@@ -578,6 +594,7 @@ function newGame(playerRealm, difficulty) {
 
   render();
   focusOnRealm(playerRealm);
+  startGuide();
 }
 
 // Small helpers
@@ -865,6 +882,7 @@ function aiTurn(id) {
 // =====================================================================
 
 function endTurn() {
+  guideEvent("endturn");
   const notes = [];    // { text, kind }: short news for the new year banner
   const cards = [];    // events and offers the player has to see or decide
   game.lastTurn = [];  // every AI attack, to show on the map
@@ -1380,6 +1398,7 @@ function showCard(card, done) {
     };
     box.appendChild(b);
   });
+  playSound(card.sound || "event");
   show("eventcard");
 }
 
@@ -1412,7 +1431,7 @@ function startNewYear(notes, cards) {
   const wars = notes.filter(n => n.warOnMe);
   if (wars.length) {
     const others = notes.filter(n => !n.warOnMe);
-    const card = { emoji: "⚔️", title: "War!", text: wars.map(n => n.text).join(" ") + ` Their armies still have to mobilize: use ${game.year} to prepare before they can strike.` };
+    const card = { emoji: "⚔️", title: "War!", sound: "war", text: wars.map(n => n.text).join(" ") + ` Their armies still have to mobilize: use ${game.year} to prepare before they can strike.` };
     return showCard(card, () => startNewYearAfterWar(others, cards, attacksOnMe));
   }
   startNewYearAfterWar(notes, cards, attacksOnMe);
@@ -1458,12 +1477,14 @@ function showYearOverview(notes) {
   }));
   clearTimeout(yearView.timer);
   yearView.timer = setTimeout(closeYearOverview, seconds * 1000);
+  playSound("bell");
   show("yearview");
 }
 
 function closeYearOverview() {
   clearTimeout(yearView.timer);
   hide("yearview");
+  renderGuide();
   if (!game.showYear) return;
   game.showYear = false;
   if (yearView.savedView) { Object.assign(view, yearView.savedView); applyView(); }
@@ -1502,6 +1523,7 @@ function checkGameOver() {
 // final: the game is really over (nothing left to conquer or nothing left at all)
 function endGame(title, text, won, final) {
   game.over = true;
+  playSound(won ? "victory" : "defeat");
   game.endInfo = { title, text, won, final };
   if (final) clearSave();
   game.selected = null;
@@ -1565,6 +1587,7 @@ function continueGame(data) {
   }
   render();
   focusOnRealm(data.player);
+  startGuide();
   checkGameOver();
 }
 
@@ -1656,6 +1679,7 @@ function render() {
   renderTopbar();
   renderPanel();
   saveGame();   // the game saves itself after every action
+  renderGuide();
 }
 
 function renderMap() {
@@ -1710,9 +1734,42 @@ function renderMap() {
     if (p.army > 0) el("text", { x: p.x, y: p.y + 1, class: "army" }, g).textContent = p.army;
     if (isCapital(p)) el("text", { x: p.x + 15, y: p.y - 12, class: "capital" }, g).textContent = "👑";
     if (p.building) el("text", { x: p.x - 16, y: p.y - 12, class: "bldg" }, g).textContent = p.building === "farm" ? "🌾" : "🏰";
-    const labelY = p.labelAbove ? p.y - r - 7 : p.y + r + 16;
-    el("text", { x: p.x, y: labelY, class: "label" }, g).textContent = p.name;
+    el("text", { x: p.x, y: p.y + r + 16, class: "label", "data-id": p.id }, g).textContent = p.name;
     g.addEventListener("click", (e) => { e.stopPropagation(); tapProvince(p.id); });
+  }
+  updateLabels();
+}
+
+// Province names keep a steady size on screen: smaller on the map when you
+// zoom in, so they stop overlapping. Where two names would still overlap,
+// the less important one is hidden (tap the city to see its name).
+function updateLabels() {
+  const zoom = view.base ? view.base.w / view.w : 1;
+  const fs = 16 / Math.sqrt(zoom);
+  const sel = game.selected ? game.provinces[game.selected] : null;
+  const order = game.order;
+  const priority = (p) => {
+    if (sel === p || (order && (order.from === p.id || order.to === p.id))) return 0;
+    if (sel && sel.neighbors.includes(p.id)) return 1;
+    if (p.owner === game.player) return 2;
+    if (REALMS[p.owner].capital !== null && isCapital(p)) return 3;
+    return 4 - provinceIncome(p) * 0.1;
+  };
+  const labels = [...svg.querySelectorAll("text.label")]
+    .map(t => ({ t, p: game.provinces[t.dataset.id] }))
+    .sort((a, b) => priority(a.p) - priority(b.p));
+  const placed = [];
+  for (const { t, p } of labels) {
+    const r = p.army > 0 ? 15 : 7;
+    const y = p.labelAbove ? p.y - r - fs * 0.45 : p.y + r + fs;
+    const half = p.name.length * fs * 0.28;
+    const box = { x1: p.x - half, x2: p.x + half, y1: y - fs * 0.8, y2: y + fs * 0.2 };
+    const hit = placed.some(b => box.x1 < b.x2 && box.x2 > b.x1 && box.y1 < b.y2 && box.y2 > b.y1);
+    t.setAttribute("y", y);
+    t.style.fontSize = `${fs}px`;
+    t.style.strokeWidth = `${fs / 4}px`;
+    t.style.display = hit ? "none" : "";
+    if (!hit) placed.push(box);
   }
 }
 
@@ -1946,7 +2003,8 @@ function showBattle(r, onDone) {
     $(`b-${side}-str`).textContent = `strength ${value.toFixed(1)}`;
   };
 
-  // 1. The luck roll: strengths flicker, then settle on the real result
+  // 1. The luck roll: drums, strengths flicker, then settle on the real result
+  for (const t of [250, 600, 950]) at(t, () => playSound("drum"));
   for (let t = 350; t < 1350; t += 70) {
     at(t, () => {
       setStrength("att", r.sent * random(RULES.luckMin, RULES.luckMax));
@@ -2021,6 +2079,8 @@ function finishBattle() {
   }
   $("b-continue").textContent = "Continue";
   try { navigator.vibrate(good ? 40 : [60, 60, 60]); } catch (e) {}
+  playSound("clash");
+  battle.timers.push(setTimeout(() => playSound(good ? "victory" : "defeat"), 250));
 }
 
 document.getElementById("b-continue").addEventListener("click", () => {
@@ -2028,6 +2088,179 @@ document.getElementById("b-continue").addEventListener("click", () => {
   hide("battle");
   if (battle.onDone) battle.onDone();
 });
+
+// =====================================================================
+// FIRST-GAME GUIDE
+// A few tips in the corner of the map during your first game. Each tip
+// waits for you to do the thing it describes, then the next one appears.
+// Skip them any time; "How to play" can bring them back.
+// =====================================================================
+
+const GUIDE_KEY = "lords-guide-done";
+const guide = { step: null };
+
+const GUIDE_STEPS = [
+  { id: "welcome",
+    text: () => `You rule the ${REALMS[game.player].name}: the provinces in your color. Tap one of them to see what you can do there.` },
+  { id: "province", next: true,
+    text: () => `Here you can recruit soldiers or build a farm or castle. To send an army, tap a neighboring province. The grey ones are independent: you can attack them any time.` },
+  { id: "war", next: true,
+    text: () => `To attack another realm, first declare war under Diplomacy 🤝. Both armies then need a year to mobilize before the fighting starts.` },
+  { id: "endturn",
+    text: () => `Done for this year? Press End turn. The other realms make their moves, and the map shows you what they did.` },
+  { id: "money", next: true, last: true,
+    text: () => `Every year your provinces pay gold, and every regiment costs 1 💰 upkeep. Own ${RULES.provincesToWin} of the ${allProvinces().length} provinces to win. Good luck!` }
+];
+
+function guideDone() {
+  try { return localStorage.getItem(GUIDE_KEY) === "yes"; } catch (e) { return true; }
+}
+function startGuide() {
+  guide.step = guideDone() ? null : 0;
+  renderGuide();
+}
+function finishGuide() {
+  guide.step = null;
+  try { localStorage.setItem(GUIDE_KEY, "yes"); } catch (e) {}
+  renderGuide();
+}
+function restartGuide() {
+  try { localStorage.removeItem(GUIDE_KEY); } catch (e) {}
+  if (game.player && !game.over) { guide.step = 0; renderGuide(); }
+}
+function nextGuideStep() {
+  if (guide.step === null) return;
+  if (GUIDE_STEPS[guide.step].last) return finishGuide();
+  guide.step += 1;
+  renderGuide();
+}
+
+// The game reports what the player did; a tip moves on when its moment comes
+function guideEvent(name) {
+  if (guide.step === null) return;
+  const id = GUIDE_STEPS[guide.step].id;
+  if (id === "welcome" && name === "select-own") nextGuideStep();
+  else if (id === "province" && (name === "acted")) nextGuideStep();
+  else if (id === "endturn" && name === "endturn") { guide.step += 1; renderGuide(); }
+  else renderGuide();
+}
+
+function renderGuide() {
+  const box = document.getElementById("guide");
+  // The last tip waits until the new-year screens are out of the way
+  const busy = ["battle", "eventcard", "yearview"].some(id => document.getElementById(id).style.display === "flex");
+  if (guide.step === null || game.over || busy) { box.style.display = "none"; return; }
+  const step = GUIDE_STEPS[guide.step];
+  box.innerHTML = `
+    <div class="guide-head">Tip ${guide.step + 1} of ${GUIDE_STEPS.length}</div>
+    <div>${step.text()}</div>
+    <div class="guide-buttons">
+      <button data-guide="skip">Skip tips</button>
+      ${step.next ? `<button data-guide="next" class="on">${step.last ? "Got it" : "Next"}</button>` : ""}
+    </div>`;
+  box.style.display = "block";
+}
+
+document.getElementById("guide").addEventListener("click", (e) => {
+  e.stopPropagation();
+  const b = e.target.closest("button[data-guide]");
+  if (!b) return;
+  if (b.dataset.guide === "skip") finishGuide();
+  if (b.dataset.guide === "next") nextGuideStep();
+});
+
+// =====================================================================
+// SOUND
+// Every sound is made on the spot with the Web Audio API (no sound files),
+// so it works offline. Switch it off in the ☰ menu.
+// =====================================================================
+
+const sound = { ctx: null, on: true };
+try { sound.on = localStorage.getItem("lords-sound") !== "off"; } catch (e) {}
+
+function audio() {
+  if (!sound.on) return null;
+  try {
+    if (!sound.ctx) sound.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (sound.ctx.state === "suspended") sound.ctx.resume();
+    return sound.ctx;
+  } catch (e) { return null; }
+}
+
+// One note: frequency in Hz, start and length in seconds from now
+function tone(ctx, freq, start, length, type = "sine", volume = 0.15, slideTo = null) {
+  const t = ctx.currentTime + start;
+  const osc = ctx.createOscillator(), gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t);
+  if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + length);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(volume, t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + length);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + length + 0.05);
+}
+
+// A burst of noise (drums, clashing steel, hammering), shaped by a filter
+function noise(ctx, start, length, volume = 0.2, filter = "lowpass", freq = 1000) {
+  const t = ctx.currentTime + start;
+  const buffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * length), ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), gain = ctx.createGain();
+  src.buffer = buffer;
+  f.type = filter;
+  f.frequency.value = freq;
+  gain.gain.setValueAtTime(volume, t);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + length);
+  src.connect(f).connect(gain).connect(ctx.destination);
+  src.start(t);
+}
+
+function playSound(name) {
+  const ctx = audio();
+  if (!ctx) return;
+  if (name === "coin") {
+    tone(ctx, 1320, 0, 0.08, "triangle", 0.12);
+    tone(ctx, 1760, 0.07, 0.14, "triangle", 0.12);
+  } else if (name === "build") {
+    for (const t of [0, 0.14, 0.28]) { noise(ctx, t, 0.08, 0.35, "lowpass", 700); tone(ctx, 180, t, 0.06, "square", 0.04); }
+  } else if (name === "drum") {
+    tone(ctx, 110, 0, 0.28, "sine", 0.35, 45);
+    noise(ctx, 0, 0.12, 0.15, "lowpass", 400);
+  } else if (name === "clash") {
+    noise(ctx, 0, 0.25, 0.25, "highpass", 2500);
+    tone(ctx, 1900, 0, 0.3, "square", 0.03, 1700);
+  } else if (name === "victory") {
+    [523, 659, 784, 1047].forEach((f, i) => tone(ctx, f, 0.1 + i * 0.12, i === 3 ? 0.6 : 0.16, "triangle", 0.14));
+  } else if (name === "defeat") {
+    [440, 349, 294].forEach((f, i) => tone(ctx, f, 0.1 + i * 0.22, 0.32, "triangle", 0.13));
+  } else if (name === "war") {
+    // A low war horn: two long notes with a rough edge
+    for (const [f, t] of [[110, 0], [147, 0.55]]) {
+      tone(ctx, f, t, 0.6, "sawtooth", 0.07);
+      tone(ctx, f * 2, t, 0.6, "triangle", 0.05);
+    }
+  } else if (name === "bell") {
+    // A church bell for the new year
+    for (const t of [0, 0.45]) {
+      tone(ctx, 660, t, 1.3, "sine", 0.12);
+      tone(ctx, 1320, t, 0.8, "sine", 0.04);
+      tone(ctx, 1980, t, 0.5, "sine", 0.02);
+    }
+  } else if (name === "event") {
+    tone(ctx, 587, 0, 0.3, "sine", 0.1);
+    tone(ctx, 880, 0.12, 0.45, "sine", 0.08);
+  }
+}
+
+function toggleSound() {
+  sound.on = !sound.on;
+  try { localStorage.setItem("lords-sound", sound.on ? "on" : "off"); } catch (e) {}
+  document.getElementById("sound-btn").textContent = `Sound: ${sound.on ? "on 🔊" : "off 🔇"}`;
+  if (sound.on) playSound("coin");
+}
 
 // =====================================================================
 // ZOOM AND DRAG
@@ -2056,6 +2289,7 @@ function applyView() {
   view.x = Math.min(b.x + b.w - view.w, Math.max(b.x, view.x));
   view.y = Math.min(b.y + b.h - view.h, Math.max(b.y, view.y));
   svg.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.h}`);
+  if (game.player) updateLabels();
 }
 
 // Screen position (pixels) to map position
@@ -2189,6 +2423,7 @@ function tapProvince(id) {
   game.selected = (game.selected === id) ? null : id;
   game.message = null;
   render();
+  if (game.selected && game.provinces[game.selected].owner === game.player) guideEvent("select-own");
 }
 
 // Tapping the sea clears the selection
@@ -2219,8 +2454,8 @@ document.getElementById("panel").addEventListener("click", (e) => {
   }
   if (action === "endanyway") { endTurn(); return; }
   if (action === "cancelend") game.confirmEnd = null;
-  if (action === "recruit") { recruit(game.provinces[game.selected]); game.message = null; }
-  if (action === "farm" || action === "castle") { build(game.provinces[game.selected], action); game.message = null; }
+  if (action === "recruit") { recruit(game.provinces[game.selected]); game.message = null; playSound("coin"); guideEvent("acted"); }
+  if (action === "farm" || action === "castle") { build(game.provinces[game.selected], action); game.message = null; playSound("build"); guideEvent("acted"); }
   if (action === "less") order.count -= 1;
   if (action === "more") order.count += 1;
   if (action === "cancel") game.order = null;
@@ -2229,12 +2464,14 @@ document.getElementById("panel").addEventListener("click", (e) => {
     game.order = null;
     if (to.owner === game.player) {
       moveArmy(from, to, order.count);
+      guideEvent("acted");
       game.selected = to.id;
     } else {
       const result = attack(from, to, order.count);
       game.message = describe(result);
       game.selected = (to.owner === game.player) ? to.id : from.id;
       render();
+      guideEvent("acted");
       showBattle(result, () => { checkGameOver(); render(); });
       return;
     }
@@ -2246,8 +2483,9 @@ document.getElementById("panel").addEventListener("click", (e) => {
 // 8. START SCREEN
 // =====================================================================
 
-function show(id) { document.getElementById(id).style.display = "flex"; }
-function hide(id) { document.getElementById(id).style.display = "none"; }
+// Show or hide a full-screen layer (the tips get out of the way of battles, events and the new year)
+function show(id) { document.getElementById(id).style.display = "flex"; renderGuide(); }
+function hide(id) { document.getElementById(id).style.display = "none"; renderGuide(); }
 
 function showStart() {
   hide("menu"); hide("diplo"); hide("eventcard"); hide("battle"); hide("yearview");
@@ -2334,6 +2572,7 @@ function confirmNewGame() {
   return false;
 }
 
+document.getElementById("sound-btn").textContent = `Sound: ${sound.on ? "on 🔊" : "off 🔇"}`;
 showStart();
 
 // Installable app: lets "Add to Home Screen" work offline (only where the
