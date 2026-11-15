@@ -321,7 +321,7 @@
       <h3>Diplomacy</h3>
       <ul>
         <li>You can only attack realms you're at war with (and the grey independents, always). Open Diplomacy 🤝 to declare war, offer peace or propose an alliance.</li>
-        <li>After a declaration, the armies need a year to mobilize: nobody can attack until the next year.</li>
+        <li>After a declaration, both armies need one turn to mobilize. Nobody can attack until the next turn, so the side that was attacked always gets one turn to prepare.</li>
         <li>Peace means a 10-year truce. Everyone keeps what they hold.</li>
         <li>If someone declares war on your ally, you join in, and the other way around.</li>
         <li>Grow to 12 provinces and your neighbors may form a coalition against you.</li>
@@ -1040,7 +1040,7 @@ function declareWar(a, b, notes, coalition) {
   Object.assign(r, { state: "war", truce: 0, since: game.year, score: { [a]: 0, [b]: 0 } });
   const kind = (b === game.player) ? "bad" : "";
   let text;
-  if (a === game.player) text = `You declare war on ${nameOf(b)}. The armies are mobilizing: fighting starts in ${game.year + 1}.`;
+  if (a === game.player) text = `You declare war on ${nameOf(b)}. Your armies are mobilizing: you can attack them from next turn.`;
   else if (coalition) text = `${capitalize(nameOf(a))} joins the coalition against ${who(b)}!`;
   else text = `${capitalize(nameOf(a))} declares war on ${who(b)}!`;
   notes.push({ text, kind, warOnMe: b === game.player });
@@ -1169,7 +1169,7 @@ const diplo = { armed: null, message: "" };
 
 function statusOf(b) {
   const r = rel(game.player, b);
-  if (r.state === "war" && game.year <= r.since) return `⚔️ <b>War declared</b> · armies mobilizing, fighting starts in ${r.since + 1}`;
+  if (r.state === "war" && game.year <= r.since) return `⚔️ <b>War declared</b> · armies mobilizing, you can attack from next turn`;
   if (r.state === "war") {
     return `⚔️ <b>At war</b> since ${r.since} · provinces taken: you ${r.score[game.player] || 0}, them ${r.score[b] || 0}`;
   }
@@ -1431,7 +1431,7 @@ function startNewYear(notes, cards) {
   const wars = notes.filter(n => n.warOnMe);
   if (wars.length) {
     const others = notes.filter(n => !n.warOnMe);
-    const card = { emoji: "⚔️", title: "War!", sound: "war", text: wars.map(n => n.text).join(" ") + ` Their armies still have to mobilize: use ${game.year} to prepare before they can strike.` };
+    const card = { emoji: "⚔️", title: "War!", sound: "war", text: wars.map(n => n.text).join(" ") + ` Their armies are still mobilizing, so you get this one turn to prepare: move troops to the border, recruit, or build a castle. They can attack as soon as you end your turn.` };
     return showCard(card, () => startNewYearAfterWar(others, cards, attacksOnMe));
   }
   startNewYearAfterWar(notes, cards, attacksOnMe);
@@ -2105,7 +2105,7 @@ const GUIDE_STEPS = [
   { id: "province", next: true,
     text: () => `Here you can recruit soldiers or build a farm or castle. To send an army, tap a neighboring province. The grey ones are independent: you can attack them any time.` },
   { id: "war", next: true,
-    text: () => `To attack another realm, first declare war under Diplomacy 🤝. Both armies then need a year to mobilize before the fighting starts.` },
+    text: () => `To attack another realm, first declare war under Diplomacy 🤝. Both armies then need one turn to mobilize before the fighting can start.` },
   { id: "endturn",
     text: () => `Done for this year? Press End turn. The other realms make their moves, and the map shows you what they did.` },
   { id: "money", next: true, last: true,
