@@ -158,6 +158,10 @@
   }
   #start-map { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: .3; pointer-events: none; }
   .start-inner { position: relative; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .lang-switch { position: absolute; right: 0; top: -12px; display: flex; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; z-index: 2; }
+  .lang-switch button { font-family: 'Cinzel', serif; font-weight: 800; font-size: 12px; padding: 5px 9px; border: none; background: rgba(255,250,235,.9); color: var(--ink); cursor: pointer; }
+  .lang-switch button.on { background: var(--ink); color: var(--parchment); }
+  html[lang="nl"] [data-lang="en"], html[lang="en"] [data-lang="nl"] { display: none !important; }
   .start-kicker { font-family: 'Cinzel', serif; font-weight: 600; letter-spacing: .25em; font-size: 12px; color: var(--ink-soft); }
   #start h1 { font-size: 36px; line-height: 1.05; margin: 0; text-shadow: 0 2px 0 #fff8e0, 0 0 18px #f6edd5; }
   .start-rule { width: 70%; height: 2px; background: linear-gradient(90deg, transparent, var(--ink), transparent); margin: 2px 0 4px; }
@@ -317,37 +321,40 @@
   <div id="start" class="overlay">
     <svg id="start-map" viewBox="__VIEWBOX__" preserveAspectRatio="xMidYMid slice"></svg>
     <div class="start-inner">
+      <div class="lang-switch"><button data-lang-set="en">EN</button><button data-lang-set="nl">NL</button></div>
       <div class="start-kicker">ANNO DOMINI 1350</div>
       <h1>Lords of the<br>Low Countries</h1>
       <div class="start-rule"></div>
       <button id="continue" class="continue-btn" style="display:none"></button>
-      <div class="section-label">DIFFICULTY</div>
+      <div class="section-label" data-t>DIFFICULTY</div>
       <div class="diff" id="difficulty"></div>
       <div class="diff-text" id="difficulty-text"></div>
-      <div class="section-label">CHOOSE YOUR REALM</div>
+      <div class="section-label" data-t>CHOOSE YOUR REALM</div>
       <div id="realm-buttons" class="realm-grid"></div>
       <div id="start-msg"></div>
       <div class="row" style="width:100%">
-        <button class="act light" style="min-height:42px" onclick="showHelp()">How to play</button>
-        <button class="act light" id="start-board" style="min-height:42px;display:none" onclick="openBoard(false)">Leaderboard 🏆</button>
+        <button class="act light" style="min-height:42px" onclick="showHelp()" data-t>How to play</button>
+        <button class="act light" id="start-board" style="min-height:42px;display:none" onclick="openBoard(false)" data-t>Leaderboard 🏆</button>
       </div>
     </div>
   </div>
   <div id="menu" class="overlay" style="display:none">
-    <h1>Paused</h1>
+    <h1 data-t>Paused</h1>
     <p id="menu-text"></p>
     <div class="stack">
-      <button class="act" onclick="closeMenu()">Resume</button>
-      <button class="act light" onclick="closeMenu(); openDiplomacy()">Diplomacy 🤝</button>
-      <button class="act light" onclick="showHelp()">How to play</button>
+      <button class="act" onclick="closeMenu()" data-t>Resume</button>
+      <button class="act light" onclick="closeMenu(); openDiplomacy()" data-t>Diplomacy 🤝</button>
+      <button class="act light" onclick="showHelp()" data-t>How to play</button>
       <button class="act light" id="sound-btn" onclick="toggleSound()">Sound: on 🔊</button>
-      <button class="act light" onclick="closeMenu(); openFeedback()">Send feedback 💬</button>
-      <button class="act light" onclick="quitToStart()">Main menu (game is saved)</button>
+      <button class="act light" id="lang-btn" onclick="setLanguage(LANG === 'nl' ? 'en' : 'nl')">🌐 Language: English</button>
+      <button class="act light" onclick="closeMenu(); openFeedback()" data-t>Send feedback 💬</button>
+      <button class="act light" onclick="quitToStart()" data-t>Main menu (game is saved)</button>
     </div>
   </div>
   <div id="help" class="overlay" style="display:none">
     <div class="box">
-      <h1>How to play</h1>
+      <h1 data-t>How to play</h1>
+      <div data-lang="en">
       <h3>Goal</h3>
       <p>Own 16 of the 31 provinces, or hold the most when the year 1400 comes. You lose if another realm gets there first. Either way you can keep playing, all the way to uniting the whole country. The game only ends for good when you hold all 31, or none.</p>
       <h3>Your turn</h3>
@@ -387,8 +394,50 @@
       </ul>
       <h3>Credits</h3>
       <p>Made by IceSpiked123132, with Claude. Map data: Natural Earth (public domain). Fonts: Cinzel and EB Garamond (SIL Open Font License). The coats of arms are drawn for this game after the medieval arms of Holland, Utrecht, Gelre and Brabant.</p>
-      <button class="act" style="width:100%;margin-top:16px" onclick="closeHelp()">Got it</button>
-      <button class="act light" style="width:100%;margin-top:8px" onclick="closeHelp(); restartGuide()">Show the first-game tips again</button>
+      </div>
+      <div data-lang="nl">
+      <h3>Doel</h3>
+      <p>Bezit 16 van de 31 provincies, of heb de meeste als het jaar 1400 aanbreekt. Je verliest als een ander rijk je voor is. Hoe dan ook kun je doorspelen, helemaal tot het hele land verenigd is. Het spel is pas echt voorbij als je alle 31 provincies hebt, of geen enkele.</p>
+      <h3>Jouw beurt</h3>
+      <ul>
+        <li><b>Rekruteren:</b> tik op je provincie en druk op Rekruteren (5 💰, 1 ⚔️ mankracht).</li>
+        <li><b>Verplaatsen of aanvallen:</b> tik op je provincie en dan op een buurprovincie. Kies hoeveel regimenten je stuurt. Elk regiment kan één keer per jaar iets doen.</li>
+        <li><b>Bouwen:</b> een boerderij (+1 💰 per jaar) of een kasteel (verdedigers ×1,5). Eén gebouw per provincie, één per jaar.</li>
+        <li><b>Beurt beëindigen</b> als je klaar bent. De andere rijken zijn dan aan zet, daarna krijg je je inkomen.</li>
+      </ul>
+      <h3>De kaart</h3>
+      <p>Knijp of gebruik + en − om te zoomen, sleep om rond te kijken. Aan het begin van elk jaar laat de kaart zien wat de andere rijken deden: een pijl voor elke aanval (gestippeld met ✕ als die werd afgeslagen) en een knipperende gele rand om provincies die van eigenaar wisselden. Aanvallen op jou zie je eerst als veldslag.</p>
+      <h3>Diplomatie</h3>
+      <ul>
+        <li>Je kunt alleen rijken aanvallen waarmee je in oorlog bent (en de grijze onafhankelijken, altijd). Open Diplomatie 🤝 om de oorlog te verklaren, vrede aan te bieden of een verbond voor te stellen.</li>
+        <li>Na een oorlogsverklaring hebben beide legers één beurt nodig om te mobiliseren. Niemand kan aanvallen tot de volgende beurt, dus wie wordt aangevallen krijgt altijd één beurt om zich voor te bereiden.</li>
+        <li>Vrede betekent een bestand van 10 jaar. Iedereen houdt wat hij heeft.</li>
+        <li>Als iemand je bondgenoot de oorlog verklaart, doe jij mee, en andersom.</li>
+        <li>Groei je tot 12 provincies, dan kunnen je buren een coalitie tegen je vormen.</li>
+      </ul>
+      <h3>Gebeurtenissen</h3>
+      <p>Sommige jaren brengen een gebeurtenis: oogsten, vrijwilligers, Hanzekooplieden, huurlingen, maar ook stormvloeden, pest, adellijke vetes (in Holland: de Hoekse en Kabeljauwse twisten) en misschien zelfs de Zwarte Dood. Het lot is eerlijk: na een tegenslag ben je een paar jaar veilig, en een rijk dat terrein heeft verloren krijgt alleen nog goede gebeurtenissen.</p>
+      <h3>Terrein verloren?</h3>
+      <ul>
+        <li>Je thuisprovincies worden verdedigd door 2 militie in plaats van 1.</li>
+        <li>Een provincie die van je is afgepakt, kan in opstand komen en naar je terugkeren als de veroveraar er geen soldaten laat. Je eigen provincies terugnemen geeft geen onrust.</li>
+        <li>Met minder provincies dan waarmee je begon, kosten rekruten maar 3 💰.</li>
+      </ul>
+      <h3>Geld</h3>
+      <p>Elk regiment kost 1 💰 per jaar. Kun je niet betalen, dan deserteren er soldaten.</p>
+      <h3>Veldslagen</h3>
+      <ul>
+        <li>Kracht is regimenten × een beetje geluk. De sterkste kant wint; bij gelijkspel wint de verdediger.</li>
+        <li>Elke provincie wordt gratis verdedigd door militie: 1, of 2 in de eigen thuisprovincies van een rijk.</li>
+        <li>Verdedigers achter een rivier 🌊 vechten ×1,25, achter een kasteel ×1,5 (allebei: ongeveer ×1,9).</li>
+        <li>Een veroverde provincie levert 3 jaar niets op terwijl de rust terugkeert.</li>
+        <li>Verlies je je hoofdstad 👑, dan daalt je inkomen 3 jaar lang met een kwart. Herover haar om dat eerder te beëindigen.</li>
+      </ul>
+      <h3>Makers</h3>
+      <p>Gemaakt door IceSpiked123132, met Claude. Kaartgegevens: Natural Earth (publiek domein). Lettertypen: Cinzel en EB Garamond (SIL Open Font License). De wapens zijn voor dit spel getekend naar de middeleeuwse wapens van Holland, Utrecht, Gelre en Brabant.</p>
+      </div>
+      <button class="act" style="width:100%;margin-top:16px" onclick="closeHelp()" data-t>Got it</button>
+      <button class="act light" style="width:100%;margin-top:8px" onclick="closeHelp(); restartGuide()" data-t>Show the first-game tips again</button>
     </div>
   </div>
   <div id="battle" class="overlay" style="display:none">
@@ -403,7 +452,7 @@
         <div class="b-str" id="b-att-str"></div>
         <div class="b-loss" id="b-att-loss"></div>
       </div>
-        <div class="b-vs">vs</div>
+        <div class="b-vs" data-t>vs</div>
       <div class="b-side" id="b-def">
         <div class="b-name" id="b-def-name"></div>
         <div class="b-count" id="b-def-count"></div>
@@ -421,49 +470,49 @@
     <div id="year-banner">
       <div id="year-title"></div>
       <ul id="year-notes"></ul>
-      <div id="year-hint"><span>Tap to continue</span><div id="year-timer"><i></i></div></div>
+      <div id="year-hint"><span data-t>Tap to continue</span><div id="year-timer"><i></i></div></div>
     </div>
   </div>
   <div id="board" class="overlay" style="display:none">
     <div class="box">
-      <h1>🏆 Leaderboard</h1>
+      <h1 data-t>🏆 Leaderboard</h1>
       <div id="board-form"></div>
       <div class="diff" id="board-cat"></div>
       <div class="diff" id="board-diff"></div>
       <div id="board-status"></div>
       <ol id="board-list"></ol>
-      <button class="act" style="width:100%" onclick="hide('board')">Close</button>
+      <button class="act" style="width:100%" onclick="hide('board')" data-t>Close</button>
     </div>
   </div>
   <div id="feedback" class="overlay" style="display:none">
     <div class="box">
       <h1>Feedback 💬</h1>
-      <div>Found a bug, have an idea, or just want to say what you think? Every message is read.</div>
+      <div data-t>Found a bug, have an idea, or just want to say what you think? Every message is read.</div>
       <div id="fb-form" style="flex-direction:column;gap:10px">
-        <textarea id="fb-text" maxlength="2000" placeholder="Your message"></textarea>
-        <input id="fb-contact" maxlength="100" placeholder="Email or social handle, if you'd like an answer (optional)">
-        <button class="act go" id="fb-send" onclick="sendFeedback()">Send</button>
+        <textarea id="fb-text" maxlength="2000" placeholder="Your message" data-tp></textarea>
+        <input id="fb-contact" maxlength="100" placeholder="Email or social handle, if you'd like an answer (optional)" data-tp>
+        <button class="act go" id="fb-send" onclick="sendFeedback()" data-t>Send</button>
       </div>
-      <div id="fb-offline" class="msg">The feedback form isn't switched on yet. You can leave a message on <a href="https://github.com/IceSpiked123132/LordsOfTheLowCountries/issues" target="_blank" rel="noopener">GitHub</a>.</div>
+      <div id="fb-offline" class="msg" data-t>The feedback form isn't switched on yet. You can leave a message on <a href="https://github.com/IceSpiked123132/LordsOfTheLowCountries/issues" target="_blank" rel="noopener">GitHub</a>.</div>
       <div id="fb-status"></div>
-      <button class="act light" onclick="hide('feedback')">Close</button>
+      <button class="act light" onclick="hide('feedback')" data-t>Close</button>
     </div>
   </div>
   <div id="sharebox" class="overlay" style="display:none">
     <div class="box">
-      <h1>Share your game</h1>
+      <h1 data-t>Share your game</h1>
       <img id="share-img" alt="Your final map and result">
-      <div class="hint" style="text-align:center">Press and hold the image to save or share it.</div>
-      <a id="share-download" class="act" download="lords-of-the-low-countries.png" style="text-align:center;text-decoration:none;line-height:46px">Download the image</a>
-      <button class="act light" onclick="hide('sharebox')">Close</button>
+      <div class="hint" style="text-align:center" data-t>Press and hold the image to save or share it.</div>
+      <a id="share-download" class="act" download="lords-of-the-low-countries.png" style="text-align:center;text-decoration:none;line-height:46px" data-t>Download the image</a>
+      <button class="act light" onclick="hide('sharebox')" data-t>Close</button>
     </div>
   </div>
   <div id="diplo" class="overlay" style="display:none">
     <div class="box">
-      <h1>Diplomacy</h1>
+      <h1 data-t>Diplomacy</h1>
       <div id="diplo-msg" class="msg"></div>
       <div id="diplo-list"></div>
-      <button class="act" style="width:100%;margin-top:6px" onclick="closeDiplomacy()">Back to the map</button>
+      <button class="act" style="width:100%;margin-top:6px" onclick="closeDiplomacy()" data-t>Back to the map</button>
     </div>
   </div>
   <div id="eventcard" class="overlay" style="display:none">
@@ -477,6 +526,276 @@
 </div>
 
 <script>
+// =====================================================================
+// 0. LANGUAGE
+// The game's text is written in English. Every sentence a player sees goes
+// through T`...` (or tr("...")), which looks up the Dutch version in NL.
+// In NL, {0}, {1}, ... stand for the names and numbers in the sentence, so
+// the Dutch word order can differ. Missing translations fall back to English.
+// =====================================================================
+
+let LANG = (() => {
+  try { const saved = localStorage.getItem("lords-lang"); if (saved === "en" || saved === "nl") return saved; } catch (e) {}
+  return (navigator.language || "en").toLowerCase().startsWith("nl") ? "nl" : "en";
+})();
+
+function T(strings, ...values) {
+  const english = () => strings.reduce((out, part, i) => out + part + (i < values.length ? values[i] : ""), "");
+  if (LANG !== "nl") return english();
+  const dutch = NL[strings.join("{}")];
+  return dutch === undefined ? english() : dutch.replace(/\{(\d+)\}/g, (_, i) => values[i]);
+}
+const tr = (text) => (LANG === "nl" && NL[text] !== undefined ? NL[text] : text);
+const yearsWord = (n) => (n === 1 ? T`year` : T`years`);
+
+// Names that change with the language
+const REALM_NAMES_NL = {
+  holland:     { name: "Graafschap Holland", short: "Holland",            note: "Rijke steden langs de kust" },
+  utrecht:     { name: "Sticht Utrecht",     short: "het Sticht",         note: "Verspreid tussen rivalen (moeilijk)" },
+  gelre:       { name: "Hertogdom Gelre",    short: "Gelre",              note: "Veilig achter de grote rivieren" },
+  brabant:     { name: "Hertogdom Brabant",  short: "Brabant",            note: "Het rijkste vorstendom" },
+  independent: { name: "Onafhankelijk",      short: "de onafhankelijken", note: "" }
+};
+const PROVINCE_NAMES_NL = { antwerp: "Antwerpen", brussels: "Brussel" };
+
+// Dutch versions of every sentence and label, keyed by the English text
+const NL = {
+  "year": "jaar",
+  "years": "jaar",
+  "You took {}. Only the local militia stood in your way.": "Je hebt {0} ingenomen. Alleen de plaatselijke militie stond je in de weg.",
+  "Victory at {}! You lost {}, they lost {}.": "Overwinning bij {0}! Jij verloor {1}, zij verloren {2}.",
+  "Defeat at {}. Your 1 regiment was destroyed, they lost {}.": "Nederlaag bij {0}. Je ene regiment is vernietigd, zij verloren {1}.",
+  "Defeat at {}. Your {} regiments were destroyed, they lost {}.": "Nederlaag bij {0}. Je {1} regimenten zijn vernietigd, zij verloren {2}.",
+  "{} took {}, which only had its militia to defend it.": "{0} heeft {1} ingenomen, dat alleen door zijn militie werd verdedigd.",
+  "{} took {}! Your 1 regiment fell, they lost {}.": "{0} heeft {1} ingenomen! Je ene regiment is gesneuveld, zij verloren {2}.",
+  "{} took {}! Your {} regiments fell, they lost {}.": "{0} heeft {1} ingenomen! Je {2} regimenten zijn gesneuveld, zij verloren {3}.",
+  "{} attacked {} with {} and was beaten back. You lost {}.": "{0} viel {1} aan met {2} regimenten en werd teruggeslagen. Jij verloor {3}.",
+  "{} took {} from {}.": "{0} heeft {1} veroverd op {2}.",
+  " {} lost its capital and moves its court to {}.": " {0} heeft zijn hoofdstad verloren en verplaatst het hof naar {1}.",
+  " {} is destroyed.": " {0} is vernietigd.",
+  " {} retook its capital!": " {0} heeft zijn hoofdstad heroverd!",
+  "Income +{}, upkeep −{}.": "Inkomen +{0}, onderhoud −{1}.",
+  " (Income −25% without your capital, {} more {}.)": " (Inkomen −25% zonder je hoofdstad, nog {0} {1}.)",
+  "You couldn't pay your troops: {} deserted!": "Je kon je troepen niet betalen: {0} zijn gedeserteerd!",
+  "The year is {}. {}": "Het is {0}. {1}",
+  "Your armies could probably take {}{}.": "Je legers kunnen waarschijnlijk {0}{1} innemen.",
+  " and {} more": " en nog {0}",
+  "You haven't built anything this year, and you have {} 💰.": "Je hebt dit jaar nog niets gebouwd, en je hebt {0} 💰.",
+  "Your manpower is full ({}/{}), so next year's new men are wasted unless you recruit.": "Je mankracht is vol ({0}/{1}), dus de nieuwe mannen van volgend jaar gaan verloren als je niet rekruteert.",
+  "{} has no soldiers and could rise up against you.": "{0} heeft geen soldaten en kan tegen je in opstand komen.",
+  "{} have no soldiers and could rise up against you.": "{0} hebben geen soldaten en kunnen tegen je in opstand komen.",
+  "You declare war on {}. Your armies are mobilizing: you can attack them from next turn.": "Je verklaart {0} de oorlog. Je legers mobiliseren: vanaf de volgende beurt kun je aanvallen.",
+  "{} joins the coalition against {}!": "{0} sluit zich aan bij de coalitie tegen {1}!",
+  "{} declares war on {}!": "{0} verklaart {1} de oorlog!",
+  "As {}'s ally, you are now at war with {}.": "Als bondgenoot van {0} ben je nu in oorlog met {1}.",
+  "{} honors its alliance with {} and joins the war against {}.": "{0} komt zijn verbond met {1} na en trekt ten strijde tegen {2}.",
+  "{} and {} make peace ({}-year truce).": "{0} en {1} sluiten vrede (bestand van {2} jaar).",
+  "{} and {} form an alliance.": "{0} en {1} sluiten een verbond.",
+  "{} ended the alliance with {}.": "{0} beëindigt het verbond met {1}.",
+  "{} refuses. They think they're winning this war.": "{0} weigert. Ze denken dat ze deze oorlog aan het winnen zijn.",
+  "{} accepts. {}": "{0} stemt toe. {1}",
+  "{} already gave you an answer this year.": "{0} heeft je dit jaar al een antwoord gegeven.",
+  "{} refuses. Your realm has grown too powerful to trust.": "{0} weigert. Je rijk is te machtig geworden om te vertrouwen.",
+  "{} sees no need for an alliance right now.": "{0} ziet op dit moment geen reden voor een verbond.",
+  "{} accepts. Together you stand against {}.": "{0} stemt toe. Samen staan jullie sterk tegen {1}.",
+  "⚔️ <b>War declared</b> · armies mobilizing, you can attack from next turn": "⚔️ <b>Oorlog verklaard</b> · legers mobiliseren, vanaf de volgende beurt kun je aanvallen",
+  "⚔️ <b>At war</b> since {} · provinces taken: you {}, them {}": "⚔️ <b>In oorlog</b> sinds {0} · provincies ingenomen: jij {1}, zij {2}",
+  "🤝 <b>Allied</b>": "🤝 <b>Bondgenoot</b>",
+  "🕊️ <b>Truce</b> · {} more {}": "🕊️ <b>Bestand</b> · nog {0} {1}",
+  "🕊️ <b>At peace</b>": "🕊️ <b>Vrede</b>",
+  "Offer peace 🕊️": "Vrede aanbieden 🕊️",
+  "End alliance": "Verbond beëindigen",
+  "Propose alliance 🤝": "Verbond voorstellen 🤝",
+  "Sure? Declare war": "Zeker? Verklaar de oorlog",
+  "Declare war ⚔️": "Oorlog verklaren ⚔️",
+  "{} provinces · {} regiments": "{0} provincies · {1} regimenten",
+  "At war with {}. ": "In oorlog met {0}. ",
+  "Allied with {}.": "Bondgenoot van {0}.",
+  "{} rose up and went back to {}!{}": "{0} is in opstand gekomen en teruggekeerd naar {1}!{2}",
+  "{} rose up against {} and is yours again!{}": "{0} is in opstand gekomen tegen {1} en is weer van jou!{2}",
+  "{} rose in revolt and declared itself independent!{}": "{0} is in opstand gekomen en heeft zich onafhankelijk verklaard!{1}",
+  "The Black Death": "De Zwarte Dood",
+  "The great pestilence sweeps through the Low Countries. Armies of 3 or more regiments lose a third of their men, and no realm can raise new soldiers this year. Every realm suffers alike.": "De grote pestilentie trekt door de Lage Landen. Legers van 3 of meer regimenten verliezen een derde van hun mannen, en geen enkel rijk kan dit jaar nieuwe soldaten werven. Elk rijk lijdt evenveel.",
+  "A rich harvest": "Een rijke oogst",
+  "The granaries are full. Your treasury gains {} 💰.": "De graanschuren zijn vol. Je schatkist krijgt er {0} 💰 bij.",
+  "Volunteers": "Vrijwilligers",
+  "Men from across your lands flock to {} to defend the realm: +1 regiment there and +3 manpower.": "Mannen uit al je landen stromen naar {0} om het rijk te verdedigen: +1 regiment daar en +3 mankracht.",
+  "Hanseatic merchants": "Hanzekooplieden",
+  "Trading ships crowd your harbor. Your coastal province brings in {} 💰 extra.": "Handelsschepen vullen je haven. Je kustprovincie levert {0} 💰 extra op.",
+  "Trading ships crowd your harbors. Your {} coastal provinces bring in {} 💰 extra.": "Handelsschepen vullen je havens. Je {0} kustprovincies leveren {1} 💰 extra op.",
+  "Mercenaries for hire": "Huurlingen te huur",
+  "A company of Free Lances offers its swords: 3 regiments for 20 💰, no manpower needed. They would join you at {}.": "Een compagnie huursoldaten biedt haar zwaarden aan: 3 regimenten voor 20 💰, zonder mankracht. Ze zouden zich in {0} bij je voegen.",
+  "Hire them (20 💰)": "Huur ze in (20 💰)",
+  "3 mercenary regiments arrive at {}.": "3 regimenten huurlingen komen aan in {0}.",
+  "Send them away": "Stuur ze weg",
+  "A storm flood strikes {}. The farm is washed away, and the province pays nothing for 2 years.": "Een stormvloed treft {0}. De boerderij spoelt weg, en de provincie levert 2 jaar niets op.",
+  "A storm flood strikes {}. The province pays nothing for 2 years.": "Een stormvloed treft {0}. De provincie levert 2 jaar niets op.",
+  "Storm flood": "Stormvloed",
+  "The Hook and Cod wars": "De Hoekse en Kabeljauwse twisten",
+  "A noble feud": "Een adellijke vete",
+  "Holland's nobles have split into two factions, the Hooks and the Cods, and are ready to fight each other.": "De Hollandse adel is in twee partijen uiteengevallen, de Hoeken en de Kabeljauwen, en staat op het punt elkaar te bevechten.",
+  "Two of {}'s great noble houses are at each other's throats.": "Twee grote adellijke huizen van {0} liggen met elkaar overhoop.",
+  "{} broke away and is now independent.": "{0} heeft zich afgescheiden en is nu onafhankelijk.",
+  "The nobles are paid off. The realm stays together, for now.": "De edelen zijn afgekocht. Het rijk blijft bijeen, voorlopig.",
+  "Let them fight (lose {})": "Laat ze vechten (verlies {0})",
+  "Pay the nobles (15 💰)": "Koop de edelen af (15 💰)",
+  "{} Pay them off, or {} will break away and become independent.": "{0} Koop ze af, of {1} scheidt zich af en wordt onafhankelijk.",
+  "{} buys peace between its quarrelling nobles.": "{0} koopt de vrede tussen zijn ruziënde edelen.",
+  "The Hook and Cod wars in Holland: {}": "De Hoekse en Kabeljauwse twisten in Holland: {0}",
+  "A noble feud in {}: {}": "Een adellijke vete in {0}: {1}",
+  "Plague outbreak": "Pestuitbraak",
+  "Sickness spreads through your towns. Your manpower is halved.": "Ziekte verspreidt zich door je steden. Je mankracht wordt gehalveerd.",
+  "Continue": "Verder",
+  "{} offers peace": "{0} biedt vrede aan",
+  "After {} years of war (provinces taken: you {}, them {}), {} proposes a {}-year truce. Everyone keeps what they hold now.": "Na {0} jaar oorlog (provincies ingenomen: jij {1}, zij {2}) stelt {3} een bestand van {4} jaar voor. Iedereen houdt wat hij nu heeft.",
+  "Accept peace": "Vrede aannemen",
+  "Refuse, the war goes on": "Weigeren, de oorlog gaat door",
+  "War!": "Oorlog!",
+  " Their armies are still mobilizing, so you get this one turn to prepare: move troops to the border, recruit, or build a castle. They can attack as soon as you end your turn.": " Hun legers mobiliseren nog, dus je krijgt deze ene beurt om je voor te bereiden: verplaats troepen naar de grens, rekruteer, of bouw een kasteel. Ze kunnen aanvallen zodra je je beurt beëindigt.",
+  "A quiet year. Nobody went to war.": "Een rustig jaar. Niemand trok ten strijde.",
+  "The Low Countries united!": "De Lage Landen verenigd!",
+  "In {} every one of the {} provinces flies your banner.": "In {0} wappert jouw banier boven alle {1} provincies.",
+  "Defeat": "Nederlaag",
+  "Your realm was wiped off the map in {}.": "Je rijk is in {0} van de kaart geveegd.",
+  "Victory!": "Overwinning!",
+  "You rule {} of the {} provinces in {}. Keep playing to unite all of the Low Countries.": "In {2} heers je over {0} van de {1} provincies. Speel door om de hele Lage Landen te verenigen.",
+  "{} rules {} provinces in {}. You can still fight on.": "{0} heerst in {2} over {1} provincies. Je kunt nog doorvechten.",
+  "It is {} and you hold the most provinces ({}).": "Het is {0} en jij hebt de meeste provincies ({1}).",
+  "It is {} and {} holds the most provinces ({} against your {}).": "Het is {0} en {1} heeft de meeste provincies ({2} tegen jouw {3}).",
+  "The war goes on. Conquer all {} provinces to unite the Low Countries!": "De oorlog gaat door. Verover alle {0} provincies om de Lage Landen te verenigen!",
+  "Welcome back. The year is {}.": "Welkom terug. Het is {0}.",
+  "{} ({}) · {} years · {} battles won, {} lost · {} provinces conquered · most held at once: {}": "{0} ({1}) · {2} jaar · {3} veldslagen gewonnen, {4} verloren · {5} provincies veroverd · meeste tegelijk: {6}",
+  "Share 📤": "Delen 📤",
+  "Leaderboard 🏆": "Ranglijst 🏆",
+  "Keep conquering": "Verder veroveren",
+  "Fight on": "Doorvechten",
+  "New game": "Nieuw spel",
+  "End turn ⏳": "Beurt beëindigen ⏳",
+  "Diplomacy 🤝": "Diplomatie 🤝",
+  "End the year?": "Het jaar afsluiten?",
+  "Go back": "Terug",
+  "End turn anyway": "Toch beëindigen",
+  "Move regiments from {} to {}.": "Verplaats regimenten van {0} naar {1}.",
+  "castle": "kasteel",
+  "river 🌊": "rivier 🌊",
+  "🛡️ Defenders: {} + {} militia": "🛡️ Verdedigers: {0} + {1} militie",
+  " (×{} for {})": " (×{0} door {1})",
+  " and ": " en ",
+  "🎲 Chance to win: about <b>{}%</b>": "🎲 Kans op winst: ongeveer <b>{0}%</b>",
+  "Move to {}": "Naar {0}",
+  "Attack {}": "{0} aanvallen",
+  "Send:": "Sturen:",
+  "Cancel": "Annuleren",
+  "Move": "Verplaatsen",
+  "Attack ⚔️": "Aanvallen ⚔️",
+  "Your realm has lost ground: recruits cost only {} 💰, and fortune favors you.": "Je rijk heeft terrein verloren: rekruten kosten maar {0} 💰, en het geluk staat aan jouw kant.",
+  "Conquer all {} provinces to unite the Low Countries.": "Verover alle {0} provincies om de Lage Landen te verenigen.",
+  "Own {} of the {} provinces to win.": "Bezit {0} van de {1} provincies om te winnen.",
+  "⚔️ At war with {}": "⚔️ In oorlog met {0}",
+  "🕊️ At peace with every realm": "🕊️ In vrede met alle rijken",
+  " · 🤝 Allied with {}": " · 🤝 Bondgenoot van {0}",
+  "Tap one of your provinces to recruit or to send its army.": "Tik op een van je provincies om te rekruteren of een leger te sturen.",
+  "{} ({} ready)": "{0} ({1} klaar)",
+  "Tap a neighboring province to move or attack.": "Tik op een aangrenzende provincie om te verplaatsen of aan te vallen.",
+  "This army has already acted this year.": "Dit leger is dit jaar al in actie gekomen.",
+  "Recruit": "Rekruteren",
+  "Farm 🌾": "Boerderij 🌾",
+  "Castle 🏰": "Kasteel 🏰",
+  " You already built something this year.": " Je hebt dit jaar al iets gebouwd.",
+  "Independent: you can attack it any time. First tap one of your own provinces next to it.": "Onafhankelijk: je kunt het altijd aanvallen. Tik eerst op een van je eigen provincies ernaast.",
+  "Independent.": "Onafhankelijk.",
+  "To attack, first tap one of your own provinces next to it.": "Tik eerst op een van je eigen provincies ernaast om aan te vallen.",
+  "Declare war in Diplomacy before you can attack.": "Verklaar eerst de oorlog via Diplomatie voordat je kunt aanvallen.",
+  "💰 Income: {}": "💰 Inkomen: {0}",
+  "⚔️ Manpower: {}": "⚔️ Mankracht: {0}",
+  "🛡️ Army: {}": "🛡️ Leger: {0}",
+  "Farm 🌾 (+1 💰)": "Boerderij 🌾 (+1 💰)",
+  "Castle 🏰 (×1.5 🛡️)": "Kasteel 🏰 (×1,5 🛡️)",
+  "No building": "Geen gebouw",
+  "🏠 Home province of {}: {} militia defend it.": "🏠 Thuisprovincie van {0}: verdedigd door {1} militie.",
+  "Conquered from {}": "Veroverd op {0}",
+  "Conquered": "Veroverd",
+  ", restless for {} more {}": ", nog {0} {1} onrustig",
+  ". Left without soldiers, it may rise up.": ". Zonder soldaten kan ze in opstand komen.",
+  "Borders: {}": "Grenst aan: {0}",
+  "{} attacks {}!": "{0} valt {1} aan!",
+  "Battle of {}": "Slag om {0}",
+  "regiment": "regiment",
+  "regiments": "regimenten",
+  "castle 🏰": "kasteel 🏰",
+  "{} + {} militia": "{0} + {1} militie",
+  "strength ?": "kracht ?",
+  "Skip": "Overslaan",
+  "strength {}": "kracht {0}",
+  "no losses": "geen verliezen",
+  "<b>Victory!</b> {} is taken.": "<b>Overwinning!</b> {0} is ingenomen.",
+  "<b>Defeat.</b> The attack on {} failed.": "<b>Nederlaag.</b> De aanval op {0} is mislukt.",
+  "<b>{} has fallen.</b>": "<b>{0} is gevallen.</b>",
+  "<b>Held!</b> {} beat back the attack.": "<b>Standgehouden!</b> {0} heeft de aanval afgeslagen.",
+  "You rule the {}: the provinces in your color. Tap one of them to see what you can do there.": "Jij regeert over het {0}: de provincies in jouw kleur. Tik op een ervan om te zien wat je daar kunt doen.",
+  "Here you can recruit soldiers or build a farm or castle. To send an army, tap a neighboring province. The grey ones are independent: you can attack them any time.": "Hier kun je soldaten rekruteren of een boerderij of kasteel bouwen. Tik op een aangrenzende provincie om een leger te sturen. De grijze zijn onafhankelijk: die kun je altijd aanvallen.",
+  "To attack another realm, first declare war under Diplomacy 🤝. Both armies then need one turn to mobilize before the fighting can start.": "Om een ander rijk aan te vallen, verklaar je eerst de oorlog via Diplomatie 🤝. Beide legers hebben dan één beurt nodig om te mobiliseren voordat er gevochten kan worden.",
+  "Done for this year? Press End turn. The other realms make their moves, and the map shows you what they did.": "Klaar voor dit jaar? Druk op Beurt beëindigen. De andere rijken doen hun zetten, en de kaart laat zien wat ze deden.",
+  "Every year your provinces pay gold, and every regiment costs 1 💰 upkeep. Own {} of the {} provinces to win. Good luck!": "Elk jaar leveren je provincies goud op, en elk regiment kost 1 💰 onderhoud. Bezit {0} van de {1} provincies om te winnen. Succes!",
+  "Tip {} of {}": "Tip {0} van {1}",
+  "Skip tips": "Tips overslaan",
+  "Got it": "Begrepen",
+  "Next": "Volgende",
+  "Sound: on 🔊": "Geluid: aan 🔊",
+  "Sound: off 🔇": "Geluid: uit 🔇",
+  "united the Low Countries in {} {}": "de Lage Landen verenigd in {0} {1}",
+  "victory in {} {}": "overwinning in {0} {1}",
+  "Your name": "Je naam",
+  "Add": "Toevoegen",
+  "Couldn't reach the leaderboard. Check your internet and try again.": "De ranglijst is niet bereikbaar. Controleer je internet en probeer het opnieuw.",
+  "Fastest victory": "Snelste overwinning",
+  "Whole country": "Het hele land",
+  "Loading…": "Laden…",
+  "No one is on this board yet. Be the first!": "Nog niemand op deze ranglijst. Wees de eerste!",
+  "{} yrs": "{0} jr",
+  "The leaderboard can't be reached right now (are you offline?).": "De ranglijst is nu niet bereikbaar (ben je offline?).",
+  "Write a few words first.": "Schrijf eerst een paar woorden.",
+  "Thank you! Your message has been sent.": "Dank je! Je bericht is verstuurd.",
+  "Couldn't send it. Check your internet and try again.": "Versturen lukte niet. Controleer je internet en probeer het opnieuw.",
+  "{} · {} of {} provinces": "{0} · {1} van {2} provincies",
+  "{} {} · {} battles won · {} difficulty": "{0} {1} · {2} veldslagen gewonnen · moeilijkheid: {3}",
+  "Play free: {}": "Gratis spelen: {0}",
+  "Drawing…": "Tekenen…",
+  "I played Lords of the Low Countries as {}. Can you do better?": "Ik speelde Lords of the Low Countries als {0}. Kun jij het beter?",
+  "{} · {} · {} provinces · {}": "{0} · {1} · {2} provincies · {3}",
+  "{}, {}, {}. Your game is saved automatically.": "{0}, {1}, {2}. Je spel wordt automatisch opgeslagen.",
+  "{} provinces": "{0} provincies",
+  "This replaces your saved game. Tap a realm again to confirm.": "Dit vervangt je opgeslagen spel. Tik nog een keer op een rijk om te bevestigen.",
+  "DIFFICULTY": "MOEILIJKHEID",
+  "CHOOSE YOUR REALM": "KIES JE RIJK",
+  "How to play": "Spelregels",
+  "Paused": "Gepauzeerd",
+  "Resume": "Verder spelen",
+  "Send feedback 💬": "Feedback sturen 💬",
+  "Main menu (game is saved)": "Hoofdmenu (spel is opgeslagen)",
+  "Show the first-game tips again": "Toon de beginnerstips opnieuw",
+  "vs": "tegen",
+  "Tap to continue": "Tik om verder te gaan",
+  "🏆 Leaderboard": "🏆 Ranglijst",
+  "Close": "Sluiten",
+  "Found a bug, have an idea, or just want to say what you think? Every message is read.": "Een fout gevonden, een idee, of wil je gewoon laten weten wat je ervan vindt? Elk bericht wordt gelezen.",
+  "Send": "Versturen",
+  "The feedback form isn't switched on yet. You can leave a message on <a href=\"https://github.com/IceSpiked123132/LordsOfTheLowCountries/issues\" target=\"_blank\" rel=\"noopener\">GitHub</a>.": "Het feedbackformulier staat nog niet aan. Je kunt een bericht achterlaten op <a href=\"https://github.com/IceSpiked123132/LordsOfTheLowCountries/issues\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
+  "Share your game": "Deel je spel",
+  "Press and hold the image to save or share it.": "Houd de afbeelding ingedrukt om haar op te slaan of te delen.",
+  "Download the image": "Download de afbeelding",
+  "Diplomacy": "Diplomatie",
+  "Back to the map": "Terug naar de kaart",
+  "Your message": "Je bericht",
+  "Email or social handle, if you'd like an answer (optional)": "E-mail of socialmedianaam, als je een antwoord wilt (optioneel)",
+  "Easy": "Makkelijk",
+  "The other realms are poorer, slower to start wars and quicker to make peace.": "De andere rijken zijn armer, beginnen minder snel een oorlog en sluiten sneller vrede.",
+  "Normal": "Normaal",
+  "A fair fight.": "Een eerlijke strijd.",
+  "Hard": "Moeilijk",
+  "The other realms are richer, hungrier for war and slow to make peace.": "De andere rijken zijn rijker, beluster op oorlog en sluiten minder snel vrede."
+};
+
 // =====================================================================
 // 1. GAME DATA AND RULES
 // Everything about the world lives in these objects. To tweak balance,
@@ -813,19 +1132,20 @@ function attack(from, to, count) {
 function describe(r) {
   const me = game.player;
   const them = (id) => REALMS[id].short;
-  const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
   let text;
   if (r.attacker === me) {
-    if (r.won && r.defenders === 0) text = `You took ${r.place}. Only the local militia stood in your way.`;
-    else if (r.won) text = `Victory at ${r.place}! You lost ${r.attackLoss}, they lost ${r.defenseLoss}.`;
-    else text = `Defeat at ${r.place}. Your ${plural(r.sent, "regiment")} ${r.sent === 1 ? "was" : "were"} destroyed, they lost ${r.defenseLoss}.`;
+    if (r.won && r.defenders === 0) text = T`You took ${r.place}. Only the local militia stood in your way.`;
+    else if (r.won) text = T`Victory at ${r.place}! You lost ${r.attackLoss}, they lost ${r.defenseLoss}.`;
+    else if (r.sent === 1) text = T`Defeat at ${r.place}. Your 1 regiment was destroyed, they lost ${r.defenseLoss}.`;
+    else text = T`Defeat at ${r.place}. Your ${r.sent} regiments were destroyed, they lost ${r.defenseLoss}.`;
   } else if (r.defender === me) {
-    if (r.won && r.defenders === 0) text = `${them(r.attacker)} took ${r.place}, which only had its militia to defend it.`;
-    else if (r.won) text = `${them(r.attacker)} took ${r.place}! Your ${plural(r.defenders, "regiment")} fell, they lost ${r.attackLoss}.`;
-    else text = `${them(r.attacker)} attacked ${r.place} with ${r.sent} and was beaten back. You lost ${r.defenseLoss}.`;
+    if (r.won && r.defenders === 0) text = T`${them(r.attacker)} took ${r.place}, which only had its militia to defend it.`;
+    else if (r.won && r.defenders === 1) text = T`${them(r.attacker)} took ${r.place}! Your 1 regiment fell, they lost ${r.attackLoss}.`;
+    else if (r.won) text = T`${them(r.attacker)} took ${r.place}! Your ${r.defenders} regiments fell, they lost ${r.attackLoss}.`;
+    else text = T`${them(r.attacker)} attacked ${r.place} with ${r.sent} and was beaten back. You lost ${r.defenseLoss}.`;
   } else {
     if (!r.won) return null;
-    text = `${them(r.attacker)} took ${r.place} from ${them(r.defender)}.`;
+    text = T`${them(r.attacker)} took ${r.place} from ${them(r.defender)}.`;
   }
   return capitalize(text + r.note);
 }
@@ -850,10 +1170,10 @@ function capture(p, newOwner, survivors) {
     old.capital = left.length ? left[0].id : null;
     old.penalty = left.length ? RULES.capitalPenaltyTurns : 0;
     text += left.length
-      ? ` ${capitalize(REALMS[oldOwner].short)} lost its capital and moves its court to ${left[0].name}.`
-      : ` ${capitalize(REALMS[oldOwner].short)} is destroyed.`;
+      ? T` ${capitalize(REALMS[oldOwner].short)} lost its capital and moves its court to ${left[0].name}.`
+      : T` ${capitalize(REALMS[oldOwner].short)} is destroyed.`;
   } else if (provincesOf(oldOwner).length === 0 && oldOwner !== "independent") {
-    text += ` ${capitalize(REALMS[oldOwner].short)} is destroyed.`;
+    text += T` ${capitalize(REALMS[oldOwner].short)} is destroyed.`;
   }
 
   // The new owner retook its original capital: the penalty ends
@@ -861,7 +1181,7 @@ function capture(p, newOwner, survivors) {
   if (mine.homeCapital === p.id && mine.capital !== p.id) {
     mine.capital = p.id;
     mine.penalty = 0;
-    text += ` ${capitalize(REALMS[newOwner].short)} retook its capital!`;
+    text += T` ${capitalize(REALMS[newOwner].short)} retook its capital!`;
   }
   return text;
 }
@@ -1011,9 +1331,9 @@ function endTurn() {
     realm.manpower = Math.min(RULES.maxManpower, realm.manpower + newMen);
 
     if (id === game.player) {
-      report = `Income +${income}, upkeep −${upkeep}.`;
-      if (realm.penalty > 0) report += ` (Income −25% without your capital, ${realm.penalty - 1} more ${realm.penalty - 1 === 1 ? "year" : "years"}.)`;
-      if (deserted > 0) notes.push({ text: `You couldn't pay your troops: ${deserted} deserted!`, kind: "bad" });
+      report = T`Income +${income}, upkeep −${upkeep}.`;
+      if (realm.penalty > 1) report += T` (Income −25% without your capital, ${realm.penalty - 1} more ${yearsWord(realm.penalty - 1)}.)`;
+      if (deserted > 0) notes.push({ text: T`You couldn't pay your troops: ${deserted} deserted!`, kind: "bad" });
     }
     if (realm.penalty > 0) realm.penalty -= 1;
   }
@@ -1035,7 +1355,7 @@ function endTurn() {
 
   game.selected = null;
   game.order = null;
-  game.message = `The year is ${game.year}. ${report}`;
+  game.message = T`The year is ${game.year}. ${report}`;
   game.stats.peak = Math.max(game.stats.peak, provincesOf(game.player).length);
   checkGameOver();
   render();
@@ -1056,17 +1376,18 @@ function unusedWarnings() {
   }
   if (targets.size) {
     const names = [...targets];
-    warnings.push(`Your armies could probably take ${names.slice(0, 3).join(", ")}${names.length > 3 ? ` and ${names.length - 3} more` : ""}.`);
+    warnings.push(T`Your armies could probably take ${names.slice(0, 3).join(", ")}${names.length > 3 ? T` and ${names.length - 3} more` : ""}.`);
   }
   if (!realm.built && mine.some(p => !p.building) && realm.gold >= RULES.farmCost) {
-    warnings.push(`You haven't built anything this year, and you have ${realm.gold} 💰.`);
+    warnings.push(T`You haven't built anything this year, and you have ${realm.gold} 💰.`);
   }
   if (realm.manpower >= RULES.maxManpower && realm.gold >= recruitCost(me)) {
-    warnings.push(`Your manpower is full (${RULES.maxManpower}/${RULES.maxManpower}), so next year's new men are wasted unless you recruit.`);
+    warnings.push(T`Your manpower is full (${RULES.maxManpower}/${RULES.maxManpower}), so next year's new men are wasted unless you recruit.`);
   }
   const exposed = mine.filter(p => p.army === 0 && p.core !== me).map(p => p.name);
   if (exposed.length) {
-    warnings.push(`${exposed.slice(0, 3).join(", ")}${exposed.length > 3 ? ` and ${exposed.length - 3} more` : ""} ${exposed.length === 1 ? "has" : "have"} no soldiers and could rise up against you.`);
+    const list = exposed.slice(0, 3).join(", ") + (exposed.length > 3 ? T` and ${exposed.length - 3} more` : "");
+    warnings.push(exposed.length === 1 ? T`${list} has no soldiers and could rise up against you.` : T`${list} have no soldiers and could rise up against you.`);
   }
   return warnings;
 }
@@ -1112,16 +1433,20 @@ function initRelations(state) {
 }
 
 // A sentence about two realms from the player's point of view
-function who(id) { return id === game.player ? "you" : nameOf(id); }
+// "you" as the subject ("you and Gelre make peace") or object ("war on you"); Dutch has two words
+function who(id, object) {
+  if (id !== game.player) return nameOf(id);
+  return LANG === "nl" ? (object ? "jou" : "jij") : "you";
+}
 
 function declareWar(a, b, notes, coalition) {
   const r = rel(a, b);
   Object.assign(r, { state: "war", truce: 0, since: game.year, score: { [a]: 0, [b]: 0 } });
   const kind = (b === game.player) ? "bad" : "";
   let text;
-  if (a === game.player) text = `You declare war on ${nameOf(b)}. Your armies are mobilizing: you can attack them from next turn.`;
-  else if (coalition) text = `${capitalize(nameOf(a))} joins the coalition against ${who(b)}!`;
-  else text = `${capitalize(nameOf(a))} declares war on ${who(b)}!`;
+  if (a === game.player) text = T`You declare war on ${nameOf(b)}. Your armies are mobilizing: you can attack them from next turn.`;
+  else if (coalition) text = T`${capitalize(nameOf(a))} joins the coalition against ${who(b, true)}!`;
+  else text = T`${capitalize(nameOf(a))} declares war on ${who(b, true)}!`;
   notes.push({ text, kind, warOnMe: b === game.player });
 
   // The defender's allies honor the alliance
@@ -1131,8 +1456,8 @@ function declareWar(a, b, notes, coalition) {
     Object.assign(rc, { state: "war", truce: 0, since: game.year, score: { [a]: 0, [c]: 0 } });
     notes.push({
       text: c === game.player
-        ? `As ${nameOf(b)}'s ally, you are now at war with ${nameOf(a)}.`
-        : `${capitalize(nameOf(c))} honors its alliance with ${who(b)} and joins the war against ${who(a)}.`,
+        ? T`As ${nameOf(b)}'s ally, you are now at war with ${nameOf(a)}.`
+        : T`${capitalize(nameOf(c))} honors its alliance with ${who(b, true)} and joins the war against ${who(a, true)}.`,
       kind: (a === game.player || c === game.player) ? "bad" : "",
       warOnMe: c === game.player
     });
@@ -1141,17 +1466,17 @@ function declareWar(a, b, notes, coalition) {
 
 function makePeace(a, b, notes) {
   Object.assign(rel(a, b), { state: "peace", truce: RULES.truceYears });
-  notes.push({ text: `${capitalize(who(a))} and ${who(b)} make peace (${RULES.truceYears}-year truce).`, kind: "" });
+  notes.push({ text: T`${capitalize(who(a))} and ${who(b)} make peace (${RULES.truceYears}-year truce).`, kind: "" });
 }
 
 function makeAlliance(a, b, notes) {
   Object.assign(rel(a, b), { state: "alliance", truce: 0 });
-  notes.push({ text: `${capitalize(who(a))} and ${who(b)} form an alliance.`, kind: "" });
+  notes.push({ text: T`${capitalize(who(a))} and ${who(b)} form an alliance.`, kind: "" });
 }
 
 function breakAlliance(a, b, notes) {
   Object.assign(rel(a, b), { state: "peace", truce: 3 });
-  notes.push({ text: `${capitalize(who(a))} ended the alliance with ${who(b)}.`, kind: "" });
+  notes.push({ text: T`${capitalize(who(a))} ended the alliance with ${who(b, true)}.`, kind: "" });
 }
 
 // Count provinces taken in a war (for deciding who's winning)
@@ -1222,25 +1547,25 @@ function proposePeace(b) {
   const years = game.year - r.since;
   const lead = (r.score[b] || 0) - (r.score[me] || 0);   // > 0: they're winning
   const ok = (years >= 1 && lead <= 0) || armyOf(b) < armyOf(me) * 0.8 || years >= diff().peaceYears;
-  if (!ok) return { ok, text: `${capitalize(nameOf(b))} refuses. They think they're winning this war.` };
+  if (!ok) return { ok, text: T`${capitalize(nameOf(b))} refuses. They think they're winning this war.` };
   const notes = [];
   makePeace(me, b, notes);
-  return { ok, text: `${capitalize(nameOf(b))} accepts. ${notes[0].text}` };
+  return { ok, text: T`${capitalize(nameOf(b))} accepts. ${notes[0].text}` };
 }
 
 function proposeAlliance(b) {
   const me = game.player, r = rel(me, b);
-  if (r.asked === game.year) return { ok: false, text: `${capitalize(nameOf(b))} already gave you an answer this year.` };
+  if (r.asked === game.year) return { ok: false, text: T`${capitalize(nameOf(b))} already gave you an answer this year.` };
   r.asked = game.year;
   if (provincesOf(me).length >= RULES.coalitionAt) {
-    return { ok: false, text: `${capitalize(nameOf(b))} refuses. Your realm has grown too powerful to trust.` };
+    return { ok: false, text: T`${capitalize(nameOf(b))} refuses. Your realm has grown too powerful to trust.` };
   }
   const threat = REALM_IDS.find(c => c !== me && c !== b && alive(c) &&
     (rel(b, c).state === "war" || (provincesOf(c).length > provincesOf(b).length && bordering(b, c))));
-  if (!threat) return { ok: false, text: `${capitalize(nameOf(b))} sees no need for an alliance right now.` };
+  if (!threat) return { ok: false, text: T`${capitalize(nameOf(b))} sees no need for an alliance right now.` };
   const notes = [];
   makeAlliance(me, b, notes);
-  return { ok: true, text: `${capitalize(nameOf(b))} accepts. Together you stand against ${nameOf(threat)}.` };
+  return { ok: true, text: T`${capitalize(nameOf(b))} accepts. Together you stand against ${nameOf(threat)}.` };
 }
 
 // --- The diplomacy screen ---
@@ -1248,13 +1573,13 @@ const diplo = { armed: null, message: "" };
 
 function statusOf(b) {
   const r = rel(game.player, b);
-  if (r.state === "war" && game.year <= r.since) return `⚔️ <b>War declared</b> · armies mobilizing, you can attack from next turn`;
+  if (r.state === "war" && game.year <= r.since) return T`⚔️ <b>War declared</b> · armies mobilizing, you can attack from next turn`;
   if (r.state === "war") {
-    return `⚔️ <b>At war</b> since ${r.since} · provinces taken: you ${r.score[game.player] || 0}, them ${r.score[b] || 0}`;
+    return T`⚔️ <b>At war</b> since ${r.since} · provinces taken: you ${r.score[game.player] || 0}, them ${r.score[b] || 0}`;
   }
-  if (r.state === "alliance") return "🤝 <b>Allied</b>";
-  if (r.truce > 0) return `🕊️ <b>Truce</b> · ${r.truce} more ${r.truce === 1 ? "year" : "years"}`;
-  return "🕊️ <b>At peace</b>";
+  if (r.state === "alliance") return T`🤝 <b>Allied</b>`;
+  if (r.truce > 0) return T`🕊️ <b>Truce</b> · ${r.truce} more ${yearsWord(r.truce)}`;
+  return T`🕊️ <b>At peace</b>`;
 }
 
 function openDiplomacy() {
@@ -1271,22 +1596,22 @@ function renderDiplomacy() {
     const theirWars = warsOf(b).filter(c => c !== me).map(nameOf);
     const theirAllies = alliesOf(b).filter(c => c !== me).map(nameOf);
     let buttons = "";
-    if (r.state === "war") buttons = `<button class="act light" data-dip="peace" data-realm="${b}">Offer peace 🕊️</button>`;
-    if (r.state === "alliance") buttons = `<button class="act light" data-dip="break" data-realm="${b}">End alliance</button>`;
+    if (r.state === "war") buttons = `<button class="act light" data-dip="peace" data-realm="${b}">${T`Offer peace 🕊️`}</button>`;
+    if (r.state === "alliance") buttons = `<button class="act light" data-dip="break" data-realm="${b}">${T`End alliance`}</button>`;
     if (r.state === "peace") {
-      buttons = `<button class="act light" data-dip="ally" data-realm="${b}">Propose alliance 🤝</button>`;
+      buttons = `<button class="act light" data-dip="ally" data-realm="${b}">${T`Propose alliance 🤝`}</button>`;
       if (r.truce === 0) {
         buttons += diplo.armed === b
-          ? `<button class="act go" data-dip="war" data-realm="${b}">Sure? Declare war</button>`
-          : `<button class="act light" data-dip="arm" data-realm="${b}">Declare war ⚔️</button>`;
+          ? `<button class="act go" data-dip="war" data-realm="${b}">${T`Sure? Declare war`}</button>`
+          : `<button class="act light" data-dip="arm" data-realm="${b}">${T`Declare war ⚔️`}</button>`;
       }
     }
     return `
       <div class="dip-row" style="--side:${REALMS[b].color}">
         <div class="dip-name">${crest(b, 28)}${REALMS[b].name}</div>
-        <div class="dip-stats">${provincesOf(b).length} provinces · ${armyOf(b)} regiments</div>
+        <div class="dip-stats">${T`${provincesOf(b).length} provinces · ${armyOf(b)} regiments`}</div>
         <div class="dip-status">${statusOf(b)}</div>
-        ${theirWars.length || theirAllies.length ? `<div class="dip-stats">${theirWars.length ? `At war with ${theirWars.join(", ")}. ` : ""}${theirAllies.length ? `Allied with ${theirAllies.join(", ")}.` : ""}</div>` : ""}
+        ${theirWars.length || theirAllies.length ? `<div class="dip-stats">${theirWars.length ? T`At war with ${theirWars.join(", ")}. ` : ""}${theirAllies.length ? T`Allied with ${theirAllies.join(", ")}.` : ""}</div>` : ""}
         <div class="row">${buttons}</div>
       </div>`;
   }).join("");
@@ -1349,11 +1674,11 @@ function runEvents(notes, cards) {
     const owner = p.owner;
     if (p.core !== owner && alive(p.core) && Math.random() < RULES.uprisingChance) {
       const note = capture(p, p.core, 1);
-      if (owner === me) notes.push({ text: `${p.name} rose up and went back to ${nameOf(p.core)}!${note}`, kind: "bad" });
-      else if (p.core === me) notes.push({ text: `${p.name} rose up against ${nameOf(owner)} and is yours again!${note}`, kind: "good" });
+      if (owner === me) notes.push({ text: T`${p.name} rose up and went back to ${nameOf(p.core)}!${note}`, kind: "bad" });
+      else if (p.core === me) notes.push({ text: T`${p.name} rose up against ${nameOf(owner)} and is yours again!${note}`, kind: "good" });
     } else if (p.unrest > 0 && Math.random() < RULES.revoltChance) {
       const note = capture(p, "independent", 1);
-      if (owner === me) notes.push({ text: `${p.name} rose in revolt and declared itself independent!${note}`, kind: "bad" });
+      if (owner === me) notes.push({ text: T`${p.name} rose in revolt and declared itself independent!${note}`, kind: "bad" });
     }
   }
 
@@ -1364,8 +1689,8 @@ function runEvents(notes, cards) {
     for (const id of REALM_IDS) game.realms[id].manpower = 0;
     for (const p of allProvinces()) if (p.army >= 3) p.army -= Math.floor(p.army / 3);
     cards.push({
-      emoji: "💀", title: "The Black Death",
-      text: "The great pestilence sweeps through the Low Countries. Armies of 3 or more regiments lose a third of their men, and no realm can raise new soldiers this year. Every realm suffers alike."
+      emoji: "💀", title: T`The Black Death`,
+      text: T`The great pestilence sweeps through the Low Countries. Armies of 3 or more regiments lose a third of their men, and no realm can raise new soldiers this year. Every realm suffers alike.`
     });
     return;
   }
@@ -1382,26 +1707,26 @@ function runEvents(notes, cards) {
   options.push({ weight: 3, run: () => {
     const gold = 8 + Math.floor(Math.random() * 8);
     realm.gold += gold;
-    if (target === me) cards.push({ emoji: "🌾", title: "A rich harvest", text: `The granaries are full. Your treasury gains ${gold} 💰.` });
+    if (target === me) cards.push({ emoji: "🌾", title: T`A rich harvest`, text: T`The granaries are full. Your treasury gains ${gold} 💰.` });
   }});
   options.push({ weight: behind(target) ? 4 : 2, run: () => {
     realm.manpower = Math.min(RULES.maxManpower, realm.manpower + 3);
     capital.army += 1;
-    if (target === me) cards.push({ emoji: "🛡️", title: "Volunteers", text: `Men from across your lands flock to ${capital.name} to defend the realm: +1 regiment there and +3 manpower.` });
+    if (target === me) cards.push({ emoji: "🛡️", title: T`Volunteers`, text: T`Men from across your lands flock to ${capital.name} to defend the realm: +1 regiment there and +3 manpower.` });
   }});
   const ports = lands.filter(p => COASTAL.includes(p.id));
   if (ports.length) options.push({ weight: 2, run: () => {
     const gold = 3 * ports.length;
     realm.gold += gold;
-    if (target === me) cards.push({ emoji: "⛵", title: "Hanseatic merchants", text: `Trading ships crowd your harbors. Your ${ports.length} coastal ${ports.length === 1 ? "province brings" : "provinces bring"} in ${gold} 💰 extra.` });
+    if (target === me) cards.push({ emoji: "⛵", title: T`Hanseatic merchants`, text: ports.length === 1 ? T`Trading ships crowd your harbor. Your coastal province brings in ${gold} 💰 extra.` : T`Trading ships crowd your harbors. Your ${ports.length} coastal provinces bring in ${gold} 💰 extra.` });
   }});
   if (target === me && realm.gold >= 20) options.push({ weight: 2, run: () => {
     cards.push({
-      emoji: "🗡️", title: "Mercenaries for hire",
-      text: `A company of Free Lances offers its swords: 3 regiments for 20 💰, no manpower needed. They would join you at ${capital.name}.`,
+      emoji: "🗡️", title: T`Mercenaries for hire`,
+      text: T`A company of Free Lances offers its swords: 3 regiments for 20 💰, no manpower needed. They would join you at ${capital.name}.`,
       choices: [
-        { label: "Hire them (20 💰)", run: () => { realm.gold -= 20; capital.army += 3; return `3 mercenary regiments arrive at ${capital.name}.`; } },
-        { label: "Send them away", run: () => "" }
+        { label: T`Hire them (20 💰)`, run: () => { realm.gold -= 20; capital.army += 3; return T`3 mercenary regiments arrive at ${capital.name}.`; } },
+        { label: T`Send them away`, run: () => "" }
       ]
     });
   }});
@@ -1415,8 +1740,9 @@ function runEvents(notes, cards) {
       const farm = p.building === "farm";
       if (farm) p.building = null;
       p.unrest = Math.max(p.unrest, 2);
-      const text = `A storm flood strikes ${p.name}.${farm ? " The farm is washed away, and the province" : " The province"} pays nothing for 2 years.`;
-      if (target === me) cards.push({ emoji: "🌊", title: "Storm flood", text });
+      const text = farm ? T`A storm flood strikes ${p.name}. The farm is washed away, and the province pays nothing for 2 years.`
+                        : T`A storm flood strikes ${p.name}. The province pays nothing for 2 years.`;
+      if (target === me) cards.push({ emoji: "🌊", title: T`Storm flood`, text });
       else notes.push({ text, kind: "" });
     }});
     const rebel = lands.filter(p => !isCapital(p) && p.core === target).sort((a, b) => a.army - b.army)[0];
@@ -1424,27 +1750,27 @@ function runEvents(notes, cards) {
       flags.feud[target] = true;
       badLuck(target);
       const holland = target === "holland";
-      const title = holland ? "The Hook and Cod wars" : "A noble feud";
+      const title = holland ? T`The Hook and Cod wars` : T`A noble feud`;
       const story = holland
-        ? "Holland's nobles have split into two factions, the Hooks and the Cods, and are ready to fight each other."
-        : `Two of ${nameOf(target)}'s great noble houses are at each other's throats.`;
-      const revolt = () => { capture(rebel, "independent", 2); rebel.unrest = 0; return `${rebel.name} broke away and is now independent.`; };
-      const pay = () => { realm.gold -= 15; return "The nobles are paid off. The realm stays together, for now."; };
+        ? T`Holland's nobles have split into two factions, the Hooks and the Cods, and are ready to fight each other.`
+        : T`Two of ${nameOf(target)}'s great noble houses are at each other's throats.`;
+      const revolt = () => { capture(rebel, "independent", 2); rebel.unrest = 0; return T`${rebel.name} broke away and is now independent.`; };
+      const pay = () => { realm.gold -= 15; return T`The nobles are paid off. The realm stays together, for now.`; };
       if (target === me) {
-        const choices = [{ label: `Let them fight (lose ${rebel.name})`, run: revolt }];
-        if (realm.gold >= 15) choices.unshift({ label: "Pay the nobles (15 💰)", run: pay });
-        cards.push({ emoji: holland ? "🪝🐟" : "⚔️", title, text: `${story} Pay them off, or ${rebel.name} will break away and become independent.`, choices });
+        const choices = [{ label: T`Let them fight (lose ${rebel.name})`, run: revolt }];
+        if (realm.gold >= 15) choices.unshift({ label: T`Pay the nobles (15 💰)`, run: pay });
+        cards.push({ emoji: holland ? "🪝🐟" : "⚔️", title, text: T`${story} Pay them off, or ${rebel.name} will break away and become independent.`, choices });
       } else if (realm.gold >= 15) {
         pay();
-        notes.push({ text: `${capitalize(nameOf(target))} buys peace between its quarrelling nobles.`, kind: "" });
+        notes.push({ text: T`${capitalize(nameOf(target))} buys peace between its quarrelling nobles.`, kind: "" });
       } else {
-        notes.push({ text: `${holland ? "The Hook and Cod wars" : "A noble feud"} in ${nameOf(target)}: ${revolt()}`, kind: "" });
+        notes.push({ text: holland ? T`The Hook and Cod wars in Holland: ${revolt()}` : T`A noble feud in ${nameOf(target)}: ${revolt()}`, kind: "" });
       }
     }});
     options.push({ weight: 1, run: () => {
       badLuck(target);
       realm.manpower = Math.floor(realm.manpower / 2);
-      if (target === me) cards.push({ emoji: "⚰️", title: "Plague outbreak", text: "Sickness spreads through your towns. Your manpower is halved." });
+      if (target === me) cards.push({ emoji: "⚰️", title: T`Plague outbreak`, text: T`Sickness spreads through your towns. Your manpower is halved.` });
     }});
   }
 
@@ -1463,7 +1789,7 @@ function showCard(card, done) {
   document.getElementById("ev-text").textContent = card.text;
   const box = document.getElementById("ev-buttons");
   box.innerHTML = "";
-  const choices = card.choices || [{ label: "Continue" }];
+  const choices = card.choices || [{ label: T`Continue` }];
   choices.forEach((c, i) => {
     const b = document.createElement("button");
     b.className = "act" + (i > 0 ? " light" : "");
@@ -1485,11 +1811,11 @@ function showCard(card, done) {
 function peaceOfferCard(b) {
   const me = game.player, r = rel(me, b);
   return {
-    emoji: "🕊️", title: `${capitalize(nameOf(b))} offers peace`,
-    text: `After ${game.year - r.since} years of war (provinces taken: you ${r.score[me] || 0}, them ${r.score[b] || 0}), ${nameOf(b)} proposes a ${RULES.truceYears}-year truce. Everyone keeps what they hold now.`,
+    emoji: "🕊️", title: T`${capitalize(nameOf(b))} offers peace`,
+    text: T`After ${game.year - r.since} years of war (provinces taken: you ${r.score[me] || 0}, them ${r.score[b] || 0}), ${nameOf(b)} proposes a ${RULES.truceYears}-year truce. Everyone keeps what they hold now.`,
     choices: [
-      { label: "Accept peace", run: () => { if (rel(me, b).state !== "war") return ""; const n = []; makePeace(me, b, n); return n[0].text; } },
-      { label: "Refuse, the war goes on", run: () => "" }
+      { label: T`Accept peace`, run: () => { if (rel(me, b).state !== "war") return ""; const n = []; makePeace(me, b, n); return n[0].text; } },
+      { label: T`Refuse, the war goes on`, run: () => "" }
     ]
   };
 }
@@ -1510,7 +1836,7 @@ function startNewYear(notes, cards) {
   const wars = notes.filter(n => n.warOnMe);
   if (wars.length) {
     const others = notes.filter(n => !n.warOnMe);
-    const card = { emoji: "⚔️", title: "War!", sound: "war", text: wars.map(n => n.text).join(" ") + ` Their armies are still mobilizing, so you get this one turn to prepare: move troops to the border, recruit, or build a castle. They can attack as soon as you end your turn.` };
+    const card = { emoji: "⚔️", title: T`War!`, sound: "war", text: wars.map(n => n.text).join(" ") + T` Their armies are still mobilizing, so you get this one turn to prepare: move troops to the border, recruit, or build a castle. They can attack as soon as you end your turn.` };
     return showCard(card, () => startNewYearAfterWar(others, cards, attacksOnMe));
   }
   startNewYearAfterWar(notes, cards, attacksOnMe);
@@ -1527,7 +1853,7 @@ function startNewYearAfterWar(notes, cards, attacksOnMe) {
 
 function showYearOverview(notes) {
   const attacks = game.lastTurn.length;
-  if (attacks === 0 && notes.length === 0) notes = [{ text: "A quiet year. Nobody went to war.", kind: "" }];
+  if (attacks === 0 && notes.length === 0) notes = [{ text: T`A quiet year. Nobody went to war.`, kind: "" }];
 
   document.getElementById("year-title").textContent = `Anno ${game.year}`;
   document.getElementById("year-notes").innerHTML =
@@ -1581,20 +1907,20 @@ function checkGameOver() {
 
   // These always end the game
   if (mine === total) {
-    return endGame("The Low Countries united!", `In ${game.year} every one of the ${total} provinces flies your banner.`, true, true);
+    return endGame(T`The Low Countries united!`, T`In ${game.year} every one of the ${total} provinces flies your banner.`, true, true);
   }
   if (mine === 0) {
-    return endGame("Defeat", `Your realm was wiped off the map in ${game.year}.`, false, true);
+    return endGame(T`Defeat`, T`Your realm was wiped off the map in ${game.year}.`, false, true);
   }
   // These are a victory or defeat, but you can keep playing
   if (game.endless) return;
   if (mine >= RULES.provincesToWin) {
-    endGame("Victory!", `You rule ${mine} of the ${total} provinces in ${game.year}. Keep playing to unite all of the Low Countries.`, true, false);
+    endGame(T`Victory!`, T`You rule ${mine} of the ${total} provinces in ${game.year}. Keep playing to unite all of the Low Countries.`, true, false);
   } else if (count(leader) >= RULES.provincesToWin) {
-    endGame("Defeat", `${REALMS[leader].name} rules ${count(leader)} provinces in ${game.year}. You can still fight on.`, false, false);
+    endGame(T`Defeat`, T`${REALMS[leader].name} rules ${count(leader)} provinces in ${game.year}. You can still fight on.`, false, false);
   } else if (game.year >= RULES.endYear) {
-    if (count(leader) <= mine) endGame("Victory!", `It is ${RULES.endYear} and you hold the most provinces (${mine}).`, true, false);
-    else endGame("Defeat", `It is ${RULES.endYear} and ${REALMS[leader].name} holds the most provinces (${count(leader)} against your ${mine}).`, false, false);
+    if (count(leader) <= mine) endGame(T`Victory!`, T`It is ${RULES.endYear} and you hold the most provinces (${mine}).`, true, false);
+    else endGame(T`Defeat`, T`It is ${RULES.endYear} and ${REALMS[leader].name} holds the most provinces (${count(leader)} against your ${mine}).`, false, false);
   }
 }
 
@@ -1618,7 +1944,7 @@ function keepPlaying() {
   game.over = false;
   game.endless = true;
   game.endInfo = null;
-  game.message = `The war goes on. Conquer all ${allProvinces().length} provinces to unite the Low Countries!`;
+  game.message = T`The war goes on. Conquer all ${allProvinces().length} provinces to unite the Low Countries!`;
   render();
 }
 
@@ -1658,7 +1984,7 @@ function continueGame(data) {
     realms: data.realms, provinces: data.provinces,
     relations: data.relations || {}, flags: data.flags || {}, endless: !!data.endless, difficulty: data.difficulty || "normal",
     selected: null, order: null, over: false, lastTurn: [], confirmEnd: null, endInfo: null, offers: [],
-    message: `Welcome back. The year is ${data.year}.`
+    message: T`Welcome back. The year is ${data.year}.`
   });
   // Saves from before diplomacy existed: everyone was at war with everyone
   if (!data.relations) {
@@ -1895,34 +2221,33 @@ function renderPanel() {
       <h2 class="end-title ${e.won ? "win" : "lose"}">${e.title}</h2>
       <div>${e.text}</div>
       <div class="end-stats">
-        ${REALMS[game.player].name} (${diff().label.toLowerCase()}) · ${game.year - RULES.startYear} years · ${s.won} battles won, ${s.lost} lost ·
-        ${s.taken} provinces conquered · most held at once: ${Math.max(s.peak, provincesOf(game.player).length)}
+        ${T`${REALMS[game.player].name} (${tr(diff().label).toLowerCase()}) · ${game.year - RULES.startYear} years · ${s.won} battles won, ${s.lost} lost · ${s.taken} provinces conquered · most held at once: ${Math.max(s.peak, provincesOf(game.player).length)}`}
       </div>
       <div class="spacer"></div>
       <div class="row">
-        <button class="act light" data-do="share">Share 📤</button>
-        ${online() ? `<button class="act light" data-do="${e.won && !(game.submitted || {})[e.final ? "united" : "victory"] ? "addscore" : "board"}">Leaderboard 🏆</button>` : ""}
+        <button class="act light" data-do="share">${T`Share 📤`}</button>
+        ${online() ? `<button class="act light" data-do="${e.won && !(game.submitted || {})[e.final ? "united" : "victory"] ? "addscore" : "board"}">${T`Leaderboard 🏆`}</button>` : ""}
       </div>
       <div class="row">
-        ${e.final ? "" : `<button class="act go" data-do="keepplaying">${e.won ? "Keep conquering" : "Fight on"}</button>`}
-        <button class="act ${e.final ? "" : "light"}" data-do="newgame">New game</button>
+        ${e.final ? "" : `<button class="act go" data-do="keepplaying">${e.won ? T`Keep conquering` : T`Fight on`}</button>`}
+        <button class="act ${e.final ? "" : "light"}" data-do="newgame">${T`New game`}</button>
       </div>`;
     return;
   }
 
   const msg = game.message ? `<div class="msg">${game.message}</div>` : "";
-  const endTurnButton = `<button class="act" data-do="endturn">End turn ⏳</button>`;
-  const diploButton = `<button class="act light" data-do="diplomacy">Diplomacy 🤝</button>`;
+  const endTurnButton = `<button class="act" data-do="endturn">${T`End turn ⏳`}</button>`;
+  const diploButton = `<button class="act light" data-do="diplomacy">${T`Diplomacy 🤝`}</button>`;
 
   // --- The player pressed End turn but still has things to do ---
   if (game.confirmEnd) {
     panel.innerHTML = `
-      <h2>End the year?</h2>
+      <h2>${T`End the year?`}</h2>
       <ul class="warn">${game.confirmEnd.map(w => `<li>${w}</li>`).join("")}</ul>
       <div class="spacer"></div>
       <div class="row">
-        <button class="act light" data-do="cancelend">Go back</button>
-        <button class="act" data-do="endanyway">End turn anyway</button>
+        <button class="act light" data-do="cancelend">${T`Go back`}</button>
+        <button class="act" data-do="endanyway">${T`End turn anyway`}</button>
       </div>`;
     return;
   }
@@ -1934,30 +2259,30 @@ function renderPanel() {
     const isMove = to.owner === game.player;
     let details;
     if (isMove) {
-      details = `<div>Move regiments from ${from.name} to ${to.name}.</div>`;
+      details = `<div>${T`Move regiments from ${from.name} to ${to.name}.`}</div>`;
     } else {
       const bonus = defenseBonus(from, to);
       const why = [];
-      if (to.building === "castle") why.push("castle");
-      if (to.riverBorders.includes(from.id)) why.push("river 🌊");
+      if (to.building === "castle") why.push(T`castle`);
+      if (to.riverBorders.includes(from.id)) why.push(T`river 🌊`);
       const chance = Math.round(winChance(from, to, count) * 100);
       details = `
-        <div>🛡️ Defenders: ${to.army} + ${militiaOf(to)} militia${bonus > 1 ? ` (×${bonus.toFixed(2).replace(/0$/, "")} for ${why.join(" and ")})` : ""}</div>
-        <div>🎲 Chance to win: about <b>${chance}%</b></div>`;
+        <div>${T`🛡️ Defenders: ${to.army} + ${militiaOf(to)} militia`}${bonus > 1 ? T` (×${bonus.toFixed(2).replace(/0$/, "")} for ${why.join(T` and `)})` : ""}</div>
+        <div>${T`🎲 Chance to win: about <b>${chance}%</b>`}</div>`;
     }
     panel.innerHTML = `
-      <h2>${isMove ? "Move to" : "Attack"} ${to.name}</h2>
+      <h2>${isMove ? T`Move to ${to.name}` : T`Attack ${to.name}`}</h2>
       ${details}
       <div class="row">
-        <span>Send:</span>
+        <span>${T`Send:`}</span>
         <button class="act light step" data-do="less" ${count <= 1 ? "disabled" : ""}>−</button>
         <span class="count">${count} / ${ready(from)}</span>
         <button class="act light step" data-do="more" ${count >= ready(from) ? "disabled" : ""}>+</button>
       </div>
       <div class="spacer"></div>
       <div class="row">
-        <button class="act light" data-do="cancel">Cancel</button>
-        <button class="act go" data-do="confirm">${isMove ? "Move" : "Attack ⚔️"}</button>
+        <button class="act light" data-do="cancel">${T`Cancel`}</button>
+        <button class="act go" data-do="confirm">${isMove ? T`Move` : T`Attack ⚔️`}</button>
       </div>`;
     return;
   }
@@ -1967,15 +2292,15 @@ function renderPanel() {
     const r = REALMS[game.player];
     const wars = warsOf(game.player).map(nameOf), allies = alliesOf(game.player).map(nameOf);
     const danger = behind(game.player)
-      ? `<div class="hint">Your realm has lost ground: recruits cost only ${RULES.underdogRecruitGold} 💰, and fortune favors you.</div>` : "";
+      ? `<div class="hint">${T`Your realm has lost ground: recruits cost only ${RULES.underdogRecruitGold} 💰, and fortune favors you.`}</div>` : "";
     const total = allProvinces().length;
-    const goal = game.endless ? `Conquer all ${total} provinces to unite the Low Countries.` : `Own ${RULES.provincesToWin} of the ${total} provinces to win.`;
+    const goal = game.endless ? T`Conquer all ${total} provinces to unite the Low Countries.` : T`Own ${RULES.provincesToWin} of the ${total} provinces to win.`;
     panel.innerHTML = `
       <h2 style="display:flex;align-items:center;gap:8px">${crest(game.player, 26)}${r.name}</h2>
       ${msg}
-      <div>${wars.length ? `⚔️ At war with ${wars.join(", ")}` : "🕊️ At peace with every realm"}${allies.length ? ` · 🤝 Allied with ${allies.join(", ")}` : ""}</div>
+      <div>${wars.length ? T`⚔️ At war with ${wars.join(", ")}` : T`🕊️ At peace with every realm`}${allies.length ? T` · 🤝 Allied with ${allies.join(", ")}` : ""}</div>
       ${danger}
-      <div class="hint">Tap one of your provinces to recruit or to send its army. ${goal}</div>
+      <div class="hint">${T`Tap one of your provinces to recruit or to send its army.`} ${goal}</div>
       <div class="spacer"></div>
       <div class="row">${diploButton}${endTurnButton}</div>`;
     return;
@@ -1988,43 +2313,43 @@ function renderPanel() {
   const neighborNames = p.neighbors
     .map(n => game.provinces[n].name + (p.riverBorders.includes(n) ? " 🌊" : ""))
     .join(", ");
-  const armyText = yours && p.army > 0 ? `${p.army} (${ready(p)} ready)` : `${p.army}`;
+  const armyText = yours && p.army > 0 ? T`${p.army} (${ready(p)} ready)` : `${p.army}`;
 
   let hint = "";
   let recruitButton = "";
   let buildButtons = "";
   if (yours) {
     hint = ready(p) > 0
-      ? "Tap a neighboring province to move or attack."
-      : (p.army > 0 ? "This army has already acted this year." : "");
-    recruitButton = `<button class="act light" data-do="recruit" ${canRecruit(p) ? "" : "disabled"}>Recruit<br>${recruitCost(game.player)}💰 ${RULES.recruitManpower}⚔️</button>`;
+      ? T`Tap a neighboring province to move or attack.`
+      : (p.army > 0 ? T`This army has already acted this year.` : "");
+    recruitButton = `<button class="act light" data-do="recruit" ${canRecruit(p) ? "" : "disabled"}>${T`Recruit`}<br>${recruitCost(game.player)}💰 ${RULES.recruitManpower}⚔️</button>`;
     if (!p.building) {
       buildButtons =
-        `<button class="act light" data-do="farm" ${canBuild(p, "farm") ? "" : "disabled"}>Farm 🌾<br>${RULES.farmCost}💰</button>` +
-        `<button class="act light" data-do="castle" ${canBuild(p, "castle") ? "" : "disabled"}>Castle 🏰<br>${RULES.castleCost}💰</button>`;
+        `<button class="act light" data-do="farm" ${canBuild(p, "farm") ? "" : "disabled"}>${T`Farm 🌾`}<br>${RULES.farmCost}💰</button>` +
+        `<button class="act light" data-do="castle" ${canBuild(p, "castle") ? "" : "disabled"}>${T`Castle 🏰`}<br>${RULES.castleCost}💰</button>`;
     }
-    if (!p.building && game.realms[game.player].built) hint += " You already built something this year.";
+    if (!p.building && game.realms[game.player].built) hint += T` You already built something this year.`;
   } else if (p.owner === "independent") {
     hint = p.neighbors.some(n => game.provinces[n].owner === game.player)
-      ? "Independent: you can attack it any time. First tap one of your own provinces next to it." : "Independent.";
+      ? T`Independent: you can attack it any time. First tap one of your own provinces next to it.` : T`Independent.`;
   } else {
     hint = statusOf(p.owner) + ". " + (canAttack(game.player, p)
-      ? (p.neighbors.some(n => game.provinces[n].owner === game.player) ? "To attack, first tap one of your own provinces next to it." : "")
-      : atWar(game.player, p.owner) ? "" : "Declare war in Diplomacy before you can attack.");
+      ? (p.neighbors.some(n => game.provinces[n].owner === game.player) ? T`To attack, first tap one of your own provinces next to it.` : "")
+      : atWar(game.player, p.owner) ? "" : T`Declare war in Diplomacy before you can attack.`);
   }
 
   panel.innerHTML = `
     <h2>${p.name} ${isCapital(p) ? "👑" : ""} <small class="sub" style="font-family:'EB Garamond',serif;font-weight:400;font-size:15px;color:${owner.color}">${owner.name}</small></h2>
     ${msg}
     <div class="grid">
-      <div>💰 Income: ${provinceIncome(p)}</div>
-      <div>⚔️ Manpower: ${p.manpower}</div>
-      <div>🛡️ Army: ${armyText}</div>
-      <div>🏗️ ${p.building === "farm" ? "Farm 🌾 (+1 💰)" : p.building === "castle" ? "Castle 🏰 (×1.5 🛡️)" : "No building"}</div>
+      <div>${T`💰 Income: ${provinceIncome(p)}`}</div>
+      <div>${T`⚔️ Manpower: ${p.manpower}`}</div>
+      <div>${T`🛡️ Army: ${armyText}`}</div>
+      <div>🏗️ ${p.building === "farm" ? T`Farm 🌾 (+1 💰)` : p.building === "castle" ? T`Castle 🏰 (×1.5 🛡️)` : T`No building`}</div>
     </div>
-    ${p.owner !== "independent" && p.core === p.owner ? `<div class="sub">🏠 Home province of ${nameOf(p.owner)}: ${militiaOf(p)} militia defend it.</div>` : ""}
-    ${p.owner !== "independent" && p.core !== p.owner ? `<div class="sub">Conquered${p.core !== "independent" ? ` from ${nameOf(p.core)}` : ""}${p.unrest > 0 ? `, restless for ${p.unrest} more ${p.unrest === 1 ? "year" : "years"}` : ""}. Left without soldiers, it may rise up.</div>` : ""}
-    <div class="sub">Borders: ${neighborNames}</div>
+    ${p.owner !== "independent" && p.core === p.owner ? `<div class="sub">${T`🏠 Home province of ${nameOf(p.owner)}: ${militiaOf(p)} militia defend it.`}</div>` : ""}
+    ${p.owner !== "independent" && p.core !== p.owner ? `<div class="sub">${p.core !== "independent" ? T`Conquered from ${nameOf(p.core)}` : T`Conquered`}${p.unrest > 0 ? T`, restless for ${p.unrest} more ${yearsWord(p.unrest)}` : ""}${T`. Left without soldiers, it may rise up.`}</div>` : ""}
+    <div class="sub">${T`Borders: ${neighborNames}`}</div>
     ${hint ? `<div class="hint">${hint}</div>` : ""}
     <div class="spacer"></div>
     ${yours ? `<div class="row">${recruitButton}${buildButtons}</div>` : ""}
@@ -2052,31 +2377,31 @@ function showBattle(r, onDone) {
   const at = (ms, fn) => battle.timers.push(setTimeout(fn, ms));
 
   $("b-title").textContent = r.defender === game.player
-    ? `${capitalize(att.short)} attacks ${r.place}!`
-    : `Battle of ${r.place}`;
+    ? T`${capitalize(att.short)} attacks ${r.place}!`
+    : T`Battle of ${r.place}`;
   $("b-att-name").innerHTML = crest(r.attacker, 22) + capitalize(att.short);
   $("b-def-name").innerHTML = crest(r.defender, 22) + capitalize(def.short);
   $("b-att").style.setProperty("--side", att.color);
   $("b-def").style.setProperty("--side", def.color);
   $("b-att-count").textContent = r.sent;
   $("b-def-count").textContent = r.defenders;
-  $("b-att-sub").textContent = r.sent === 1 ? "regiment" : "regiments";
+  $("b-att-sub").textContent = r.sent === 1 ? T`regiment` : T`regiments`;
   const why = [];
-  if (r.castle) why.push("castle 🏰");
-  if (r.river) why.push("river 🌊");
+  if (r.castle) why.push(T`castle 🏰`);
+  if (r.river) why.push(T`river 🌊`);
   $("b-def-sub").textContent =
-    `${r.defenders === 1 ? "regiment" : "regiments"} + ${r.militia} militia` +
+    T`${r.defenders === 1 ? T`regiment` : T`regiments`} + ${r.militia} militia` +
     (why.length ? ` · ×${r.bonus.toFixed(2).replace(/0$/, "")} ${why.join(" ")}` : "");
   for (const side of ["att", "def"]) {
     $(`b-${side}`).classList.remove("win", "lose");
     $(`b-${side}-bar`).style.width = "0%";
-    $(`b-${side}-str`).textContent = "strength ?";
+    $(`b-${side}-str`).textContent = T`strength ?`;
     $(`b-${side}-loss`).textContent = "";
     $(`b-${side}-loss`).classList.remove("show");
   }
   $("b-result").textContent = "";
   $("b-result").className = "";
-  $("b-continue").textContent = "Skip";
+  $("b-continue").textContent = T`Skip`;
 
   // The biggest strength either side could possibly roll, for the bars
   const attackMax = r.sent * RULES.luckMax;
@@ -2084,7 +2409,7 @@ function showBattle(r, onDone) {
   const top = Math.max(attackMax, defenseMax, r.attackStrength, r.defenseStrength);
   const setStrength = (side, value) => {
     $(`b-${side}-bar`).style.width = `${Math.round(100 * value / top)}%`;
-    $(`b-${side}-str`).textContent = `strength ${value.toFixed(1)}`;
+    $(`b-${side}-str`).textContent = T`strength ${value.toFixed(1)}`;
   };
 
   // 1. The luck roll: drums, strengths flicker, then settle on the real result
@@ -2126,7 +2451,7 @@ function countDown(id, from, to) {
 
 function showLoss(side, n) {
   const e = document.getElementById(`b-${side}-loss`);
-  e.textContent = n > 0 ? `−${n}` : "no losses";
+  e.textContent = n > 0 ? `−${n}` : T`no losses`;
   e.classList.add("show");
 }
 
@@ -2140,8 +2465,8 @@ function finishBattle() {
 
   $("b-att-bar").style.width = `${Math.round(100 * r.attackStrength / Math.max(r.attackStrength, r.defenseStrength))}%`;
   $("b-def-bar").style.width = `${Math.round(100 * r.defenseStrength / Math.max(r.attackStrength, r.defenseStrength))}%`;
-  $("b-att-str").textContent = `strength ${r.attackStrength.toFixed(1)}`;
-  $("b-def-str").textContent = `strength ${r.defenseStrength.toFixed(1)}`;
+  $("b-att-str").textContent = T`strength ${r.attackStrength.toFixed(1)}`;
+  $("b-def-str").textContent = T`strength ${r.defenseStrength.toFixed(1)}`;
   $("b-att").classList.add(r.won ? "win" : "lose");
   $("b-def").classList.add(r.won ? "lose" : "win");
   $("b-att-count").textContent = r.sent - r.attackLoss;
@@ -2154,14 +2479,14 @@ function finishBattle() {
   $("b-result").className = good ? "good" : "bad";
   if (mine) {
     $("b-result").innerHTML = r.won
-      ? `<b>Victory!</b> ${r.place} is taken.${r.note ? `<br><small>${r.note.trim()}</small>` : ""}`
-      : `<b>Defeat.</b> The attack on ${r.place} failed.`;
+      ? T`<b>Victory!</b> ${r.place} is taken.` + (r.note ? `<br><small>${r.note.trim()}</small>` : "")
+      : T`<b>Defeat.</b> The attack on ${r.place} failed.`;
   } else {
     $("b-result").innerHTML = r.won
-      ? `<b>${r.place} has fallen.</b>${r.note ? `<br><small>${r.note.trim()}</small>` : ""}`
-      : `<b>Held!</b> ${r.place} beat back the attack.`;
+      ? T`<b>${r.place} has fallen.</b>` + (r.note ? `<br><small>${r.note.trim()}</small>` : "")
+      : T`<b>Held!</b> ${r.place} beat back the attack.`;
   }
-  $("b-continue").textContent = "Continue";
+  $("b-continue").textContent = T`Continue`;
   try { navigator.vibrate(good ? 40 : [60, 60, 60]); } catch (e) {}
   playSound("clash");
   battle.timers.push(setTimeout(() => playSound(good ? "victory" : "defeat"), 250));
@@ -2185,15 +2510,15 @@ const guide = { step: null };
 
 const GUIDE_STEPS = [
   { id: "welcome",
-    text: () => `You rule the ${REALMS[game.player].name}: the provinces in your color. Tap one of them to see what you can do there.` },
+    text: () => T`You rule the ${REALMS[game.player].name}: the provinces in your color. Tap one of them to see what you can do there.` },
   { id: "province", next: true,
-    text: () => `Here you can recruit soldiers or build a farm or castle. To send an army, tap a neighboring province. The grey ones are independent: you can attack them any time.` },
+    text: () => T`Here you can recruit soldiers or build a farm or castle. To send an army, tap a neighboring province. The grey ones are independent: you can attack them any time.` },
   { id: "war", next: true,
-    text: () => `To attack another realm, first declare war under Diplomacy 🤝. Both armies then need one turn to mobilize before the fighting can start.` },
+    text: () => T`To attack another realm, first declare war under Diplomacy 🤝. Both armies then need one turn to mobilize before the fighting can start.` },
   { id: "endturn",
-    text: () => `Done for this year? Press End turn. The other realms make their moves, and the map shows you what they did.` },
+    text: () => T`Done for this year? Press End turn. The other realms make their moves, and the map shows you what they did.` },
   { id: "money", next: true, last: true,
-    text: () => `Every year your provinces pay gold, and every regiment costs 1 💰 upkeep. Own ${RULES.provincesToWin} of the ${allProvinces().length} provinces to win. Good luck!` }
+    text: () => T`Every year your provinces pay gold, and every regiment costs 1 💰 upkeep. Own ${RULES.provincesToWin} of the ${allProvinces().length} provinces to win. Good luck!` }
 ];
 
 function guideDone() {
@@ -2236,11 +2561,11 @@ function renderGuide() {
   if (guide.step === null || game.over || busy) { box.style.display = "none"; return; }
   const step = GUIDE_STEPS[guide.step];
   box.innerHTML = `
-    <div class="guide-head">Tip ${guide.step + 1} of ${GUIDE_STEPS.length}</div>
+    <div class="guide-head">${T`Tip ${guide.step + 1} of ${GUIDE_STEPS.length}`}</div>
     <div>${step.text()}</div>
     <div class="guide-buttons">
-      <button data-guide="skip">Skip tips</button>
-      ${step.next ? `<button data-guide="next" class="on">${step.last ? "Got it" : "Next"}</button>` : ""}
+      <button data-guide="skip">${T`Skip tips`}</button>
+      ${step.next ? `<button data-guide="next" class="on">${step.last ? T`Got it` : T`Next`}</button>` : ""}
     </div>`;
   box.style.display = "block";
 }
@@ -2342,7 +2667,7 @@ function playSound(name) {
 function toggleSound() {
   sound.on = !sound.on;
   try { localStorage.setItem("lords-sound", sound.on ? "on" : "off"); } catch (e) {}
-  document.getElementById("sound-btn").textContent = `Sound: ${sound.on ? "on 🔊" : "off 🔇"}`;
+  document.getElementById("sound-btn").textContent = sound.on ? T`Sound: on 🔊` : T`Sound: off 🔇`;
   if (sound.on) playSound("coin");
 }
 
@@ -2414,10 +2739,10 @@ function renderBoardForm() {
   try { name = localStorage.getItem("lords-name") || ""; } catch (e) {}
   const years = game.year - RULES.startYear;
   form.innerHTML = `
-    <div>${crest(game.player, 28)} <b>${REALMS[game.player].name}</b>: ${board.category === "united" ? "united the Low Countries" : "victory"} in ${years} ${years === 1 ? "year" : "years"} (${diff().label.toLowerCase()})</div>
+    <div>${crest(game.player, 28)} <b>${REALMS[game.player].name}</b>: ${board.category === "united" ? T`united the Low Countries in ${years} ${yearsWord(years)}` : T`victory in ${years} ${yearsWord(years)}`} (${tr(diff().label).toLowerCase()})</div>
     <div class="row">
-      <input id="board-name" maxlength="20" placeholder="Your name" value="${name.replace(/"/g, "&quot;")}">
-      <button class="act go" id="board-submit">Add</button>
+      <input id="board-name" maxlength="20" placeholder="${T`Your name`}" value="${name.replace(/"/g, "&quot;")}">
+      <button class="act go" id="board-submit">${T`Add`}</button>
     </div>`;
   form.style.display = "flex";
   document.getElementById("board-submit").onclick = submitScore;
@@ -2445,31 +2770,31 @@ async function submitScore() {
     render();
   } catch (e) {
     button.disabled = false;
-    document.getElementById("board-status").textContent = "Couldn't reach the leaderboard. Check your internet and try again.";
+    document.getElementById("board-status").textContent = T`Couldn't reach the leaderboard. Check your internet and try again.`;
   }
 }
 
 async function loadBoard() {
   document.getElementById("board-diff").innerHTML = Object.entries(DIFFICULTY)
-    .map(([id, d]) => `<button class="${id === board.difficulty ? "on" : ""}" data-board-diff="${id}">${d.label}</button>`).join("");
-  document.getElementById("board-cat").innerHTML = [["victory", "Fastest victory"], ["united", "Whole country"]]
+    .map(([id, d]) => `<button class="${id === board.difficulty ? "on" : ""}" data-board-diff="${id}">${tr(d.label)}</button>`).join("");
+  document.getElementById("board-cat").innerHTML = [["victory", T`Fastest victory`], ["united", T`Whole country`]]
     .map(([id, label]) => `<button class="${id === board.category ? "on" : ""}" data-board-cat="${id}">${label}</button>`).join("");
   const list = document.getElementById("board-list");
   const status = document.getElementById("board-status");
   list.innerHTML = "";
-  status.textContent = "Loading…";
+  status.textContent = T`Loading…`;
   try {
     const rows = await api(`scores?select=name,realm,years,created_at&difficulty=eq.${board.difficulty}&category=eq.${board.category}&order=years.asc,created_at.asc&limit=25`);
-    status.textContent = rows.length ? "" : "No one is on this board yet. Be the first!";
+    status.textContent = rows.length ? "" : T`No one is on this board yet. Be the first!`;
     const h = board.highlight;
     list.innerHTML = rows.map((r, i) => `
       <li class="${h && h.name === r.name && h.years === r.years ? "me" : ""}">
         <span class="rank">${i + 1}</span>${crest(r.realm, 22)}
         <span class="who">${escapeHtml(r.name)}<small>${REALMS[r.realm].name} · ${new Date(r.created_at).toLocaleDateString()}</small></span>
-        <span class="yrs">${r.years} yrs</span>
+        <span class="yrs">${T`${r.years} yrs`}</span>
       </li>`).join("");
   } catch (e) {
-    status.textContent = "The leaderboard can't be reached right now (are you offline?).";
+    status.textContent = T`The leaderboard can't be reached right now (are you offline?).`;
   }
 }
 
@@ -2497,18 +2822,18 @@ async function sendFeedback() {
   const message = document.getElementById("fb-text").value.trim().slice(0, 2000);
   const contact = document.getElementById("fb-contact").value.trim().slice(0, 100);
   const status = document.getElementById("fb-status");
-  if (!message) { status.textContent = "Write a few words first."; return; }
+  if (!message) { status.textContent = T`Write a few words first.`; return; }
   document.getElementById("fb-send").disabled = true;
   try {
     await api("feedback", { method: "POST", body: JSON.stringify({
       message, contact: contact || null, realm: game.player || null,
       year: game.player ? game.year : null, difficulty: game.player ? game.difficulty : null, version: GAME_VERSION
     }) });
-    status.textContent = "Thank you! Your message has been sent.";
+    status.textContent = T`Thank you! Your message has been sent.`;
     document.getElementById("fb-text").value = "";
   } catch (e) {
     document.getElementById("fb-send").disabled = false;
-    status.textContent = "Couldn't send it. Check your internet and try again.";
+    status.textContent = T`Couldn't send it. Check your internet and try again.`;
   }
 }
 
@@ -2557,8 +2882,8 @@ async function buildShareImage() {
   g.addColorStop(0, "#f6edd5"); g.addColorStop(1, "#cbb683");
   c.fillStyle = g; c.fillRect(0, 0, W, H);
   c.fillStyle = "#3b2a1a"; c.textAlign = "center";
-  c.font = "600 26px Cinzel"; c.fillText("A N N O   D O M I N I   " + game.year, W / 2, 78);
-  c.font = "800 62px Cinzel"; c.fillText("Lords of the Low Countries", W / 2, 152);
+  c.font = "600 26px Cinzel"; c.fillText(T`A N N O   D O M I N I   ${game.year}`, W / 2, 78);
+  c.font = "800 62px Cinzel"; c.fillText(T`Lords of the Low Countries`, W / 2, 152);
 
   // The map, framed
   const map = await svgToImage(mapSvg());
@@ -2577,22 +2902,22 @@ async function buildShareImage() {
   c.font = "800 56px Cinzel"; c.fillText(e.title, 260, 1102);
   c.fillStyle = "#3b2a1a";
   c.font = "600 36px 'EB Garamond'";
-  c.fillText(`${REALMS[game.player].name} · ${provincesOf(game.player).length} of ${allProvinces().length} provinces`, 260, 1152);
-  c.fillText(`${years} ${years === 1 ? "year" : "years"} · ${s.won} battles won · ${diff().label} difficulty`, 260, 1198);
+  c.fillText(T`${REALMS[game.player].name} · ${provincesOf(game.player).length} of ${allProvinces().length} provinces`, 260, 1152);
+  c.fillText(T`${years} ${yearsWord(years)} · ${s.won} battles won · ${tr(diff().label)} difficulty`, 260, 1198);
   c.textAlign = "center";
   c.font = "600 28px Cinzel"; c.fillStyle = "#6b5338";
-  c.fillText("Play free: " + SITE_URL.replace("https://", "").replace(/\/$/, ""), W / 2, 1300);
+  c.fillText(T`Play free: ${SITE_URL.replace("https://", "").replace(/\/$/, "")}`, W / 2, 1300);
 
   return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
 }
 
 async function shareGame() {
   const button = document.querySelector("[data-do=share]");
-  if (button) { button.disabled = true; button.textContent = "Drawing…"; }
+  if (button) { button.disabled = true; button.textContent = T`Drawing…`; }
   try {
     const blob = await buildShareImage();
     const file = new File([blob], "lords-of-the-low-countries.png", { type: "image/png" });
-    const text = `I played Lords of the Low Countries as ${REALMS[game.player].name}. Can you do better?`;
+    const text = T`I played Lords of the Low Countries as ${REALMS[game.player].name}. Can you do better?`;
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ files: [file], title: "Lords of the Low Countries", text: `${text} ${SITE_URL}` });
     } else {
@@ -2604,7 +2929,7 @@ async function shareGame() {
   } catch (e) {
     // Closing the share menu without sharing also lands here: nothing to do
   }
-  if (button) { button.disabled = false; button.textContent = "Share 📤"; }
+  if (button) { button.disabled = false; button.textContent = T`Share 📤`; }
 }
 
 // =====================================================================
@@ -2841,8 +3166,8 @@ function showStart() {
   const button = document.getElementById("continue");
   if (save) {
     const owned = Object.values(save.provinces).filter(p => p.owner === save.player).length;
-    const level = (DIFFICULTY[save.difficulty] || DIFFICULTY.normal).label.toLowerCase();
-    button.innerHTML = `${crest(save.player, 40)}<span><b>Continue</b><small>${REALMS[save.player].name} · ${save.year} · ${owned} provinces · ${level}</small></span>`;
+    const level = tr((DIFFICULTY[save.difficulty] || DIFFICULTY.normal).label).toLowerCase();
+    button.innerHTML = `${crest(save.player, 40)}<span><b>${T`Continue`}</b><small>${T`${REALMS[save.player].name} · ${save.year} · ${owned} provinces · ${level}`}</small></span>`;
     button.style.display = "flex";
     button.onclick = () => { hide("start"); continueGame(save); };
   } else {
@@ -2867,8 +3192,8 @@ let chosenDifficulty = "normal";
 try { chosenDifficulty = localStorage.getItem("lords-difficulty") || "normal"; } catch (e) {}
 function renderDifficulty() {
   document.getElementById("difficulty").innerHTML = Object.entries(DIFFICULTY)
-    .map(([id, d]) => `<button class="${id === chosenDifficulty ? "on" : ""}" data-level="${id}">${d.label}</button>`).join("");
-  document.getElementById("difficulty-text").textContent = DIFFICULTY[chosenDifficulty].text;
+    .map(([id, d]) => `<button class="${id === chosenDifficulty ? "on" : ""}" data-level="${id}">${tr(d.label)}</button>`).join("");
+  document.getElementById("difficulty-text").textContent = tr(DIFFICULTY[chosenDifficulty].text);
 }
 document.getElementById("difficulty").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-level]");
@@ -2880,39 +3205,44 @@ document.getElementById("difficulty").addEventListener("click", (e) => {
 
 document.getElementById("topbar").addEventListener("click", (e) => {
   if (!e.target.closest("[data-do=menu]") || game.over) return;
-  document.getElementById("menu-text").textContent =
-    `${REALMS[game.player].name}, ${game.year}, ${diff().label.toLowerCase()}. Your game is saved automatically.`;
+  updateMenuText();
   show("menu");
 });
+function updateMenuText() {
+  document.getElementById("menu-text").textContent =
+    T`${REALMS[game.player].name}, ${game.year}, ${tr(diff().label).toLowerCase()}. Your game is saved automatically.`;
+}
 function closeMenu() { hide("menu"); }
 function quitToStart() { saveGame(); showStart(); }
 function showHelp() { show("help"); }
 function closeHelp() { hide("help"); }
 
-const buttons = document.getElementById("realm-buttons");
-for (const id of ["holland", "utrecht", "gelre", "brabant"]) {
-  const r = REALMS[id];
-  const count = Object.values(PROVINCES).filter(p => p.owner === id).length;
-  const b = document.createElement("button");
-  b.className = "realm-card";
-  b.style.setProperty("--side", r.color);
-  b.innerHTML = `${crest(id, 62)}<span class="rc-name">${r.name}</span><span class="rc-info">${count} provinces<br>${r.note}</span>`;
-  b.onclick = () => {
-    if (loadSave() && !confirmNewGame()) return;
-    hide("start");
-    newGame(id, chosenDifficulty);
-  };
-  buttons.appendChild(b);
+function buildRealmCards() {
+  const buttons = document.getElementById("realm-buttons");
+  buttons.innerHTML = "";
+  for (const id of ["holland", "utrecht", "gelre", "brabant"]) {
+    const r = REALMS[id];
+    const count = Object.values(PROVINCES).filter(p => p.owner === id).length;
+    const b = document.createElement("button");
+    b.className = "realm-card";
+    b.style.setProperty("--side", r.color);
+    b.innerHTML = `${crest(id, 62)}<span class="rc-name">${r.name}</span><span class="rc-info">${T`${count} provinces`}<br>${r.note}</span>`;
+    b.onclick = () => {
+      if (loadSave() && !confirmNewGame()) return;
+      hide("start");
+      newGame(id, chosenDifficulty);
+    };
+    buttons.appendChild(b);
+  }
 }
 drawStartMap();
-renderDifficulty();
 
 // Starting a new game overwrites the save: ask with a second tap
 let newGameArmed = false;
 function confirmNewGame() {
   if (newGameArmed) { newGameArmed = false; return true; }
   newGameArmed = true;
-  document.getElementById("start-msg").textContent = "This replaces your saved game. Tap a realm again to confirm.";
+  document.getElementById("start-msg").textContent = T`This replaces your saved game. Tap a realm again to confirm.`;
   setTimeout(() => {
     newGameArmed = false;
     document.getElementById("start-msg").textContent = "";
@@ -2920,7 +3250,47 @@ function confirmNewGame() {
   return false;
 }
 
-document.getElementById("sound-btn").textContent = `Sound: ${sound.on ? "on 🔊" : "off 🔇"}`;
+// --- Switching language ---
+const REALM_NAMES_EN = {}, PROVINCE_NAMES_EN = {};
+for (const id in REALMS) REALM_NAMES_EN[id] = { name: REALMS[id].name, short: REALMS[id].short, note: REALMS[id].note };
+for (const id in PROVINCES) PROVINCE_NAMES_EN[id] = PROVINCES[id].name;
+
+function setLanguage(lang) {
+  LANG = lang;
+  try { localStorage.setItem("lords-lang", lang); } catch (e) {}
+  document.documentElement.lang = lang;
+  // Realm and province names
+  for (const id in REALMS) Object.assign(REALMS[id], lang === "nl" ? REALM_NAMES_NL[id] : REALM_NAMES_EN[id]);
+  for (const id in PROVINCES) {
+    const name = (lang === "nl" && PROVINCE_NAMES_NL[id]) || PROVINCE_NAMES_EN[id];
+    PROVINCES[id].name = name;
+    if (game.provinces[id]) game.provinces[id].name = name;
+  }
+  // Fixed texts in the page (marked with data-t, placeholders with data-tp)
+  document.querySelectorAll("[data-t]").forEach(el => {
+    if (el.dataset.en === undefined) el.dataset.en = el.innerHTML;
+    el.innerHTML = tr(el.dataset.en);
+  });
+  document.querySelectorAll("[data-tp]").forEach(el => {
+    if (el.dataset.enp === undefined) el.dataset.enp = el.placeholder;
+    el.placeholder = tr(el.dataset.enp);
+  });
+  document.querySelectorAll("[data-lang-set]").forEach(b => b.classList.toggle("on", b.dataset.langSet === lang));
+  document.getElementById("lang-btn").textContent = lang === "nl" ? "🌐 Taal: Nederlands" : "🌐 Language: English";
+  document.getElementById("sound-btn").textContent = sound.on ? T`Sound: on 🔊` : T`Sound: off 🔇`;
+  buildRealmCards();
+  renderDifficulty();
+  if (document.getElementById("start").style.display !== "none") showStart();
+  if (game.player) render();
+  if (document.getElementById("menu").style.display === "flex") updateMenuText();
+}
+
+document.querySelector(".lang-switch").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-lang-set]");
+  if (b) setLanguage(b.dataset.langSet);
+});
+
+setLanguage(LANG);
 if (online()) document.getElementById("start-board").style.display = "";
 // iPhones only allow sound after a first touch: wake the sound system on the first tap
 document.addEventListener("pointerdown", () => { if (sound.on) audio(); }, { once: true });

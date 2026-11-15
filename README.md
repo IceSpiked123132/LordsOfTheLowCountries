@@ -37,6 +37,13 @@ from the province positions, so moving a city on the map changes the borders.
 Push to `main` and GitHub Pages publishes it within a minute or two. Installed copies pick up the
 new version the next time they're opened online.
 
+## Languages
+
+The game is in English and Dutch (picked from the phone's language, with a switch on the start screen and in the menu).
+Every sentence players see is written in English inside `T\`...\`` in `source/template.html`; the Dutch version is in
+the `NL` table at the top of the script, with `{0}`, `{1}`, ... for names and numbers so the word order can change.
+A sentence without a Dutch version simply shows in English.
+
 ## Saves
 
 Games are saved in the browser (`localStorage`, key `lords-of-the-low-countries-save-v1`).
