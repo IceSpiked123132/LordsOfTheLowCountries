@@ -118,16 +118,43 @@
 
   /* Info and action panel at the bottom */
   #panel {
-    min-height: 215px; padding: 10px 14px calc(14px + env(safe-area-inset-bottom));
+    min-height: 196px; padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
     background: var(--parchment-dark); border-top: 3px solid var(--ink);
-    font-size: 16px; display: flex; flex-direction: column; gap: 6px;
+    font-size: 16px; display: flex; flex-direction: column; gap: 8px;
   }
-  #panel h2 { margin: 0; font-size: 19px; }
-  #panel .sub { color: var(--ink-soft); }
-  #panel .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; }
-  #panel .hint { color: var(--ink-soft); font-style: italic; }
-  #panel .msg { background: var(--parchment); border-left: 4px solid var(--ink); padding: 6px 10px; border-radius: 4px; }
+  #panel h2 { margin: 0; font-size: 19px; line-height: 1.15; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  #panel h2 .owner { font-family: 'EB Garamond', serif; font-weight: 400; font-size: 15px; }
+  #panel .sub { color: var(--ink-soft); font-size: 14px; line-height: 1.25; }
+  #panel .hint { color: var(--ink-soft); font-style: italic; line-height: 1.25; }
+  #panel .msg { background: var(--parchment); border-left: 4px solid var(--ink); padding: 6px 10px; border-radius: 4px; line-height: 1.25; }
   #panel .spacer { flex: 1; }
+  /* Four numbers in a strip: icon and value, small label underneath */
+  .stats4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .stats4 > div {
+    background: var(--parchment); border-radius: 8px; padding: 5px 2px 4px; text-align: center; line-height: 1.1;
+  }
+  .stats4 b { display: block; font-family: 'Cinzel', serif; font-weight: 800; font-size: 17px; }
+  .stats4 small { display: block; font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+  /* One line of status chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: var(--parchment); border-radius: 999px; padding: 2px 10px; font-size: 14px; line-height: 1.35; }
+  /* Extra info the player can open when wanted */
+  button.more-toggle {
+    align-self: flex-start; background: none; border: none; padding: 2px 0; cursor: pointer;
+    font-family: 'EB Garamond', serif; font-size: 14px; color: var(--ink-soft); text-decoration: underline;
+  }
+  .more-box { display: flex; flex-direction: column; gap: 4px; }
+  /* Row of buttons at the bottom: two small tools and the main button */
+  .navrow { display: flex; gap: 8px; align-items: stretch; }
+  .navrow button.act { min-height: 48px; }
+  .navrow button.tool {
+    flex: 0 0 27%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; padding: 3px 1px; font-size: 10px; line-height: 1.1; letter-spacing: 0; position: relative;
+  }
+  .navrow button.tool span { font-size: 19px; line-height: 1; }
+  .navrow button.endturn { flex: 1; font-size: 14px; line-height: 1.15; padding: 4px 6px; }
+  .actrow { display: flex; gap: 8px; }
+  .actrow button.act { min-height: 50px; font-size: 13px; line-height: 1.2; padding: 4px 4px; }
   .row { display: flex; gap: 8px; align-items: center; }
   button.act {
     flex: 1; min-height: 46px; padding: 6px 10px;
@@ -306,7 +333,6 @@
     content: ""; position: absolute; top: -6px; right: -4px; width: 14px; height: 14px;
     border-radius: 50%; background: #d23b2b; border: 2px solid var(--parchment);
   }
-  .row.three button.act { font-size: 12px; padding: 4px 3px; }
 
   /* Event cards */
   #eventcard { background: rgba(43, 33, 24, 0.82); z-index: 20; }
@@ -328,11 +354,38 @@
   .end-stats { font-size: 15px; color: var(--ink-soft); }
   .stack { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
   .stack button.act { flex: none; width: 100%; }
+  .stack .pair { display: flex; gap: 10px; }
+  .stack .pair button.act { flex: 1; width: auto; min-height: 44px; font-size: 13px; }
+  .stack .group-label { font-family: 'Cinzel', serif; font-weight: 800; font-size: 11px; letter-spacing: .12em; color: var(--ink-soft); text-align: left; margin: 6px 0 -4px; }
+  button.act.ghost { background: none; border-color: transparent; color: var(--ink-soft); font-family: 'EB Garamond', serif; font-weight: 400; font-size: 16px; min-height: 40px; text-decoration: underline; }
+  #menu p { margin-bottom: 18px; }
   #help .box { width: 100%; max-width: 400px; text-align: left; overflow-y: auto; max-height: 100%; }
   #help h1 { text-align: center; }
   #help h3 { margin: 14px 0 4px; font-size: 16px; }
   #help p, #help li { font-size: 16px; color: var(--ink); margin: 0 0 6px; }
   #help ul { margin: 0; padding-left: 20px; }
+  /* The basics: six short steps */
+  #help .steps { list-style: none; margin: 4px 0 12px; padding: 0; counter-reset: step; }
+  #help .steps li { display: flex; gap: 12px; align-items: flex-start; margin: 0; padding: 8px 2px; line-height: 1.25; border-top: 1px solid rgba(59,42,26,.2); }
+  #help .steps li:first-child { border-top: none; }
+  #help .steps .ico { font-size: 20px; line-height: 1.2; flex: 0 0 26px; text-align: center; }
+  #help .steps b { font-family: 'Cinzel', serif; font-weight: 800; font-size: 15px; margin-right: 6px; }
+  #help .tipbox { background: var(--parchment-dark); border-left: 4px solid var(--ink); border-radius: 6px; padding: 8px 12px; line-height: 1.25; margin-bottom: 4px; }
+  #help .tipbox b { font-family: 'Cinzel', serif; font-weight: 800; font-size: 15px; }
+  /* The details: closed until the player opens one */
+  #help .more-title { margin: 22px 0 2px; font-size: 18px; text-align: center; }
+  #help .more-sub { text-align: center; color: var(--ink-soft); font-size: 15px; margin: 0 0 10px; }
+  #help details { border-top: 1px solid rgba(59,42,26,.25); }
+  #help details:last-of-type { border-bottom: 1px solid rgba(59,42,26,.25); }
+  #help summary {
+    list-style: none; cursor: pointer; padding: 11px 2px; display: flex; justify-content: space-between; align-items: center;
+    font-family: 'Cinzel', serif; font-weight: 800; font-size: 15px;
+  }
+  #help summary::-webkit-details-marker { display: none; }
+  #help summary::after { content: "+"; font-size: 20px; line-height: 1; color: var(--ink-soft); }
+  #help details[open] summary::after { content: "−"; }
+  #help details > div { padding: 0 2px 10px; }
+  #help .credits { font-size: 14px; color: var(--ink-soft); margin-top: 14px; }
   #panel ul.warn { margin: 0; padding-left: 20px; }
   #panel ul.warn li { margin-bottom: 4px; }
 
@@ -409,121 +462,184 @@
     <p id="menu-text"></p>
     <div class="stack">
       <button class="act" onclick="closeMenu()" data-t>Resume</button>
-      <button class="act light" onclick="closeMenu(); openDiplomacy()" data-t>Diplomacy 🤝</button>
       <button class="act light" onclick="showHelp()" data-t>How to play</button>
-      <button class="act light" id="sound-btn" onclick="toggleSound()">Sound: on 🔊</button>
-      <button class="act light" id="lang-btn" onclick="setLanguage(LANG === 'nl' ? 'en' : 'nl')">🌐 Language: English</button>
-      <button class="act light" id="menu-board" onclick="closeMenu(); openBoard(false)" data-t>Leaderboard 🏆</button>
+      <div class="pair">
+        <button class="act light" id="sound-btn" onclick="toggleSound()">Sound: on 🔊</button>
+        <button class="act light" id="lang-btn" onclick="setLanguage(LANG === 'nl' ? 'en' : 'nl')">🌐 English</button>
+      </div>
+      <div class="pair">
+        <button class="act light" id="menu-board" onclick="closeMenu(); openBoard(false)" data-t>Leaderboard 🏆</button>
+        <button class="act light" onclick="closeMenu(); openFeedback()" data-t>Send feedback 💬</button>
+      </div>
       <button class="act light" id="menu-install" style="display:none" onclick="closeMenu(); showInstall()" data-t>Install the app 📲</button>
-      <button class="act light" onclick="closeMenu(); openFeedback()" data-t>Send feedback 💬</button>
-      <button class="act light" onclick="quitToStart()" data-t>Main menu (game is saved)</button>
+      <button class="act ghost" onclick="quitToStart()" data-t>Main menu (game is saved)</button>
     </div>
   </div>
   <div id="help" class="overlay" style="display:none">
     <div class="box">
       <h1 data-t>How to play</h1>
       <div data-lang="en">
-      <h3>Goal</h3>
-      <p>Own 16 of the 31 provinces, or hold the most when the year 1400 comes. You lose if another realm gets there first. Either way you can keep playing, all the way to uniting the whole country. The game only ends for good when you hold all 31, or none.</p>
-      <h3>The realms</h3>
-      <p>Each realm has one ability of its own. The other realms use theirs too.</p>
-      <ul>
-        <li><b>⚓ Holland, Trade:</b> +1 💰 a year for every 2 coastal provinces ⚓, and Hanseatic merchants come twice as often and pay double. The ports are worth fighting for.</li>
-        <li><b>⛪ Utrecht, Prince-Bishop:</b> a church tithe of +2 💰 a year, however small the realm, and any war with the Bishopric can end in peace after 2 years, whoever is winning. Strike, take a province, and make peace.</li>
-        <li><b>🐎 Gelre, Knights:</b> attacks are ×1.3 stronger, but rivers don't protect Gelre's own provinces. Strike first, because waiting behind the rivers won't save you.</li>
-        <li><b>🏙️ Brabant, Rich cities:</b> farms give +2 💰 instead of +1, but recruits cost 6 💰 instead of 5. Build farms early and don't waste regiments.</li>
-      </ul>
-      <h3>Your turn</h3>
-      <ul>
-        <li><b>Recruit:</b> tap your province, press Recruit (5 💰, 1 ⚔️ manpower).</li>
-        <li><b>Move or attack:</b> tap your province, then a neighbor. Pick how many regiments to send. Each regiment acts once per year.</li>
-        <li><b>Build:</b> a farm (+1 💰 per year) or a castle (defenders ×1.5). One building per province, one per year.</li>
-        <li><b>End turn</b> when you're done. The other realms move, then you get your income.</li>
-      </ul>
-      <h3>The map</h3>
-      <p>Pinch or use + and − to zoom, drag to move around. At the start of every year the map shows what the other realms did: an arrow for each attack (dashed with ✕ when it was beaten back) and a flashing yellow border on provinces that changed hands. Attacks on you are played out on the battle card first.</p>
-      <h3>Diplomacy</h3>
-      <ul>
-        <li>You can only attack realms you're at war with (and the grey independents, always). Open Diplomacy 🤝 to declare war, offer peace or propose an alliance.</li>
-        <li>After a declaration, both armies need one turn to mobilize. Nobody can attack until the next turn, so the side that was attacked always gets one turn to prepare.</li>
-        <li>Peace means a 10-year truce. Everyone keeps what they hold.</li>
-        <li>If someone declares war on your ally, you join in, and the other way around.</li>
-        <li>Grow to 12 provinces and your neighbors may form a coalition against you.</li>
-      </ul>
-      <h3>Events</h3>
-      <p>Some years bring an event: harvests, volunteers, Hanseatic merchants, mercenaries, but also storm floods, plague, noble feuds (in Holland: the Hook and Cod wars) and maybe even the Black Death. Fortune is fair: after a bad event you're safe for a few years, and a realm that has lost ground only gets good events.</p>
-      <h3>Losing ground</h3>
-      <ul>
-        <li>Your home provinces are defended by 2 militia instead of 1.</li>
-        <li>A province that was taken from you may rise up and come back to you if the conqueror leaves it without soldiers. Taking back your own provinces causes no unrest.</li>
-        <li>With fewer provinces than you started with, recruits cost only 3 💰.</li>
-      </ul>
-      <h3>Money</h3>
-      <p>Every regiment costs 1 💰 per year. If you can't pay, soldiers desert.</p>
-      <h3>Battles</h3>
-      <ul>
-        <li>Strength is regiments × a bit of luck. The stronger side wins; ties go to the defender.</li>
-        <li>Every province has free militia defending it: 1, or 2 in a realm's own home provinces.</li>
-        <li>Defenders behind a river 🌊 fight ×1.25 (not in Gelre), behind a castle ×1.5 (both: about ×1.9).</li>
-        <li>A conquered province pays nothing for 3 years while it calms down.</li>
-        <li>Lose your capital 👑 and your income drops by a quarter for 3 years. Retake it to end that early.</li>
-      </ul>
-      <h3>Developments</h3>
-      <p>Press <b>Developments 📜</b> to research improvements in three branches: Trade, War and Rule. Every branch has three tiers, and in each tier you choose one of two options, so no two games develop the same way. A development costs gold when you start it and takes 3 years, and only one can be developed at a time. Your first tier I pick is free. Your realm's favourite branch (★) is 20% cheaper. The other realms develop too.</p>
-      <h3>Credits</h3>
-      <p>Made by IceSpiked123132, with Claude. Map data: Natural Earth (public domain). Fonts: Cinzel and EB Garamond (SIL Open Font License). The coats of arms are drawn for this game after the medieval arms of Holland, Utrecht, Gelre and Brabant.</p>
+      <h3>The basics</h3>
+      <ol class="steps">
+        <li><span class="ico">🎯</span><div><b>Goal</b> Own 16 of the 31 provinces before anyone else does, or hold the most when 1400 arrives.</div></li>
+        <li><span class="ico">👆</span><div><b>Select</b> Tap one of your provinces (your color) to see what you can do there.</div></li>
+        <li><span class="ico">🛡️</span><div><b>Recruit</b> A new regiment costs 5 💰 and 1 ⚔️ manpower.</div></li>
+        <li><span class="ico">⚔️</span><div><b>Move or attack</b> Tap your province, then a neighbor, and choose how many regiments to send. Each regiment acts once a year.</div></li>
+        <li><span class="ico">🌾</span><div><b>Build</b> A farm gives +1 💰 a year, a castle makes defenders stronger. One building per province per year.</div></li>
+        <li><span class="ico">⏳</span><div><b>End turn</b> One turn is one year. The other realms move, then you get your income.</div></li>
+      </ol>
+      <div class="tipbox"><b>Watch your money.</b> Every regiment costs 1 💰 a year, and soldiers desert if you can't pay. In a battle the stronger side wins, and a tie goes to the defender.</div>
+
+      <h2 class="more-title">More details</h2>
+      <p class="more-sub">Only if you want to know how it all works.</p>
+      <details>
+        <summary>The realms</summary>
+        <div>
+        <p>Each realm has one ability of its own. The other realms use theirs too.</p>
+        <ul>
+          <li><b>⚓ Holland, Trade:</b> +1 💰 a year for every 2 coastal provinces ⚓, and Hanseatic merchants come twice as often and pay double. The ports are worth fighting for.</li>
+          <li><b>⛪ Utrecht, Prince-Bishop:</b> a church tithe of +2 💰 a year, however small the realm, and any war with the Bishopric can end in peace after 2 years, whoever is winning. Strike, take a province, and make peace.</li>
+          <li><b>🐎 Gelre, Knights:</b> attacks are ×1.3 stronger, but rivers don't protect Gelre's own provinces. Strike first, because waiting behind the rivers won't save you.</li>
+          <li><b>🏙️ Brabant, Rich cities:</b> farms give +2 💰 instead of +1, but recruits cost 6 💰 instead of 5. Build farms early and don't waste regiments.</li>
+        </ul>
+        </div>
+      </details>
+      <details>
+        <summary>Battles</summary>
+        <div>
+        <ul>
+          <li>Strength is regiments × a bit of luck. The stronger side wins; ties go to the defender.</li>
+          <li>Every province has free militia defending it: 1, or 2 in a realm's own home provinces.</li>
+          <li>Defenders behind a river 🌊 fight ×1.25 (not in Gelre), behind a castle ×1.5 (both: about ×1.9).</li>
+          <li>A conquered province pays nothing for 3 years while it calms down.</li>
+          <li>Lose your capital 👑 and your income drops by a quarter for 3 years. Retake it to end that early.</li>
+        </ul>
+        </div>
+      </details>
+      <details>
+        <summary>Diplomacy</summary>
+        <div>
+        <ul>
+          <li>You can only attack realms you're at war with (and the grey independents, always). Open Diplomacy 🤝 to declare war, offer peace or propose an alliance.</li>
+          <li>After a declaration, both armies need one turn to mobilize. Nobody can attack until the next turn, so the side that was attacked always gets one turn to prepare.</li>
+          <li>Peace means a 10-year truce. Everyone keeps what they hold.</li>
+          <li>If someone declares war on your ally, you join in, and the other way around.</li>
+          <li>Grow to 12 provinces and your neighbors may form a coalition against you.</li>
+        </ul>
+        </div>
+      </details>
+      <details>
+        <summary>Developments</summary>
+        <div>
+        <p>Press <b>Developments 📜</b> to research improvements in three branches: Trade, War and Rule. Every branch has three tiers, and in each tier you choose one of two options, so no two games develop the same way. A development costs gold when you start it and takes 3 years, and only one can be developed at a time. Your first tier I pick is free. Your realm's favourite branch (★) is 20% cheaper. The other realms develop too.</p>
+        </div>
+      </details>
+      <details>
+        <summary>The map</summary>
+        <div>
+        <p>Pinch or use + and − to zoom, drag to move around. At the start of every year the map shows what the other realms did: an arrow for each attack (dashed with ✕ when it was beaten back) and a flashing yellow border on provinces that changed hands. Attacks on you are played out on the battle card first.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Events</summary>
+        <div>
+        <p>Some years bring an event: harvests, volunteers, Hanseatic merchants, mercenaries, but also storm floods, plague, noble feuds (in Holland: the Hook and Cod wars) and maybe even the Black Death. Fortune is fair: after a bad event you're safe for a few years, and a realm that has lost ground only gets good events.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Falling behind</summary>
+        <div>
+        <ul>
+          <li>Your home provinces are defended by 2 militia instead of 1.</li>
+          <li>A province that was taken from you may rise up and come back to you if the conqueror leaves it without soldiers. Taking back your own provinces causes no unrest.</li>
+          <li>With fewer provinces than you started with, recruits cost only 3 💰.</li>
+        </ul>
+        </div>
+      </details>
+      <p class="credits">Made by IceSpiked123132, with Claude. Map data: Natural Earth (public domain). Fonts: Cinzel and EB Garamond (SIL Open Font License). The coats of arms are drawn for this game after the medieval arms of Holland, Utrecht, Gelre and Brabant.</p>
       </div>
+
       <div data-lang="nl">
-      <h3>Doel</h3>
-      <p>Bezit 16 van de 31 provincies, of heb de meeste als het jaar 1400 aanbreekt. Je verliest als een ander rijk je voor is. Hoe dan ook kun je doorspelen, helemaal tot het hele land verenigd is. Het spel is pas echt voorbij als je alle 31 provincies hebt, of geen enkele.</p>
-      <h3>De rijken</h3>
-      <p>Elk rijk heeft een eigen vaardigheid. De andere rijken gebruiken die van hen ook.</p>
-      <ul>
-        <li><b>⚓ Holland, Handel:</b> +1 💰 per jaar voor elke 2 kustprovincies ⚓, en Hanzekooplieden komen twee keer zo vaak en betalen het dubbele. De havens zijn het vechten waard.</li>
-        <li><b>⛪ Utrecht, Prins-bisschop:</b> een kerkelijke tiende van +2 💰 per jaar, hoe klein het rijk ook is, en elke oorlog met het Sticht kan na 2 jaar eindigen in vrede, wie er ook wint. Sla toe, neem een provincie en sluit vrede.</li>
-        <li><b>🐎 Gelre, Ridders:</b> aanvallen zijn ×1,3 sterker, maar rivieren beschermen de eigen provincies van Gelre niet. Sla als eerste toe, want wachten achter de rivieren redt je niet.</li>
-        <li><b>🏙️ Brabant, Rijke steden:</b> boerderijen leveren +2 💰 op in plaats van +1, maar rekruten kosten 6 💰 in plaats van 5. Bouw vroeg boerderijen en verspil geen regimenten.</li>
-      </ul>
-      <h3>Jouw beurt</h3>
-      <ul>
-        <li><b>Rekruteren:</b> tik op je provincie en druk op Rekruteren (5 💰, 1 ⚔️ mankracht).</li>
-        <li><b>Verplaatsen of aanvallen:</b> tik op je provincie en dan op een buurprovincie. Kies hoeveel regimenten je stuurt. Elk regiment kan één keer per jaar iets doen.</li>
-        <li><b>Bouwen:</b> een boerderij (+1 💰 per jaar) of een kasteel (verdedigers ×1,5). Eén gebouw per provincie, één per jaar.</li>
-        <li><b>Beurt beëindigen</b> als je klaar bent. De andere rijken zijn dan aan zet, daarna krijg je je inkomen.</li>
-      </ul>
-      <h3>De kaart</h3>
-      <p>Knijp of gebruik + en − om te zoomen, sleep om rond te kijken. Aan het begin van elk jaar laat de kaart zien wat de andere rijken deden: een pijl voor elke aanval (gestippeld met ✕ als die werd afgeslagen) en een knipperende gele rand om provincies die van eigenaar wisselden. Aanvallen op jou zie je eerst als veldslag.</p>
-      <h3>Diplomatie</h3>
-      <ul>
-        <li>Je kunt alleen rijken aanvallen waarmee je in oorlog bent (en de grijze onafhankelijken, altijd). Open Diplomatie 🤝 om de oorlog te verklaren, vrede aan te bieden of een verbond voor te stellen.</li>
-        <li>Na een oorlogsverklaring hebben beide legers één beurt nodig om te mobiliseren. Niemand kan aanvallen tot de volgende beurt, dus wie wordt aangevallen krijgt altijd één beurt om zich voor te bereiden.</li>
-        <li>Vrede betekent een bestand van 10 jaar. Iedereen houdt wat hij heeft.</li>
-        <li>Als iemand je bondgenoot de oorlog verklaart, doe jij mee, en andersom.</li>
-        <li>Groei je tot 12 provincies, dan kunnen je buren een coalitie tegen je vormen.</li>
-      </ul>
-      <h3>Gebeurtenissen</h3>
-      <p>Sommige jaren brengen een gebeurtenis: oogsten, vrijwilligers, Hanzekooplieden, huurlingen, maar ook stormvloeden, pest, adellijke vetes (in Holland: de Hoekse en Kabeljauwse twisten) en misschien zelfs de Zwarte Dood. Het lot is eerlijk: na een tegenslag ben je een paar jaar veilig, en een rijk dat terrein heeft verloren krijgt alleen nog goede gebeurtenissen.</p>
-      <h3>Terrein verloren?</h3>
-      <ul>
-        <li>Je thuisprovincies worden verdedigd door 2 militie in plaats van 1.</li>
-        <li>Een provincie die van je is afgepakt, kan in opstand komen en naar je terugkeren als de veroveraar er geen soldaten laat. Je eigen provincies terugnemen geeft geen onrust.</li>
-        <li>Met minder provincies dan waarmee je begon, kosten rekruten maar 3 💰.</li>
-      </ul>
-      <h3>Geld</h3>
-      <p>Elk regiment kost 1 💰 per jaar. Kun je niet betalen, dan deserteren er soldaten.</p>
-      <h3>Veldslagen</h3>
-      <ul>
-        <li>Kracht is regimenten × een beetje geluk. De sterkste kant wint; bij gelijkspel wint de verdediger.</li>
-        <li>Elke provincie wordt gratis verdedigd door militie: 1, of 2 in de eigen thuisprovincies van een rijk.</li>
-        <li>Verdedigers achter een rivier 🌊 vechten ×1,25 (niet in Gelre), achter een kasteel ×1,5 (allebei: ongeveer ×1,9).</li>
-        <li>Een veroverde provincie levert 3 jaar niets op terwijl de rust terugkeert.</li>
-        <li>Verlies je je hoofdstad 👑, dan daalt je inkomen 3 jaar lang met een kwart. Herover haar om dat eerder te beëindigen.</li>
-      </ul>
-      <h3>Ontwikkelingen</h3>
-      <p>Druk op <b>Ontwikkelingen 📜</b> om verbeteringen te onderzoeken in drie takken: Handel, Oorlog en Bestuur. Elke tak heeft drie niveaus, en per niveau kies je één van twee opties, dus geen twee spellen ontwikkelen zich hetzelfde. Een ontwikkeling kost goud als je begint en duurt 3 jaar, en je kunt er maar één tegelijk ontwikkelen. Je eerste keuze van niveau I is gratis. De favoriete tak van je rijk (★) is 20% goedkoper. De andere rijken ontwikkelen ook.</p>
-      <h3>Makers</h3>
-      <p>Gemaakt door IceSpiked123132, met Claude. Kaartgegevens: Natural Earth (publiek domein). Lettertypen: Cinzel en EB Garamond (SIL Open Font License). De wapens zijn voor dit spel getekend naar de middeleeuwse wapens van Holland, Utrecht, Gelre en Brabant.</p>
+      <h3>De basis</h3>
+      <ol class="steps">
+        <li><span class="ico">🎯</span><div><b>Doel</b> Bezit 16 van de 31 provincies voordat een ander dat doet, of heb de meeste als 1400 aanbreekt.</div></li>
+        <li><span class="ico">👆</span><div><b>Kiezen</b> Tik op een van je provincies (jouw kleur) om te zien wat je daar kunt doen.</div></li>
+        <li><span class="ico">🛡️</span><div><b>Rekruteren</b> Een nieuw regiment kost 5 💰 en 1 ⚔️ mankracht.</div></li>
+        <li><span class="ico">⚔️</span><div><b>Verplaatsen of aanvallen</b> Tik op je provincie en dan op een buurprovincie, en kies hoeveel regimenten je stuurt. Elk regiment kan één keer per jaar iets doen.</div></li>
+        <li><span class="ico">🌾</span><div><b>Bouwen</b> Een boerderij levert +1 💰 per jaar op, een kasteel maakt verdedigers sterker. Eén gebouw per provincie per jaar.</div></li>
+        <li><span class="ico">⏳</span><div><b>Beurt beëindigen</b> Eén beurt is één jaar. De andere rijken zijn aan zet, daarna krijg je je inkomen.</div></li>
+      </ol>
+      <div class="tipbox"><b>Let op je geld.</b> Elk regiment kost 1 💰 per jaar, en soldaten deserteren als je niet kunt betalen. In een veldslag wint de sterkste, bij gelijkspel wint de verdediger.</div>
+
+      <h2 class="more-title">Meer details</h2>
+      <p class="more-sub">Alleen als je wilt weten hoe alles werkt.</p>
+      <details>
+        <summary>De rijken</summary>
+        <div>
+        <p>Elk rijk heeft een eigen vaardigheid. De andere rijken gebruiken die van hen ook.</p>
+        <ul>
+          <li><b>⚓ Holland, Handel:</b> +1 💰 per jaar voor elke 2 kustprovincies ⚓, en Hanzekooplieden komen twee keer zo vaak en betalen het dubbele. De havens zijn het vechten waard.</li>
+          <li><b>⛪ Utrecht, Prins-bisschop:</b> een kerkelijke tiende van +2 💰 per jaar, hoe klein het rijk ook is, en elke oorlog met het Sticht kan na 2 jaar eindigen in vrede, wie er ook wint. Sla toe, neem een provincie en sluit vrede.</li>
+          <li><b>🐎 Gelre, Ridders:</b> aanvallen zijn ×1,3 sterker, maar rivieren beschermen de eigen provincies van Gelre niet. Sla als eerste toe, want wachten achter de rivieren redt je niet.</li>
+          <li><b>🏙️ Brabant, Rijke steden:</b> boerderijen leveren +2 💰 op in plaats van +1, maar rekruten kosten 6 💰 in plaats van 5. Bouw vroeg boerderijen en verspil geen regimenten.</li>
+        </ul>
+        </div>
+      </details>
+      <details>
+        <summary>Veldslagen</summary>
+        <div>
+        <ul>
+          <li>Kracht is regimenten × een beetje geluk. De sterkste kant wint; bij gelijkspel wint de verdediger.</li>
+          <li>Elke provincie wordt gratis verdedigd door militie: 1, of 2 in de eigen thuisprovincies van een rijk.</li>
+          <li>Verdedigers achter een rivier 🌊 vechten ×1,25 (niet in Gelre), achter een kasteel ×1,5 (allebei: ongeveer ×1,9).</li>
+          <li>Een veroverde provincie levert 3 jaar niets op terwijl de rust terugkeert.</li>
+          <li>Verlies je je hoofdstad 👑, dan daalt je inkomen 3 jaar lang met een kwart. Herover haar om dat eerder te beëindigen.</li>
+        </ul>
+        </div>
+      </details>
+      <details>
+        <summary>Diplomatie</summary>
+        <div>
+        <ul>
+          <li>Je kunt alleen rijken aanvallen waarmee je in oorlog bent (en de grijze onafhankelijken, altijd). Open Diplomatie 🤝 om de oorlog te verklaren, vrede aan te bieden of een verbond voor te stellen.</li>
+          <li>Na een oorlogsverklaring hebben beide legers één beurt nodig om te mobiliseren. Niemand kan aanvallen tot de volgende beurt, dus wie wordt aangevallen krijgt altijd één beurt om zich voor te bereiden.</li>
+          <li>Vrede betekent een bestand van 10 jaar. Iedereen houdt wat hij heeft.</li>
+          <li>Als iemand je bondgenoot de oorlog verklaart, doe jij mee, en andersom.</li>
+          <li>Groei je tot 12 provincies, dan kunnen je buren een coalitie tegen je vormen.</li>
+        </ul>
+        </div>
+      </details>
+      <details>
+        <summary>Ontwikkelingen</summary>
+        <div>
+        <p>Druk op <b>Ontwikkelingen 📜</b> om verbeteringen te onderzoeken in drie takken: Handel, Oorlog en Bestuur. Elke tak heeft drie niveaus, en per niveau kies je één van twee opties, dus geen twee spellen ontwikkelen zich hetzelfde. Een ontwikkeling kost goud als je begint en duurt 3 jaar, en je kunt er maar één tegelijk ontwikkelen. Je eerste keuze van niveau I is gratis. De favoriete tak van je rijk (★) is 20% goedkoper. De andere rijken ontwikkelen ook.</p>
+        </div>
+      </details>
+      <details>
+        <summary>De kaart</summary>
+        <div>
+        <p>Knijp of gebruik + en − om te zoomen, sleep om rond te kijken. Aan het begin van elk jaar laat de kaart zien wat de andere rijken deden: een pijl voor elke aanval (gestippeld met ✕ als die werd afgeslagen) en een knipperende gele rand om provincies die van eigenaar wisselden. Aanvallen op jou zie je eerst als veldslag.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Gebeurtenissen</summary>
+        <div>
+        <p>Sommige jaren brengen een gebeurtenis: oogsten, vrijwilligers, Hanzekooplieden, huurlingen, maar ook stormvloeden, pest, adellijke vetes (in Holland: de Hoekse en Kabeljauwse twisten) en misschien zelfs de Zwarte Dood. Het lot is eerlijk: na een tegenslag ben je een paar jaar veilig, en een rijk dat terrein heeft verloren krijgt alleen nog goede gebeurtenissen.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Terrein verloren?</summary>
+        <div>
+        <ul>
+          <li>Je thuisprovincies worden verdedigd door 2 militie in plaats van 1.</li>
+          <li>Een provincie die van je is afgepakt, kan in opstand komen en naar je terugkeren als de veroveraar er geen soldaten laat. Je eigen provincies terugnemen geeft geen onrust.</li>
+          <li>Met minder provincies dan waarmee je begon, kosten rekruten maar 3 💰.</li>
+        </ul>
+        </div>
+      </details>
+      <p class="credits">Gemaakt door IceSpiked123132, met Claude. Kaartgegevens: Natural Earth (publiek domein). Lettertypen: Cinzel en EB Garamond (SIL Open Font License). De wapens zijn voor dit spel getekend naar de middeleeuwse wapens van Holland, Utrecht, Gelre en Brabant.</p>
       </div>
+
       <button class="act" style="width:100%;margin-top:16px" onclick="closeHelp()" data-t>Got it</button>
       <button class="act light" style="width:100%;margin-top:8px" onclick="closeHelp(); restartGuide()" data-t>Show the first-game tips again</button>
     </div>
@@ -794,7 +910,6 @@ const NL = {
   "Fight on": "Doorvechten",
   "New game": "Nieuw spel",
   "End turn ⏳": "Beurt beëindigen ⏳",
-  "Diplomacy 🤝": "Diplomatie 🤝",
   "End the year?": "Het jaar afsluiten?",
   "Go back": "Terug",
   "End turn anyway": "Toch beëindigen",
@@ -816,7 +931,7 @@ const NL = {
   "Own {} of the {} provinces to win.": "Bezit {0} van de {1} provincies om te winnen.",
   "⚔️ At war with {}": "⚔️ In oorlog met {0}",
   "🕊️ At peace with every realm": "🕊️ In vrede met alle rijken",
-  " · 🤝 Allied with {}": " · 🤝 Bondgenoot van {0}",
+  "🤝 Allied with {}": "🤝 Bondgenoot van {0}",
   "Tap one of your provinces to recruit or to send its army.": "Tik op een van je provincies om te rekruteren of een leger te sturen.",
   "{} ({} ready)": "{0} ({1} klaar)",
   "Tap a neighboring province to move or attack.": "Tik op een aangrenzende provincie om te verplaatsen of aan te vallen.",
@@ -829,11 +944,6 @@ const NL = {
   "Independent.": "Onafhankelijk.",
   "To attack, first tap one of your own provinces next to it.": "Tik eerst op een van je eigen provincies ernaast om aan te vallen.",
   "Declare war in Diplomacy before you can attack.": "Verklaar eerst de oorlog via Diplomatie voordat je kunt aanvallen.",
-  "💰 Income: {}": "💰 Inkomen: {0}",
-  "⚔️ Manpower: {}": "⚔️ Mankracht: {0}",
-  "🛡️ Army: {}": "🛡️ Leger: {0}",
-  "Farm 🌾 (+{} 💰)": "Boerderij 🌾 (+{0} 💰)",
-  "Castle 🏰 (×1.5 🛡️)": "Kasteel 🏰 (×1,5 🛡️)",
   "No building": "Geen gebouw",
   "🏠 Home province of {}: {} militia defend it.": "🏠 Thuisprovincie van {0}: verdedigd door {1} militie.",
   "Conquered from {}": "Veroverd op {0}",
@@ -922,6 +1032,15 @@ const NL = {
   "Press and hold the image to save or share it.": "Houd de afbeelding ingedrukt om haar op te slaan of te delen.",
   "Download the image": "Download de afbeelding",
   "Diplomacy": "Diplomatie",
+  "Details ▾": "Details ▾",
+  "Hide details ▴": "Verberg details ▴",
+  "🎁 Free first development": "🎁 Gratis eerste ontwikkeling",
+  "Income": "Inkomen",
+  "Manpower": "Mankracht",
+  "Army": "Leger",
+  "{} ready": "{0} klaar",
+  "Farm": "Boerderij",
+  "Castle": "Kasteel",
   "Back to the map": "Terug naar de kaart",
   "Your message": "Je bericht",
   "Email or social handle, if you'd like an answer (optional)": "E-mail of socialmedianaam, als je een antwoord wilt (optioneel)",
@@ -957,7 +1076,6 @@ const NL = {
   "Choose <b>Add to Home Screen</b>.": "Kies <b>Zet op beginscherm</b>.",
   // Developments
   "Developments": "Ontwikkelingen",
-  "Developments 📜": "Ontwikkelingen 📜",
   "Trade": "Handel",
   "War": "Oorlog",
   "Rule": "Bestuur",
@@ -1038,7 +1156,6 @@ const NL = {
   "Develop for {} 💰": "Ontwikkelen voor {0} 💰",
   "A storm flood strikes {}. Your dikes save the farm, but the province pays nothing for 2 years.": "Een stormvloed treft {0}. Je dijken redden de boerderij, maar de provincie levert 2 jaar niets op.",
   "pikemen 🔱": "piekeniers 🔱",
-  "🎁 You may pick a free first development.": "🎁 Je mag een gratis eerste ontwikkeling kiezen.",
   "Mercenary": "Huurling"
 };
 
@@ -2980,6 +3097,8 @@ function renderTopbar() {
     </div>`;
 }
 
+let panelDetails = false;   // the player opened the extra info in the bottom panel
+
 function renderPanel() {
   const panel = document.getElementById("panel");
 
@@ -3007,8 +3126,10 @@ function renderPanel() {
 
   const msg = game.message ? `<div class="msg">${game.message}</div>` : "";
   const endTurnButton = `<button class="act" data-do="endturn">${T`End turn ⏳`}</button>`;
-  const diploButton = `<button class="act light" data-do="diplomacy">${T`Diplomacy 🤝`}</button>`;
-  const devButton = `<button class="act light${devAttention() ? " attn" : ""}" data-do="developments">${T`Developments 📜`}</button>`;
+  const diploButton = `<button class="act light tool" data-do="diplomacy"><span>🤝</span>${T`Diplomacy`}</button>`;
+  const devButton = `<button class="act light tool${devAttention() ? " attn" : ""}" data-do="developments"><span>📜</span>${T`Developments`}</button>`;
+  const navRow = `<div class="navrow">${diploButton}${devButton}${endTurnButton.replace('class="act"', 'class="act endturn"')}</div>`;
+  const detailsToggle = `<button class="more-toggle" data-do="details">${panelDetails ? T`Hide details ▴` : T`Details ▾`}</button>`;
 
   // --- The player pressed End turn but still has things to do ---
   if (game.confirmEnd) {
@@ -3065,20 +3186,25 @@ function renderPanel() {
   if (!game.selected) {
     const r = REALMS[game.player];
     const wars = warsOf(game.player).map(nameOf), allies = alliesOf(game.player).map(nameOf);
-    const danger = behind(game.player)
-      ? `<div class="hint">${T`Your realm has lost ground: recruits cost only ${RULES.underdogRecruitGold} 💰, and fortune favors you.`}</div>` : "";
     const total = allProvinces().length;
     const goal = game.endless ? T`Conquer all ${total} provinces to unite the Low Countries.` : T`Own ${RULES.provincesToWin} of the ${total} provinces to win.`;
+    const danger = behind(game.player)
+      ? `<div class="hint">${T`Your realm has lost ground: recruits cost only ${RULES.underdogRecruitGold} 💰, and fortune favors you.`}</div>` : "";
     panel.innerHTML = `
-      <h2 style="display:flex;align-items:center;gap:8px">${crest(game.player, 26)}${r.name}</h2>
-      <div class="trait"><b>${traitName(game.player)}:</b> ${traitLong(game.player)}</div>
+      <h2>${crest(game.player, 26)}${r.name}</h2>
+      <div class="chips">
+        <span class="chip"><b>${traitName(game.player)}</b></span>
+        <span class="chip">${wars.length ? T`⚔️ At war with ${wars.join(", ")}` : T`🕊️ At peace with every realm`}</span>
+        ${allies.length ? `<span class="chip">${T`🤝 Allied with ${allies.join(", ")}`}</span>` : ""}
+        ${devOf(game.player).free ? `<span class="chip">${T`🎁 Free first development`}</span>` : ""}
+      </div>
       ${msg}
-      <div>${wars.length ? T`⚔️ At war with ${wars.join(", ")}` : T`🕊️ At peace with every realm`}${allies.length ? T` · 🤝 Allied with ${allies.join(", ")}` : ""}</div>
       ${danger}
-      ${devOf(game.player).free ? `<div class="hint">${T`🎁 You may pick a free first development.`}</div>` : ""}
       <div class="hint">${T`Tap one of your provinces to recruit or to send its army.`} ${goal}</div>
+      ${panelDetails ? `<div class="more-box"><div class="sub">${traitLong(game.player)}</div></div>` : ""}
+      ${detailsToggle}
       <div class="spacer"></div>
-      <div class="row three">${diploButton}${devButton}${endTurnButton}</div>`;
+      ${navRow}`;
     return;
   }
 
@@ -3115,22 +3241,34 @@ function renderPanel() {
       : atWar(game.player, p.owner) ? "" : T`Declare war in Diplomacy before you can attack.`);
   }
 
+  const buildingValue = p.building === "farm" ? "🌾" : p.building === "castle" ? "🏰" : "🏗️";
+  const buildingLabel = p.building === "farm" ? T`Farm` : p.building === "castle" ? T`Castle` : T`No building`;
+  const armyLabel = yours && p.army > 0 ? T`${ready(p)} ready` : T`Army`;
+  const homeLine = p.owner !== "independent" && p.core === p.owner
+    ? `<div class="sub">${T`🏠 Home province of ${nameOf(p.owner)}: ${militiaOf(p)} militia defend it.`}</div>` : "";
+  const conqueredLine = p.owner !== "independent" && p.core !== p.owner
+    ? `<div class="sub">${p.core !== "independent" ? T`Conquered from ${nameOf(p.core)}` : T`Conquered`}${p.unrest > 0 ? T`, restless for ${p.unrest} more ${yearsWord(p.unrest)}` : ""}${T`. Left without soldiers, it may rise up.`}</div>` : "";
+  const details = panelDetails ? `
+    <div class="more-box">
+      ${homeLine}${conqueredLine}
+      <div class="sub">${T`Borders: ${neighborNames}`}${COASTAL.includes(p.id) ? T` · ⚓ on the coast` : ""}</div>
+    </div>` : "";
+
   panel.innerHTML = `
-    <h2>${p.name} ${isCapital(p) ? "👑" : ""} <small class="sub" style="font-family:'EB Garamond',serif;font-weight:400;font-size:15px;color:${owner.color}">${owner.name}</small></h2>
+    <h2>${p.name} ${isCapital(p) ? "👑" : ""} <span class="owner" style="color:${owner.color}">${owner.name}</span></h2>
     ${msg}
-    <div class="grid">
-      <div>${T`💰 Income: ${provinceIncome(p)}`}</div>
-      <div>${T`⚔️ Manpower: ${p.manpower}`}</div>
-      <div>${T`🛡️ Army: ${armyText}`}</div>
-      <div>🏗️ ${p.building === "farm" ? T`Farm 🌾 (+${farmBonusOf(p.owner)} 💰)` : p.building === "castle" ? T`Castle 🏰 (×1.5 🛡️)` : T`No building`}</div>
+    <div class="stats4">
+      <div><b>💰 ${provinceIncome(p)}</b><small>${T`Income`}</small></div>
+      <div><b>⚔️ ${p.manpower}</b><small>${T`Manpower`}</small></div>
+      <div><b>🛡️ ${p.army}</b><small>${armyLabel}</small></div>
+      <div><b>${buildingValue}</b><small>${buildingLabel}</small></div>
     </div>
-    ${p.owner !== "independent" && p.core === p.owner ? `<div class="sub">${T`🏠 Home province of ${nameOf(p.owner)}: ${militiaOf(p)} militia defend it.`}</div>` : ""}
-    ${p.owner !== "independent" && p.core !== p.owner ? `<div class="sub">${p.core !== "independent" ? T`Conquered from ${nameOf(p.core)}` : T`Conquered`}${p.unrest > 0 ? T`, restless for ${p.unrest} more ${yearsWord(p.unrest)}` : ""}${T`. Left without soldiers, it may rise up.`}</div>` : ""}
-    <div class="sub">${T`Borders: ${neighborNames}`}${COASTAL.includes(p.id) ? T` · ⚓ on the coast` : ""}</div>
     ${hint ? `<div class="hint">${hint}</div>` : ""}
+    ${details}
+    ${detailsToggle}
     <div class="spacer"></div>
-    ${yours ? `<div class="row">${recruitButton}${buildButtons}</div>` : ""}
-    <div class="row three">${yours || p.owner === "independent" ? "" : diploButton}${devButton}${endTurnButton}</div>`;
+    ${yours ? `<div class="actrow">${recruitButton}${buildButtons}</div>` : ""}
+    ${navRow}`;
 }
 
 // =====================================================================
@@ -3468,7 +3606,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-16.7";
+const GAME_VERSION = "2026-11-16.8";
 
 // Leaderboard name rules. The same rules run in the database (source/supabase-security.sql),
 // this copy only gives the player a friendly message first. The word list is generated
@@ -4104,6 +4242,7 @@ document.getElementById("panel").addEventListener("click", (e) => {
   if (action === "board") { openBoard(false); return; }
   if (action === "newgame") { clearSave(); game.over = true; game.endInfo = null; showStart(); return; }
   if (game.over) return;
+  if (action === "details") { panelDetails = !panelDetails; render(); return; }
   if (action === "diplomacy") { openDiplomacy(); return; }
   if (action === "developments") { openDevelopments(); return; }
 
@@ -4265,7 +4404,7 @@ function setLanguage(lang) {
     el.placeholder = tr(el.dataset.enp);
   });
   document.querySelectorAll("[data-lang-set]").forEach(b => b.classList.toggle("on", b.dataset.langSet === lang));
-  document.getElementById("lang-btn").textContent = lang === "nl" ? "🌐 Taal: Nederlands" : "🌐 Language: English";
+  document.getElementById("lang-btn").textContent = lang === "nl" ? "🌐 Nederlands" : "🌐 English";
   document.getElementById("sound-btn").textContent = sound.on ? T`Sound: on 🔊` : T`Sound: off 🔇`;
   buildRealmCards();
   renderDifficulty();
