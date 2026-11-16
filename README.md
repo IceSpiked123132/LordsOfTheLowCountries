@@ -20,7 +20,7 @@ Play it at https://icespiked123132.github.io/LordsOfTheLowCountries/
 
 ## Changing the game
 
-Most balance changes are a single number in the `RULES` block near the top of `source/template.html`.
+Most balance changes are a single number in the `RULES` block near the top of `source/template.html`. Each realm's own ability (trade, tithe, knights, rich cities) is tuned in the `TRAITS` block right below it.
 Province income, manpower and positions are in `PROVINCES` just below it.
 
 After editing, rebuild `index.html`:

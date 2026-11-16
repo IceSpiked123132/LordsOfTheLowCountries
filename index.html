@@ -177,6 +177,9 @@
   .realm-card:active { transform: scale(.96); }
   .rc-name { font-family: 'Cinzel', serif; font-weight: 800; font-size: 14px; line-height: 1.15; }
   .rc-info { font-size: 13px; color: var(--ink-soft); line-height: 1.2; }
+  .rc-trait { font-size: 13px; line-height: 1.2; margin-top: 2px; }
+  .rc-trait b { font-family: 'Cinzel', serif; font-size: 12px; }
+  .trait { font-size: 14px; line-height: 1.25; margin: 2px 0 4px; }
   .continue-btn {
     width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer;
     background: var(--ink); color: var(--parchment); border: 2px solid var(--ink); border-radius: 10px; text-align: left;
@@ -378,6 +381,14 @@
       <div data-lang="en">
       <h3>Goal</h3>
       <p>Own 16 of the 31 provinces, or hold the most when the year 1400 comes. You lose if another realm gets there first. Either way you can keep playing, all the way to uniting the whole country. The game only ends for good when you hold all 31, or none.</p>
+      <h3>The realms</h3>
+      <p>Each realm has one ability of its own. The other realms use theirs too.</p>
+      <ul>
+        <li><b>⚓ Holland, Trade:</b> +1 💰 a year for every 2 coastal provinces ⚓, and Hanseatic merchants come twice as often and pay double. The ports are worth fighting for.</li>
+        <li><b>⛪ Utrecht, Prince-Bishop:</b> a church tithe of +2 💰 a year, however small the realm, and any war with the Bishopric can end in peace after 2 years, whoever is winning. Strike, take a province, and make peace.</li>
+        <li><b>🐎 Gelre, Knights:</b> attacks are ×1.3 stronger, but rivers don't protect Gelre's own provinces. Strike first, because waiting behind the rivers won't save you.</li>
+        <li><b>🏙️ Brabant, Rich cities:</b> farms give +2 💰 instead of +1, but recruits cost 6 💰 instead of 5. Build farms early and don't waste regiments.</li>
+      </ul>
       <h3>Your turn</h3>
       <ul>
         <li><b>Recruit:</b> tap your province, press Recruit (5 💰, 1 ⚔️ manpower).</li>
@@ -409,7 +420,7 @@
       <ul>
         <li>Strength is regiments × a bit of luck. The stronger side wins; ties go to the defender.</li>
         <li>Every province has free militia defending it: 1, or 2 in a realm's own home provinces.</li>
-        <li>Defenders behind a river 🌊 fight ×1.25, behind a castle ×1.5 (both: about ×1.9).</li>
+        <li>Defenders behind a river 🌊 fight ×1.25 (not in Gelre), behind a castle ×1.5 (both: about ×1.9).</li>
         <li>A conquered province pays nothing for 3 years while it calms down.</li>
         <li>Lose your capital 👑 and your income drops by a quarter for 3 years. Retake it to end that early.</li>
       </ul>
@@ -419,6 +430,14 @@
       <div data-lang="nl">
       <h3>Doel</h3>
       <p>Bezit 16 van de 31 provincies, of heb de meeste als het jaar 1400 aanbreekt. Je verliest als een ander rijk je voor is. Hoe dan ook kun je doorspelen, helemaal tot het hele land verenigd is. Het spel is pas echt voorbij als je alle 31 provincies hebt, of geen enkele.</p>
+      <h3>De rijken</h3>
+      <p>Elk rijk heeft een eigen vaardigheid. De andere rijken gebruiken die van hen ook.</p>
+      <ul>
+        <li><b>⚓ Holland, Handel:</b> +1 💰 per jaar voor elke 2 kustprovincies ⚓, en Hanzekooplieden komen twee keer zo vaak en betalen het dubbele. De havens zijn het vechten waard.</li>
+        <li><b>⛪ Utrecht, Prins-bisschop:</b> een kerkelijke tiende van +2 💰 per jaar, hoe klein het rijk ook is, en elke oorlog met het Sticht kan na 2 jaar eindigen in vrede, wie er ook wint. Sla toe, neem een provincie en sluit vrede.</li>
+        <li><b>🐎 Gelre, Ridders:</b> aanvallen zijn ×1,3 sterker, maar rivieren beschermen de eigen provincies van Gelre niet. Sla als eerste toe, want wachten achter de rivieren redt je niet.</li>
+        <li><b>🏙️ Brabant, Rijke steden:</b> boerderijen leveren +2 💰 op in plaats van +1, maar rekruten kosten 6 💰 in plaats van 5. Bouw vroeg boerderijen en verspil geen regimenten.</li>
+      </ul>
       <h3>Jouw beurt</h3>
       <ul>
         <li><b>Rekruteren:</b> tik op je provincie en druk op Rekruteren (5 💰, 1 ⚔️ mankracht).</li>
@@ -450,7 +469,7 @@
       <ul>
         <li>Kracht is regimenten × een beetje geluk. De sterkste kant wint; bij gelijkspel wint de verdediger.</li>
         <li>Elke provincie wordt gratis verdedigd door militie: 1, of 2 in de eigen thuisprovincies van een rijk.</li>
-        <li>Verdedigers achter een rivier 🌊 vechten ×1,25, achter een kasteel ×1,5 (allebei: ongeveer ×1,9).</li>
+        <li>Verdedigers achter een rivier 🌊 vechten ×1,25 (niet in Gelre), achter een kasteel ×1,5 (allebei: ongeveer ×1,9).</li>
         <li>Een veroverde provincie levert 3 jaar niets op terwijl de rust terugkeert.</li>
         <li>Verlies je je hoofdstad 👑, dan daalt je inkomen 3 jaar lang met een kwart. Herover haar om dat eerder te beëindigen.</li>
       </ul>
@@ -592,11 +611,11 @@ const provincesConquered = (n) => (n === 1 ? T`${n} province conquered` : T`${n}
 
 // Names that change with the language
 const REALM_NAMES_NL = {
-  holland:     { name: "Graafschap Holland", short: "Holland",            note: "Rijke steden langs de kust" },
-  utrecht:     { name: "Sticht Utrecht",     short: "het Sticht",         note: "Verspreid tussen rivalen (moeilijk)" },
-  gelre:       { name: "Hertogdom Gelre",    short: "Gelre",              note: "Veilig achter de grote rivieren" },
-  brabant:     { name: "Hertogdom Brabant",  short: "Brabant",            note: "Het rijkste vorstendom" },
-  independent: { name: "Onafhankelijk",      short: "de onafhankelijken", note: "" }
+  holland:     { name: "Graafschap Holland", short: "Holland" },
+  utrecht:     { name: "Sticht Utrecht",     short: "het Sticht" },
+  gelre:       { name: "Hertogdom Gelre",    short: "Gelre" },
+  brabant:     { name: "Hertogdom Brabant",  short: "Brabant" },
+  independent: { name: "Onafhankelijk",      short: "de onafhankelijken" }
 };
 const PROVINCE_NAMES_NL = { antwerp: "Antwerpen", brussels: "Brussel" };
 
@@ -755,7 +774,7 @@ const NL = {
   "💰 Income: {}": "💰 Inkomen: {0}",
   "⚔️ Manpower: {}": "⚔️ Mankracht: {0}",
   "🛡️ Army: {}": "🛡️ Leger: {0}",
-  "Farm 🌾 (+1 💰)": "Boerderij 🌾 (+1 💰)",
+  "Farm 🌾 (+{} 💰)": "Boerderij 🌾 (+{0} 💰)",
   "Castle 🏰 (×1.5 🛡️)": "Kasteel 🏰 (×1,5 🛡️)",
   "No building": "Geen gebouw",
   "🏠 Home province of {}: {} militia defend it.": "🏠 Thuisprovincie van {0}: verdedigd door {1} militie.",
@@ -814,6 +833,21 @@ const NL = {
   "DIFFICULTY": "MOEILIJKHEID",
   "CHOOSE YOUR REALM": "KIES JE RIJK",
   "How to play": "Spelregels",
+  "⚓ Trade": "⚓ Handel",
+  "⛪ Prince-Bishop": "⛪ Prins-bisschop",
+  "🐎 Knights": "🐎 Ridders",
+  "🏙️ Rich cities": "🏙️ Rijke steden",
+  "Ports bring extra gold": "Havens brengen extra goud",
+  "Church tithe, quick peace": "Kerkelijke tiende, snel vrede",
+  "Strong attacks, no river shield": "Sterke aanvallen, geen rivierschild",
+  "Rich farms, costly recruits": "Rijke boerderijen, dure rekruten",
+  "+1 💰 a year for every {} coastal provinces ⚓ you hold, and Hanseatic merchants come twice as often and pay double.": "+1 💰 per jaar voor elke {0} kustprovincies ⚓ die je bezit, en Hanzekooplieden komen twee keer zo vaak en betalen het dubbele.",
+  "A church tithe of +{} 💰 a year, however small your realm. Any war with the Bishopric can end in peace after {} {}, whoever is winning.": "Een kerkelijke tiende van +{0} 💰 per jaar, hoe klein je rijk ook is. Elke oorlog met het Sticht kan na {1} {2} eindigen in vrede, wie er ook wint.",
+  "Your attacks are ×{} stronger, but rivers don't protect your own provinces.": "Je aanvallen zijn ×{0} sterker, maar rivieren beschermen je eigen provincies niet.",
+  "Farms give +{} 💰 instead of +{}, but your recruits cost {} 💰 instead of {}.": "Boerderijen leveren +{0} 💰 op in plaats van +{1}, maar je rekruten kosten {2} 💰 in plaats van {3}.",
+  " · ⚓ on the coast": " · ⚓ aan de kust",
+  "🐎 Your knights attack ×{}": "🐎 Je ridders vallen aan met ×{0}",
+  "knights 🐎": "ridders 🐎",
   "Paused": "Gepauzeerd",
   "Resume": "Verder spelen",
   "Send feedback 💬": "Feedback sturen 💬",
@@ -895,6 +929,41 @@ const RULES = {
   endYear: 1400
 };
 
+// Each realm has one ability of its own. The AI realms use theirs too.
+// The texts players see are in TRAIT_TEXT further down.
+const TRAITS = {
+  holland: { tradeGold: 0.5,      // Trade: +1 gold a year for every 2 coastal provinces held (rounded down, none in unrest)
+             hanseGold: 6,        //   Hanseatic merchants pay this per port (others get 3)
+             hanseWeight: 4 },    //   and come twice as often (others: 2)
+  utrecht: { titheGold: 2,        // Prince-Bishop: church income every year, whatever the realm's size
+             peaceAfter: 2,       //   peace after this many years of war, whoever is winning
+             peaceChance: 0.3 },  //   yearly chance two AI realms end such a war (others: 0.15 after 3 years)
+  gelre:   { charge: 1.3,         // Knights: attack strength x1.3
+             noRiver: true },     //   but rivers don't protect Gelre's own provinces
+  brabant: { farmBonus: 2,        // Rich cities: a farm gives +2 income (others: +1)
+             recruitGold: 6 }     //   but burghers would rather pay than fight: recruits cost 6 (others: 5)
+};
+const trait = (id) => TRAITS[id] || {};
+// Decimal numbers the way each language writes them (1.3 / 1,3)
+const num = (x) => LANG === "nl" ? String(x).replace(".", ",") : String(x);
+// What players read about each ability: a name, a short line (start screen,
+// share image) and a full line with the numbers (realm panel)
+function traitName(id) {
+  return { holland: T`⚓ Trade`, utrecht: T`⛪ Prince-Bishop`, gelre: T`🐎 Knights`, brabant: T`🏙️ Rich cities` }[id] || "";
+}
+function traitShort(id) {
+  return { holland: T`Ports bring extra gold`, utrecht: T`Church tithe, quick peace`,
+           gelre: T`Strong attacks, no river shield`, brabant: T`Rich farms, costly recruits` }[id] || "";
+}
+function traitLong(id) {
+  const t = trait(id);
+  if (id === "holland") return T`+1 💰 a year for every ${Math.round(1 / t.tradeGold)} coastal provinces ⚓ you hold, and Hanseatic merchants come twice as often and pay double.`;
+  if (id === "utrecht") return T`A church tithe of +${t.titheGold} 💰 a year, however small your realm. Any war with the Bishopric can end in peace after ${t.peaceAfter} ${yearsWord(t.peaceAfter)}, whoever is winning.`;
+  if (id === "gelre") return T`Your attacks are ×${num(t.charge)} stronger, but rivers don't protect your own provinces.`;
+  if (id === "brabant") return T`Farms give +${t.farmBonus} 💰 instead of +${RULES.farmBonus}, but your recruits cost ${t.recruitGold} 💰 instead of ${RULES.recruitGold}.`;
+  return "";
+}
+
 // Difficulty only changes the AI realms; your own rules stay the same
 const DIFFICULTY = {
   easy:   { label: "Easy",   aiIncome: 0.75, aiWar: 0.5, aiMargin: 0.3,  peaceYears: 3,
@@ -907,10 +976,10 @@ const DIFFICULTY = {
 const diff = () => DIFFICULTY[game.difficulty] || DIFFICULTY.normal;
 
 const REALMS = {
-  holland: { short: "Holland", name: "County of Holland",    color: "#b23a3a", capital: "haarlem",  note: "Rich towns along the coast" },
-  utrecht: { short: "the Bishopric", name: "Bishopric of Utrecht", color: "#c9a227", capital: "utrecht",  note: "Spread out between rivals (hard)" },
-  gelre:   { short: "Gelre", name: "Duchy of Gelre",       color: "#3f7d3a", capital: "nijmegen", note: "Safe behind the great rivers" },
-  brabant: { short: "Brabant", name: "Duchy of Brabant",     color: "#2f5d9e", capital: "brussels", note: "The wealthiest realm" },
+  holland: { short: "Holland", name: "County of Holland",    color: "#b23a3a", capital: "haarlem" },
+  utrecht: { short: "the Bishopric", name: "Bishopric of Utrecht", color: "#c9a227", capital: "utrecht" },
+  gelre:   { short: "Gelre", name: "Duchy of Gelre",       color: "#3f7d3a", capital: "nijmegen" },
+  brabant: { short: "Brabant", name: "Duchy of Brabant",     color: "#2f5d9e", capital: "brussels" },
   independent: { short: "the independents", name: "Independent", color: "#8a8478", capital: null }
 };
 
@@ -1122,12 +1191,21 @@ const isCapital = (p) => game.realms[p.owner].capital === p.id;
 const random = (min, max) => min + Math.random() * (max - min);
 const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 
-const provinceIncome = (p) => p.unrest > 0 ? 0 : p.income + (p.building === "farm" ? RULES.farmBonus : 0);
+const farmBonusOf = (realm) => trait(realm).farmBonus ?? RULES.farmBonus;
+const provinceIncome = (p) => p.unrest > 0 ? 0 : p.income + (p.building === "farm" ? farmBonusOf(p.owner) : 0);
 const provinceManpower = (p) => p.unrest > 0 ? 0 : p.manpower;
 
 function incomeOf(realm) {
   const base = provincesOf(realm).reduce((sum, p) => sum + provinceIncome(p), 0);
-  return game.realms[realm].penalty > 0 ? Math.floor(base * 0.75) : base;
+  const income = game.realms[realm].penalty > 0 ? Math.floor(base * 0.75) : base;
+  return income + traitIncome(realm);
+}
+// Gold from the realm's ability: Holland's sea trade, Utrecht's tithe
+function traitIncome(realm) {
+  const t = trait(realm);
+  if (provincesOf(realm).length === 0) return 0;
+  const ports = provincesOf(realm).filter(p => COASTAL.includes(p.id) && p.unrest === 0).length;
+  return Math.floor(ports * (t.tradeGold || 0)) + (t.titheGold || 0);
 }
 function upkeepOf(realm) {
   return armyOf(realm) * RULES.upkeep;
@@ -1139,7 +1217,7 @@ function upkeepOf(realm) {
 // =====================================================================
 
 // Recruits are cheaper for a realm that has lost ground
-const recruitCost = (realm) => behind(realm) ? RULES.underdogRecruitGold : RULES.recruitGold;
+const recruitCost = (realm) => behind(realm) ? RULES.underdogRecruitGold : (trait(realm).recruitGold || RULES.recruitGold);
 
 function canRecruit(p) {
   const r = game.realms[p.owner];
@@ -1181,13 +1259,15 @@ function moveArmy(from, to, count) {
 // Everyone defending a province: its regiments plus the local militia
 // Militia: 1 everywhere, 2 in a realm's own home provinces
 const militiaOf = (p) => RULES.militia + (p.owner !== "independent" && p.core === p.owner ? RULES.homeMilitia : 0);
+// Attack strength multiplier (Gelre's knights)
+const chargeOf = (realm) => trait(realm).charge || 1;
 const defenseSize = (p) => p.army + militiaOf(p);
 
 // How much stronger the defenders of "to" are when attacked from "from"
 function defenseBonus(from, to) {
   let bonus = 1;
   if (to.building === "castle") bonus *= RULES.castleBonus;
-  if (to.riverBorders.includes(from.id)) bonus *= RULES.riverBonus;
+  if (to.riverBorders.includes(from.id) && !trait(to.owner).noRiver) bonus *= RULES.riverBonus;
   return bonus;
 }
 
@@ -1196,7 +1276,7 @@ function winChance(from, to, count) {
   const bonus = defenseBonus(from, to);
   let wins = 0;
   for (let i = 0; i < 2000; i++) {
-    const attack = count * random(RULES.luckMin, RULES.luckMax);
+    const attack = count * chargeOf(from.owner) * random(RULES.luckMin, RULES.luckMax);
     const defense = defenseSize(to) * bonus * random(RULES.luckMin, RULES.luckMax);
     if (attack > defense) wins++;
   }
@@ -1210,12 +1290,13 @@ function attack(from, to, count) {
   from.army -= count;
 
   const bonus = defenseBonus(from, to);
-  const attackStrength = count * random(RULES.luckMin, RULES.luckMax);
+  const charge = chargeOf(attacker);
+  const attackStrength = count * charge * random(RULES.luckMin, RULES.luckMax);
   const defenseStrength = defenseSize(to) * bonus * random(RULES.luckMin, RULES.luckMax);
   const result = {
     attacker, defender, from: from.id, to: to.id, place: to.name,
     sent: count, defenders, militia: militiaOf(to), defenseSize: defenseSize(to),
-    bonus, castle: to.building === "castle", river: to.riverBorders.includes(from.id),
+    bonus, castle: to.building === "castle", river: to.riverBorders.includes(from.id) && !trait(defender).noRiver, charge,
     attackStrength, defenseStrength,
     won: false, attackLoss: 0, defenseLoss: 0, note: ""
   };
@@ -1344,9 +1425,11 @@ function aiTurn(id) {
       if (count === 0) continue;
       for (const to of near(from).filter(to => canAttack(id, to))) {
         const needed = defenseSize(to) * defenseBonus(from, to) * margin;
-        if (count < needed) continue;
-        // Prefer weak targets, and rich ones when it's close
-        const score = defenseSize(to) * defenseBonus(from, to) - provinceIncome(to) * 0.1 + random(0, 0.5);
+        if (count * chargeOf(id) < needed) continue;
+        // Prefer weak targets, and rich ones when it's close.
+        // A trading realm also likes ports (they pay it extra).
+        const port = trait(id).tradeGold && COASTAL.includes(to.id) ? 0.4 : 0;
+        const score = defenseSize(to) * defenseBonus(from, to) - provinceIncome(to) * 0.1 - port + random(0, 0.5);
         if (!best || score < best.score) best = { from, to, count, score };
       }
     }
@@ -1386,7 +1469,7 @@ function aiTurn(id) {
     build(danger, "castle");
   } else {
     const field = lands().filter(p => !p.building).sort((a, b) => b.income - a.income)[0];
-    if (field && realm.gold >= RULES.farmCost + RULES.recruitGold) build(field, "farm");
+    if (field && realm.gold >= RULES.farmCost + recruitCost(id)) build(field, "farm");
   }
 
   return results;
@@ -1620,12 +1703,17 @@ function aiDiplomacy(id, notes) {
     const r = rel(id, b);
     const years = game.year - r.since;
     const lead = (r.score[id] || 0) - (r.score[b] || 0);
+    const bishop = trait(id).peaceAfter ?? trait(b).peaceAfter;   // Utrecht's wars end sooner
     if (b === game.player) {
       const losing = lead < 0 || myArmy < armyOf(b) * 0.7;
-      if (years >= 2 && (losing || years >= diff().peaceYears) && game.year - r.lastOffer >= 3) {
+      // The Prince-Bishop offers peace as soon as it is ahead, to keep what it took
+      const early = trait(id).peaceAfter !== undefined && years >= trait(id).peaceAfter && lead > 0;
+      if (game.year - r.lastOffer >= 3 && (early || (years >= 2 && (losing || years >= diff().peaceYears)))) {
         r.lastOffer = game.year;
         game.offers.push(id);
       }
+    } else if (id < b && bishop !== undefined) {
+      if (years >= bishop && Math.random() < trait("utrecht").peaceChance) makePeace(id, b, notes);
     } else if (id < b && years >= 3) {
       if (Math.random() < 0.15 + (Math.abs(lead) >= 2 ? 0.15 : 0)) makePeace(id, b, notes);
     }
@@ -1645,7 +1733,7 @@ function aiDiplomacy(id, notes) {
     const target = REALM_IDS
       .filter(b => b !== id && alive(b) && bordering(id, b) && rel(id, b).state === "peace" && rel(id, b).truce === 0)
       .sort((a, b) => strength(a) - strength(b))[0];
-    if (target && myArmy >= RULES.aiWarRatio * strength(target)) {
+    if (target && myArmy * chargeOf(id) >= RULES.aiWarRatio * strength(target)) {
       declareWar(id, target, notes, false);
       return;
     }
@@ -1664,7 +1752,10 @@ function proposePeace(b) {
   const me = game.player, r = rel(me, b);
   const years = game.year - r.since;
   const lead = (r.score[b] || 0) - (r.score[me] || 0);   // > 0: they're winning
-  const ok = (years >= 1 && lead <= 0) || armyOf(b) < armyOf(me) * 0.8 || years >= diff().peaceYears;
+  // The Church's word carries weight: a war with Utrecht ends after a short time, whoever is winning
+  const after = trait(me).peaceAfter ?? trait(b).peaceAfter;
+  const bishop = after !== undefined && years >= after;
+  const ok = bishop || (years >= 1 && lead <= 0) || armyOf(b) < armyOf(me) * 0.8 || years >= diff().peaceYears;
   if (!ok) return { ok, text: T`${capitalize(nameOf(b))} refuses. They think they're winning this war.` };
   const notes = [];
   makePeace(me, b, notes);
@@ -1833,8 +1924,8 @@ function runEvents(notes, cards) {
     if (target === me) cards.push({ emoji: "🛡️", title: T`Volunteers`, text: T`Men from across your lands flock to ${capital.name} to defend the realm: +1 regiment there and +3 manpower.` });
   }});
   const ports = lands.filter(p => COASTAL.includes(p.id));
-  if (ports.length) options.push({ weight: 2, run: () => {
-    const gold = 3 * ports.length;
+  if (ports.length) options.push({ weight: trait(target).hanseWeight || 2, run: () => {
+    const gold = (trait(target).hanseGold || 3) * ports.length;
     realm.gold += gold;
     if (target === me) cards.push({ emoji: "⛵", title: T`Hanseatic merchants`, text: ports.length === 1 ? T`Trading ships crowd your harbor. Your coastal province brings in ${gold} 💰 extra.` : T`Trading ships crowd your harbors. Your ${ports.length} coastal provinces bring in ${gold} 💰 extra.` });
   }});
@@ -2384,10 +2475,12 @@ function renderPanel() {
       const bonus = defenseBonus(from, to);
       const why = [];
       if (to.building === "castle") why.push(T`castle`);
-      if (to.riverBorders.includes(from.id)) why.push(T`river 🌊`);
+      if (to.riverBorders.includes(from.id) && !trait(to.owner).noRiver) why.push(T`river 🌊`);
       const chance = Math.round(winChance(from, to, count) * 100);
+      const charge = chargeOf(game.player);
       details = `
         <div>${T`🛡️ Defenders: ${to.army} + ${militiaOf(to)} militia`}${bonus > 1 ? T` (×${bonus.toFixed(2).replace(/0$/, "")} for ${why.join(T` and `)})` : ""}</div>
+        ${charge !== 1 ? `<div>${T`🐎 Your knights attack ×${num(charge)}`}</div>` : ""}
         <div>${T`🎲 Chance to win: about <b>${chance}%</b>`}</div>`;
     }
     panel.innerHTML = `
@@ -2417,6 +2510,7 @@ function renderPanel() {
     const goal = game.endless ? T`Conquer all ${total} provinces to unite the Low Countries.` : T`Own ${RULES.provincesToWin} of the ${total} provinces to win.`;
     panel.innerHTML = `
       <h2 style="display:flex;align-items:center;gap:8px">${crest(game.player, 26)}${r.name}</h2>
+      <div class="trait"><b>${traitName(game.player)}:</b> ${traitLong(game.player)}</div>
       ${msg}
       <div>${wars.length ? T`⚔️ At war with ${wars.join(", ")}` : T`🕊️ At peace with every realm`}${allies.length ? T` · 🤝 Allied with ${allies.join(", ")}` : ""}</div>
       ${danger}
@@ -2465,11 +2559,11 @@ function renderPanel() {
       <div>${T`💰 Income: ${provinceIncome(p)}`}</div>
       <div>${T`⚔️ Manpower: ${p.manpower}`}</div>
       <div>${T`🛡️ Army: ${armyText}`}</div>
-      <div>🏗️ ${p.building === "farm" ? T`Farm 🌾 (+1 💰)` : p.building === "castle" ? T`Castle 🏰 (×1.5 🛡️)` : T`No building`}</div>
+      <div>🏗️ ${p.building === "farm" ? T`Farm 🌾 (+${farmBonusOf(p.owner)} 💰)` : p.building === "castle" ? T`Castle 🏰 (×1.5 🛡️)` : T`No building`}</div>
     </div>
     ${p.owner !== "independent" && p.core === p.owner ? `<div class="sub">${T`🏠 Home province of ${nameOf(p.owner)}: ${militiaOf(p)} militia defend it.`}</div>` : ""}
     ${p.owner !== "independent" && p.core !== p.owner ? `<div class="sub">${p.core !== "independent" ? T`Conquered from ${nameOf(p.core)}` : T`Conquered`}${p.unrest > 0 ? T`, restless for ${p.unrest} more ${yearsWord(p.unrest)}` : ""}${T`. Left without soldiers, it may rise up.`}</div>` : ""}
-    <div class="sub">${T`Borders: ${neighborNames}`}</div>
+    <div class="sub">${T`Borders: ${neighborNames}`}${COASTAL.includes(p.id) ? T` · ⚓ on the coast` : ""}</div>
     ${hint ? `<div class="hint">${hint}</div>` : ""}
     <div class="spacer"></div>
     ${yours ? `<div class="row">${recruitButton}${buildButtons}</div>` : ""}
@@ -2505,7 +2599,9 @@ function showBattle(r, onDone) {
   $("b-def").style.setProperty("--side", def.color);
   $("b-att-count").textContent = r.sent;
   $("b-def-count").textContent = r.defenders;
-  $("b-att-sub").textContent = r.sent === 1 ? T`regiment` : T`regiments`;
+  const charge = r.charge || 1;
+  $("b-att-sub").textContent = (r.sent === 1 ? T`regiment` : T`regiments`) +
+    (charge !== 1 ? ` · ×${charge} ${T`knights 🐎`}` : "");
   const why = [];
   if (r.castle) why.push(T`castle 🏰`);
   if (r.river) why.push(T`river 🌊`);
@@ -2524,7 +2620,7 @@ function showBattle(r, onDone) {
   $("b-continue").textContent = T`Skip`;
 
   // The biggest strength either side could possibly roll, for the bars
-  const attackMax = r.sent * RULES.luckMax;
+  const attackMax = r.sent * charge * RULES.luckMax;
   const defenseMax = r.defenseSize * r.bonus * RULES.luckMax;
   const top = Math.max(attackMax, defenseMax, r.attackStrength, r.defenseStrength);
   const setStrength = (side, value) => {
@@ -2536,7 +2632,7 @@ function showBattle(r, onDone) {
   for (const t of [250, 600, 950]) at(t, () => playSound("drum"));
   for (let t = 350; t < 1350; t += 70) {
     at(t, () => {
-      setStrength("att", r.sent * random(RULES.luckMin, RULES.luckMax));
+      setStrength("att", r.sent * charge * random(RULES.luckMin, RULES.luckMax));
       setStrength("def", r.defenseSize * r.bonus * random(RULES.luckMin, RULES.luckMax));
     });
   }
@@ -2804,7 +2900,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-16.4";
+const GAME_VERSION = "2026-11-16.5";
 const online = () => Boolean(ONLINE.url && ONLINE.key);
 
 async function api(path, options = {}) {
@@ -3030,6 +3126,11 @@ async function buildShareImage(name, rank) {
   // Coat of arms and result
   const arms = await svgToImage(crest(game.player, 150));
   c.drawImage(arms, 80, 1050, 150, 165);
+  c.textAlign = "center"; c.fillStyle = "#3b2a1a";
+  // Shrink the ability name until it fits under the coat of arms (left of the text column)
+  let size = 22;
+  do { c.font = `700 ${size}px Cinzel`; size--; } while (c.measureText(traitName(game.player)).width > 165 && size > 12);
+  c.fillText(traitName(game.player), 155, 1246);
   const e = game.endInfo || { title: "Anno " + game.year, won: true };
   const years = game.year - RULES.startYear, s = game.stats;
   c.textAlign = "left";
@@ -3457,7 +3558,7 @@ function buildRealmCards() {
     const b = document.createElement("button");
     b.className = "realm-card";
     b.style.setProperty("--side", r.color);
-    b.innerHTML = `${crest(id, 62)}<span class="rc-name">${r.name}</span><span class="rc-info">${T`${count} provinces`}<br>${r.note}</span>`;
+    b.innerHTML = `${crest(id, 62)}<span class="rc-name">${r.name}</span><span class="rc-info">${T`${count} provinces`}</span><span class="rc-trait"><b>${traitName(id)}</b><br>${traitShort(id)}</span>`;
     b.onclick = () => {
       if (loadSave() && !confirmNewGame()) return;
       hide("start");
@@ -3483,7 +3584,7 @@ function confirmNewGame() {
 
 // --- Switching language ---
 const REALM_NAMES_EN = {}, PROVINCE_NAMES_EN = {};
-for (const id in REALMS) REALM_NAMES_EN[id] = { name: REALMS[id].name, short: REALMS[id].short, note: REALMS[id].note };
+for (const id in REALMS) REALM_NAMES_EN[id] = { name: REALMS[id].name, short: REALMS[id].short };
 for (const id in PROVINCES) PROVINCE_NAMES_EN[id] = PROVINCES[id].name;
 
 function setLanguage(lang) {
