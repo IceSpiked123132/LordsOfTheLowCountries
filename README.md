@@ -17,6 +17,11 @@ Play it at https://icespiked123132.github.io/LordsOfTheLowCountries/
 | `og-image.png` | The preview image shown when the link is shared on social media or in chat apps. |
 | `stats.html` | Your statistics page (games started, finished, won, per realm and per day). Not linked from the game. |
 | `source/supabase-setup.sql` | Creates the online database for the leaderboard, statistics and feedback. |
+| `source/supabase-security.sql` | Spam and flooding protection for an existing database (rate limits, value checks, name checks, locked down permissions, optional cleanup). Safe to run twice. Fresh databases get it through `supabase-setup.sql`. |
+| `source/blocklist.txt` | The one list of blocked leaderboard words (English and Dutch). After editing run `python3 source/sync_security.py`, rebuild, and run the security SQL again. |
+| `source/sync_security.py` | Copies the blocklist into both SQL files and the game, and keeps the security part of `supabase-setup.sql` identical to `supabase-security.sql`. |
+| `source/test_online.py`, `test_security_sql.py`, `test_names.js`, `local_test_db.sh` | Tests of the online parts: Playwright with a mocked database that returns errors, and the SQL rules on a local Postgres behind PostgREST. |
+| `privacy.html` | The privacy statement (English and Dutch), linked from the start screen, leaderboard, share form and feedback form. |
 | `source/balance_sim.py` | Plays N AI-only games in the built game and prints win share per realm, game length and comebacks (optional JSON overrides). |
 | `source/dev_ablation.py` | Ablation test for developments: gives one realm one development from turn 1 and shows the change in its win rate. |
 | `source/check_translations.js` | Lists English texts that have no Dutch version yet. |

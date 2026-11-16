@@ -4,3 +4,4 @@ Read README.md first. Edit `source/template.html`, never `index.html` directly; 
 The design doc for the game lives in a Claude Doc called "Lords of the Low Countries: Game Design".
 The owner prefers no dashes used as punctuation in text written for him.
 The game is in English and Dutch. Every sentence a player sees goes through T`...` (or tr("...") for plain strings, data-t / data-tp for fixed page text); add the Dutch version to the NL table at the top of the script, using {0}, {1}, ... for the values in order. The How to play page has a separate English and Dutch block.
+Privacy and abuse: the leaderboard name blocklist lives only in `source/blocklist.txt`; run `python3 source/sync_security.py` after changing it or `source/supabase-security.sql` (it updates the game template and `supabase-setup.sql`). Never collect new data without updating `privacy.html` (English and Dutch) in the same change.

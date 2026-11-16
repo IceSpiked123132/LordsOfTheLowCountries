@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lords of the Low Countries: privacy</title>
+<style>
+  @font-face { font-family: 'Cinzel'; src: url('fonts/cinzel.woff2') format('woff2'); font-weight: 400 900; }
+  @font-face { font-family: 'EB Garamond'; src: url('fonts/eb-garamond.woff2') format('woff2'); font-weight: 400 800; }
+  body { margin: 0; background: #efe3c4; color: #3b2a1a; font-family: 'EB Garamond', Georgia, serif; font-size: 18px; line-height: 1.4; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1, h2, h3 { font-family: 'Cinzel', serif; }
+  h1 { margin: 0 0 4px; font-size: 28px; }
+  h2 { font-size: 19px; margin: 30px 0 10px; }
+  h3 { font-size: 15px; margin: 0 0 8px; }
+  p { margin: 8px 0; }
+  a { color: #7a2e22; }
+  .muted { color: #6b5338; }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .top a { display: inline-block; padding: 10px 0; }
+  .lang { display: flex; gap: 6px; }
+  .lang button { min-width: 48px; min-height: 44px; font-family: 'Cinzel', serif; font-weight: 700; font-size: 14px; color: #3b2a1a; background: #fffaf0; border: 2px solid #3b2a1a; border-radius: 8px; cursor: pointer; }
+  .lang button.on { background: #3b2a1a; color: #fffaf0; }
+  .short, .card { background: #fffaf0; border: 2px solid #3b2a1a; border-radius: 10px; padding: 12px 14px; margin: 12px 0; }
+  .short { background: #f6edd5; }
+  .card dl { margin: 0; }
+  .card dt { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: #6b5338; margin-top: 8px; }
+  .card dd { margin: 2px 0 0; }
+  ul { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  .small { font-size: 15px; }
+  body.nl .en { display: none; }
+  body:not(.nl) .nl { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <a href="./"><span class="en">← Back to the game</span><span class="nl">← Terug naar het spel</span></a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-set="en" class="on">EN</button>
+      <button type="button" data-set="nl">NL</button>
+    </div>
+  </div>
+
+  <!-- ====================== ENGLISH ====================== -->
+  <div class="en">
+    <h1>Privacy</h1>
+    <div class="muted">Lords of the Low Countries · last updated 16 November 2026</div>
+
+    <div class="short">
+      <b>The short version.</b> The game has no accounts, no cookies, no ads and no tracking. Your saved game stays on your own phone or computer. The game only sends something over the internet when you start or finish a game (anonymous), when you put your name on the leaderboard, or when you send feedback.
+    </div>
+
+    <h2>Who is behind this</h2>
+    <p>Lords of the Low Countries is a free hobby game made by Jonathan from the Netherlands. I decide what happens with the information on this page. For questions or requests about your information, email me: <a href="mailto:lordsofthelowcountries@gmail.com">lordsofthelowcountries@gmail.com</a>.</p>
+
+    <h2>What the game sends, and why</h2>
+
+    <div class="card">
+      <h3>1. Anonymous statistics</h3>
+      <dl>
+        <dt>What</dt>
+        <dd>When you start a game and when it ends: your realm, the difficulty, how it ended (for example won or lost), how many years it took, how many provinces you held, battles won and lost, the game version, and the date and time. No name, no ID, no cookie. Nobody, including me, can tell who played.</dd>
+        <dt>Why</dt>
+        <dd>To see how many people play and whether the game is fair.</dd>
+        <dt>How long</dt>
+        <dd>For as long as the game exists. It is anonymous, so it can't be linked to you.</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>2. The leaderboard (only if you add your result)</h3>
+      <dl>
+        <dt>What</dt>
+        <dd>The name you type, your realm, the difficulty, the years and provinces, and the date. Everyone who opens the leaderboard can see the name and the date.</dd>
+        <dt>Why</dt>
+        <dd>To show the ranking.</dd>
+        <dt>Tip</dt>
+        <dd>Use a nickname. Don't use your full name, your school or anything private.</dd>
+        <dt>How long</dt>
+        <dd>Until you ask me to remove it.</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>3. Feedback (only if you send a message)</h3>
+      <dl>
+        <dt>What</dt>
+        <dd>Your message, the contact field if you fill it in (optional, only used to reply to you), and the date. If you were in a game, also your realm, the year in the game, the difficulty and the game version.</dd>
+        <dt>Why</dt>
+        <dd>To fix bugs, improve the game and reply to you if you left contact details. Only I read it.</dd>
+        <dt>How long</dt>
+        <dd>Deleted after 12 months.</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>4. IP addresses (every website sees them)</h3>
+      <p style="margin-top:0">An IP address is a number your internet connection uses. It is sent automatically whenever your device connects to a website. GitHub, which hosts the game files, sees it when you open the game. Supabase, which runs the database, sees it when the game sends statistics, a leaderboard entry or feedback, or loads the leaderboard. They keep it in their own technical logs to run and protect their service. I do not save IP addresses in my database and I don't use them for anything. Supabase's logs are visible to me for a short time, and I only look at them when there is a bug or abuse.</p>
+    </div>
+
+    <h2>Where it is stored, and who helps</h2>
+    <p>The database runs at <b>Supabase</b>, in their data centre in London. The UK is outside the EU, but the EU has officially decided that the UK protects personal data well enough (an adequacy decision). The game files are hosted by <b>GitHub Pages</b>. Supabase and GitHub are companies that help me run the game (in legal words: processors). Both are American companies. How they handle data is in their own privacy policies:</p>
+    <ul>
+      <li><a href="https://supabase.com/privacy" target="_blank" rel="noopener">Supabase privacy policy</a></li>
+      <li><a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub privacy statement</a></li>
+    </ul>
+    <p>I don't share your information with anyone else and I never sell it.</p>
+
+    <h2>What stays on your device</h2>
+    <p>The game uses your browser's local storage on your own device for: your saved game, your language, sound on or off, your difficulty choice, the last leaderboard name you typed (so you don't have to type it again), and whether you have seen the tips and the install message. None of this is sent anywhere by itself. A name is only sent when you add it to the leaderboard. The installed app and offline mode also keep a copy of the game files on your device.</p>
+    <p><b>To delete it all:</b> clear the site data for this website in your browser settings (Chrome: Settings, Privacy, Site settings, find icespiked123132.github.io, delete data. Safari on iPhone: Settings, Safari (in newer versions under Apps), Advanced, Website Data). If you installed the game as an app, removing the app deletes its data too. Your saved game is then gone for good.</p>
+
+    <h2>No cookies, no tracking</h2>
+    <p>No cookies, no analytics, no ads, no accounts, no social media buttons and no Google services (the fonts are stored on the game's own server). I don't ask for your age, your location or your real name.</p>
+
+    <h2>Your rights</h2>
+    <p>You can ask me for a copy of what I have about you, to correct it, or to delete it. The anonymous statistics can't be linked to you, so I can't look them up. For the leaderboard and feedback, tell me the name or message and roughly when you sent it, so I can find it. I answer within one month. If I remove a leaderboard name, it disappears from the board, but people who already saw it may have copied it.</p>
+    <p>Email: <a href="mailto:lordsofthelowcountries@gmail.com">lordsofthelowcountries@gmail.com</a></p>
+    <p>You can also complain to the Dutch data protection authority, the <a href="https://autoriteitpersoonsgegevens.nl/" target="_blank" rel="noopener">Autoriteit Persoonsgegevens</a>.</p>
+
+    <h2>For the curious: the legal reason</h2>
+    <p class="small">Statistics: legitimate interest (a game maker wants to know if the game works), and the data is anonymous. Leaderboard and feedback: you send them yourself, so it rests on your consent. You can take that back at any time by asking me to delete it.</p>
+
+    <h2>Changes</h2>
+    <p>If this page changes in a meaningful way, I will update the date at the top.</p>
+  </div>
+
+  <!-- ====================== NEDERLANDS ====================== -->
+  <div class="nl">
+    <h1>Privacy</h1>
+    <div class="muted">Lords of the Low Countries · laatst bijgewerkt op 16 november 2026</div>
+
+    <div class="short">
+      <b>Kort gezegd.</b> Het spel heeft geen accounts, geen cookies, geen advertenties en geen tracking. Je opgeslagen spel blijft op je eigen telefoon of computer. Het spel stuurt alleen iets over internet als je een spel start of afrondt (anoniem), als je je naam op de ranglijst zet of als je feedback stuurt.
+    </div>
+
+    <h2>Wie zit hierachter</h2>
+    <p>Lords of the Low Countries is een gratis hobbyspel, gemaakt door Jonathan uit Nederland. Ik bepaal wat er met de gegevens op deze pagina gebeurt. Heb je een vraag of verzoek over jouw gegevens? Mail me: <a href="mailto:lordsofthelowcountries@gmail.com">lordsofthelowcountries@gmail.com</a>.</p>
+
+    <h2>Wat het spel verstuurt, en waarom</h2>
+
+    <div class="card">
+      <h3>1. Anonieme statistieken</h3>
+      <dl>
+        <dt>Wat</dt>
+        <dd>Als je een spel start en als het eindigt: je rijk, de moeilijkheid, hoe het afliep (bijvoorbeeld gewonnen of verloren), hoeveel jaar het duurde, hoeveel provincies je had, gewonnen en verloren veldslagen, de spelversie en de datum en tijd. Geen naam, geen ID, geen cookie. Niemand, ook ik niet, kan zien wie er speelde.</dd>
+        <dt>Waarom</dt>
+        <dd>Om te zien hoeveel mensen spelen en of het spel eerlijk is.</dd>
+        <dt>Hoelang</dt>
+        <dd>Zolang het spel bestaat. Het is anoniem, dus niet aan jou te koppelen.</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>2. De ranglijst (alleen als je je resultaat toevoegt)</h3>
+      <dl>
+        <dt>Wat</dt>
+        <dd>De naam die je typt, je rijk, de moeilijkheid, de jaren en provincies, en de datum. Iedereen die de ranglijst opent ziet de naam en de datum.</dd>
+        <dt>Waarom</dt>
+        <dd>Om de ranglijst te laten zien.</dd>
+        <dt>Let op</dt>
+        <dd>Gebruik een bijnaam. Gebruik niet je volledige naam, je school of iets privés.</dd>
+        <dt>Hoelang</dt>
+        <dd>Tot je me vraagt het te verwijderen.</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>3. Feedback (alleen als je een bericht stuurt)</h3>
+      <dl>
+        <dt>Wat</dt>
+        <dd>Je bericht, het contactveld als je dat invult (hoeft niet, wordt alleen gebruikt om je te antwoorden) en de datum. Zat je in een spel, dan ook je rijk, het jaar in het spel, de moeilijkheid en de spelversie.</dd>
+        <dt>Waarom</dt>
+        <dd>Om fouten te herstellen, het spel te verbeteren en je te antwoorden als je contactgegevens hebt achtergelaten. Alleen ik lees het.</dd>
+        <dt>Hoelang</dt>
+        <dd>Na 12 maanden verwijderd.</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>4. IP-adressen (elke website ziet ze)</h3>
+      <p style="margin-top:0">Een IP-adres is een nummer dat je internetverbinding gebruikt. Het wordt automatisch meegestuurd zodra je apparaat verbinding maakt met een website. GitHub, waar de spelbestanden staan, ziet het als je het spel opent. Supabase, dat de database draait, ziet het als het spel statistieken, een ranglijstregel of feedback verstuurt, of de ranglijst ophaalt. Zij bewaren het in hun eigen technische logboeken om hun dienst te laten werken en te beveiligen. Ik sla IP-adressen niet op in mijn database en gebruik ze nergens voor. De logboeken van Supabase kan ik een korte tijd zien, en ik kijk er alleen in als er een fout of misbruik is.</p>
+    </div>
+
+    <h2>Waar het staat, en wie helpt</h2>
+    <p>De database draait bij <b>Supabase</b>, in hun datacenter in Londen. Het Verenigd Koninkrijk valt buiten de EU, maar de EU heeft officieel besloten dat het VK persoonsgegevens goed genoeg beschermt (een adequaatheidsbesluit). De spelbestanden staan bij <b>GitHub Pages</b>. Supabase en GitHub zijn bedrijven die mij helpen het spel te laten draaien (in juridische taal: verwerkers). Beide zijn Amerikaanse bedrijven. Hoe zij met gegevens omgaan staat in hun eigen privacyverklaringen:</p>
+    <ul>
+      <li><a href="https://supabase.com/privacy" target="_blank" rel="noopener">Privacyverklaring van Supabase</a> (Engels)</li>
+      <li><a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Privacyverklaring van GitHub</a> (Engels)</li>
+    </ul>
+    <p>Ik deel jouw gegevens met niemand anders en ik verkoop ze nooit.</p>
+
+    <h2>Wat op je eigen apparaat blijft</h2>
+    <p>Het spel gebruikt de lokale opslag van je browser op je eigen apparaat voor: je opgeslagen spel, je taal, geluid aan of uit, je gekozen moeilijkheid, de laatste ranglijstnaam die je typte (zodat je die niet steeds opnieuw hoeft te typen), en of je de tips en de installatiemelding al hebt gezien. Dit wordt nergens vanzelf naartoe gestuurd. Een naam wordt alleen verstuurd als je die op de ranglijst zet. De geïnstalleerde app en de offline modus bewaren ook een kopie van de spelbestanden op je apparaat.</p>
+    <p><b>Alles verwijderen:</b> wis de websitegegevens van deze site in de instellingen van je browser (Chrome: Instellingen, Privacy, Site-instellingen, zoek icespiked123132.github.io, gegevens verwijderen. Safari op iPhone: Instellingen, Safari (in nieuwere versies onder Apps), Geavanceerd, Websitegegevens). Heb je het spel als app geïnstalleerd, dan verwijdert het verwijderen van de app ook de gegevens. Je opgeslagen spel is dan voorgoed weg.</p>
+
+    <h2>Geen cookies, geen tracking</h2>
+    <p>Geen cookies, geen analyses, geen advertenties, geen accounts, geen sociale-mediaknoppen en geen Google-diensten (de lettertypen staan op de eigen server van het spel). Ik vraag niet naar je leeftijd, je locatie of je echte naam.</p>
+
+    <h2>Jouw rechten</h2>
+    <p>Je kunt me vragen om een kopie van wat ik over je heb, om het te corrigeren of om het te verwijderen. De anonieme statistieken zijn niet aan jou te koppelen, dus die kan ik niet opzoeken. Voor de ranglijst en feedback: stuur me de naam of het bericht en ongeveer wanneer je het stuurde, zodat ik het kan vinden. Ik antwoord binnen een maand. Als ik een ranglijstnaam verwijder, verdwijnt die van de lijst, maar mensen die hem al zagen kunnen hem gekopieerd hebben.</p>
+    <p>E-mail: <a href="mailto:lordsofthelowcountries@gmail.com">lordsofthelowcountries@gmail.com</a></p>
+    <p>Je kunt ook een klacht indienen bij de Autoriteit Persoonsgegevens, de Nederlandse toezichthouder voor privacy: <a href="https://autoriteitpersoonsgegevens.nl/" target="_blank" rel="noopener">autoriteitpersoonsgegevens.nl</a>.</p>
+
+    <h2>Voor wie het wil weten: de juridische reden</h2>
+    <p class="small">Statistieken: gerechtvaardigd belang (een spelmaker wil weten of het spel werkt), en de gegevens zijn anoniem. Ranglijst en feedback: je stuurt ze zelf, dus het berust op jouw toestemming. Je kunt die op elk moment intrekken door me te vragen het te verwijderen.</p>
+
+    <h2>Wijzigingen</h2>
+    <p>Als deze pagina inhoudelijk verandert, pas ik de datum bovenaan aan.</p>
+  </div>
+</main>
+<script>
+(function () {
+  var wanted = new URLSearchParams(location.search).get("lang"), saved = null;
+  try { saved = localStorage.getItem("lords-lang"); } catch (e) {}
+  var lang = (wanted === "nl" || wanted === "en") ? wanted
+    : (saved === "nl" || saved === "en") ? saved
+    : ((navigator.language || "en").toLowerCase().indexOf("nl") === 0 ? "nl" : "en");
+  function show(l) {
+    document.body.className = l === "nl" ? "nl" : "";
+    document.documentElement.lang = l;
+    var buttons = document.querySelectorAll("[data-set]");
+    for (var i = 0; i < buttons.length; i++) buttons[i].className = buttons[i].getAttribute("data-set") === l ? "on" : "";
+  }
+  document.querySelector(".lang").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-set]");
+    if (b) show(b.getAttribute("data-set"));
+  });
+  show(lang);
+})();
+</script>
+</body>
+</html>

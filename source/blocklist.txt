@@ -1,0 +1,143 @@
+# Leaderboard name blocklist. This is the ONE place the list lives.
+#
+# After editing, run:   python3 source/sync_security.py
+# That copies the list into source/supabase-security.sql, source/supabase-setup.sql
+# and source/template.html. Then rebuild the game, and paste supabase-security.sql
+# into the Supabase SQL Editor again (it is safe to run more than once).
+#
+# One entry per line, lowercase letters only (no spaces, accents or digits).
+#   plain word    blocked when it appears ANYWHERE in the name, also when the
+#                 player puts spaces or dots between the letters ("f u c k", "f.u.c.k")
+#   =word         blocked only when it is a WHOLE word in the name. Use this for
+#                 short words that sit inside normal names or places
+#                 (Assen, Grape, Harshit, Nazim, Therapist, Scunthorpe).
+#
+# Letters are matched after these clean-ups: lowercase, accents removed,
+# 0 1 3 4 5 7 @ $ ! + read as o i e a s t a s i t ("sh!t" counts as "shit").
+#
+# Deliberately NOT on the list: mild words, and words that are real names or
+# places (bastard was a medieval title, Dick, Dyke and Reet are names, Assen is a city).
+# This list is a starting point, not a wall. A determined player can get around it.
+# Remove a word by deleting its line; the sync deletes it from the database too.
+
+# ---- English: anywhere in the name ----
+fuck
+bitch
+asshole
+arsehole
+dickhead
+motherfucker
+nigger
+faggot
+bollocks
+blowjob
+handjob
+cumshot
+jizz
+orgasm
+masturbat
+pedophile
+paedophile
+molest
+killyourself
+hitler
+siegheil
+heilhitler
+whitepower
+whitepride
+gaschamber
+kkk
+pornhub
+xvideos
+
+# ---- English: whole word only ----
+=shit
+=shits
+=shitty
+=bullshit
+=shithead
+=cunt
+=cunts
+=cock
+=cocks
+=twat
+=wanker
+=slut
+=sluts
+=whore
+=whores
+=nigga
+=niggas
+=fag
+=fags
+=retard
+=retarded
+=retards
+=kike
+=spic
+=chink
+=gook
+=coon
+=tranny
+=negro
+=rape
+=raped
+=rapist
+=pedo
+=paedo
+=molester
+=nazi
+=nazis
+=kys
+=sex
+=sexy
+=porn
+=porno
+=pussy
+=dildo
+=vagina
+=penis
+=boobs
+=tits
+=anal
+=cum
+=ass
+=arse
+
+# ---- Dutch: anywhere in the name ----
+kanker
+klootzak
+kutwijf
+godverdom
+tyfus
+teringlijer
+hoerenzoon
+
+# ---- Dutch: whole word only ----
+=kut
+=kutten
+=klote
+=tering
+=hoer
+=hoeren
+=slet
+=sletten
+=sletje
+=sletjes
+=snol
+=neuk
+=neuken
+=neukt
+=neukte
+=lul
+=lullen
+=pik
+=flikker
+=flikkers
+=nikker
+=nikkers
+=neger
+=negers
+=mongool
+=mongolen
+=schijt

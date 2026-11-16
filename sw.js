@@ -2,8 +2,8 @@
 // Every time you're online it checks the server for a newer version first
 // (so updates arrive right away); only when offline does it use the saved copy.
 // Requests to other sites (the leaderboard database) are left alone.
-const CACHE = "lords-v3";
-const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png", "fonts/cinzel.woff2", "fonts/eb-garamond.woff2"];
+const CACHE = "lords-v4";
+const FILES = ["./", "index.html", "privacy.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png", "fonts/cinzel.woff2", "fonts/eb-garamond.woff2"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: "reload" })))));

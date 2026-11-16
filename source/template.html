@@ -223,6 +223,11 @@
   .check-row input { width: 22px; height: 22px; accent-color: #7a2e22; }
   #share-status { color: #9a2c2c; font-style: italic; }
   .start-version { font-size: 12px; color: var(--ink-soft); opacity: .7; }
+  .start-version a { color: inherit; text-decoration: underline; padding: 8px 4px; }
+  .privacy-note { font-size: 14px; color: var(--ink-soft); line-height: 1.3; }
+  .privacy-note a { color: inherit; text-decoration: underline; white-space: nowrap; }
+  .form-error { color: #9a2c2c; font-style: italic; }
+  .form-error:empty { display: none; }
   #install { background: rgba(43, 33, 24, 0.82); z-index: 25; }
   #install .card {
     width: 100%; max-width: 360px; background: var(--parchment); border-radius: 12px; border: 3px solid var(--ink);
@@ -396,7 +401,7 @@
         <button class="act light" style="min-height:42px" onclick="showHelp()" data-t>How to play</button>
         <button class="act light" id="start-board" style="min-height:42px;display:none" onclick="openBoard(false)" data-t>Leaderboard 🏆</button>
       </div>
-      <div class="start-version" id="start-version"></div>
+      <div class="start-version"><span id="start-version"></span> · <a href="privacy.html" target="_blank" rel="noopener" data-t>Privacy</a></div>
     </div>
   </div>
   <div id="menu" class="overlay" style="display:none">
@@ -574,6 +579,7 @@
       <div id="fb-form" style="flex-direction:column;gap:10px">
         <textarea id="fb-text" maxlength="2000" placeholder="Your message" data-tp></textarea>
         <input id="fb-contact" maxlength="100" placeholder="Email or social handle, if you'd like an answer (optional)" data-tp>
+        <div class="privacy-note"><span data-t>The contact field is optional and only used to reply to you. Please don't write anything private in your message.</span> <a href="privacy.html" target="_blank" rel="noopener" data-t>Privacy</a></div>
         <button class="act go" id="fb-send" onclick="sendFeedback()" data-t>Send</button>
       </div>
       <div id="fb-offline" class="msg" data-t>The feedback form isn't switched on yet. You can leave a message on <a href="https://github.com/IceSpiked123132/LordsOfTheLowCountries/issues" target="_blank" rel="noopener">GitHub</a>.</div>
@@ -587,6 +593,7 @@
       <div data-t>Your name goes on the picture, so everyone knows whose realm this is.</div>
       <input id="share-name" maxlength="20" placeholder="Your name" data-tp>
       <label id="share-board-row" class="check-row"><input type="checkbox" id="share-board" checked> <span data-t>Also put my result on the leaderboard 🏆</span></label>
+      <div id="share-board-note" class="privacy-note"><span data-t>Your name and the date are shown publicly on the leaderboard. Pick any name you like.</span> <a href="privacy.html" target="_blank" rel="noopener" data-t>Privacy</a></div>
       <div id="share-status"></div>
       <button class="act go" id="share-go" onclick="shareGame()" data-t>Share 📤</button>
       <button class="act light" onclick="hide('shareform')" data-t>Cancel</button>
@@ -930,6 +937,17 @@ const NL = {
   "{} · #{} on the leaderboard": "{0} · #{1} op de ranglijst",
   "Your name goes on the picture, so everyone knows whose realm this is.": "Je naam komt op de afbeelding, zodat iedereen weet wiens rijk dit is.",
   "Also put my result on the leaderboard 🏆": "Zet mijn resultaat ook op de ranglijst 🏆",
+  // Privacy and online errors
+  "Privacy": "Privacy",
+  "The contact field is optional and only used to reply to you. Please don't write anything private in your message.": "Het contactveld hoeft niet en wordt alleen gebruikt om je te antwoorden. Schrijf geen privézaken in je bericht.",
+  "Your name and the date are shown publicly on the leaderboard. Pick any name you like.": "Je naam en de datum zijn openbaar zichtbaar op de ranglijst. Kies gerust een bijnaam.",
+  "That name isn't allowed on the leaderboard. Please pick another one.": "Die naam mag niet op de ranglijst. Kies een andere naam.",
+  "A name can't be empty or look like a link or an email address.": "Een naam mag niet leeg zijn en niet op een link of e-mailadres lijken.",
+  "The server is very busy right now. Please try again in a little while.": "De server is nu erg druk. Probeer het over een poosje opnieuw.",
+  "This result can't be put on the leaderboard.": "Dit resultaat kan niet op de ranglijst.",
+  "Your message couldn't be sent. Check it and try again.": "Je bericht kon niet worden verstuurd. Controleer het en probeer het opnieuw.",
+  "Something went wrong on the server. Please try again later.": "Er ging iets mis op de server. Probeer het later opnieuw.",
+  "Your picture is still ready to share. You can try the leaderboard again later.": "Je afbeelding staat nog klaar om te delen. Je kunt de ranglijst later opnieuw proberen.",
   "Play it like an app": "Speel het als een app",
   "Install the app 📲": "Installeer de app 📲",
   "Add Lords of the Low Countries to your home screen: it opens full screen like a real app, starts faster and works without internet.": "Zet Lords of the Low Countries op je beginscherm: het opent schermvullend als een echte app, start sneller en werkt zonder internet.",
@@ -1341,6 +1359,7 @@ function newGame(playerRealm, difficulty) {
   game.selected = null;
   game.order = null;
   game.message = null;
+  game.notice = null;     // a note on the end screen (for example: the leaderboard didn't work)
   game.over = false;
   game.stats = { won: 0, lost: 0, taken: 0, peak: 0 };
   game.lastTurn = [];
@@ -2630,6 +2649,7 @@ function keepPlaying() {
   game.over = false;
   game.endless = true;
   game.endInfo = null;
+  game.notice = null;
   game.message = T`The war goes on. Conquer all ${allProvinces().length} provinces to unite the Low Countries!`;
   render();
 }
@@ -2912,6 +2932,7 @@ function renderPanel() {
       <div class="end-stats">
         ${T`${REALMS[game.player].name} (${tr(diff().label).toLowerCase()}) · ${game.year - RULES.startYear} ${yearsWord(game.year - RULES.startYear)} · ${battlesWon(s.won)}, ${s.lost} lost · ${provincesConquered(s.taken)} · most held at once: ${Math.max(s.peak, provincesOf(game.player).length)}`}
       </div>
+      ${game.notice ? `<div class="msg">${game.notice}</div>` : ""}
       <div class="spacer"></div>
       <div class="row">
         <button class="act light" data-do="share">${T`Share 📤`}</button>
@@ -3387,7 +3408,69 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-16.6";
+const GAME_VERSION = "2026-11-16.7";
+
+// Leaderboard name rules. The same rules run in the database (source/supabase-security.sql),
+// this copy only gives the player a friendly message first. The word list is generated
+// from source/blocklist.txt by source/sync_security.py: edit that file, not this block.
+// BEGIN GENERATED NAME RULES
+const NAME_RULES = {
+  accentFrom: "àáâãäåçèéêëìíîïñòóôõöùúûüýÿāăąćĉċčďēĕėęěĝğġģĥĩīĭįĵķĺļľńņňōŏőŕŗřśŝşšţťũūŭůűųŵŷźżžơưǎǐǒǔǖǘǚǜǟǡǧǩǫǭǰǵǹǻȁȃȅȇȉȋȍȏȑȓȕȗșțȟȧȩȫȭȯȱȳḁḃḅḇḉḋḍḏḑḓḕḗḙḛḝḟḡḣḥḧḩḫḭḯḱḳḵḷḹḻḽḿṁṃṅṇṉṋṍṏṑṓṕṗṙṛṝṟṡṣṥṧṩṫṭṯṱṳṵṷṹṻṽṿẁẃẅẇẉẋẍẏẑẓẕẖẗẘẙạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹøđłħı",
+  accentTo: "aaaaaaceeeeiiiinooooouuuuyyaaaccccdeeeeegggghiiiijklllnnnooorrrssssttuuuuuuwyzzzouaiouuuuuaagkoojgnaaaeeiioorruusthaeooooyabbbcdddddeeeeefghhhhhiikkkllllmmmnnnnoooopprrrrsssssttttuuuuuvvwwwwwxxyzzzhtwyaaaaaaaaaaaaeeeeeeeeiioooooooooooouuuuuuuyyyyodlhi",
+  anywhere: "arsehole,asshole,bitch,blowjob,bollocks,cumshot,dickhead,faggot,fuck,gaschamber,godverdom,handjob,heilhitler,hitler,hoerenzoon,jizz,kanker,killyourself,kkk,klootzak,kutwijf,masturbat,molest,motherfucker,nigger,orgasm,paedophile,pedophile,pornhub,siegheil,teringlijer,tyfus,whitepower,whitepride,xvideos".split(","),
+  wholeWord: "anal,arse,ass,boobs,bullshit,chink,cock,cocks,coon,cum,cunt,cunts,dildo,fag,fags,flikker,flikkers,gook,hoer,hoeren,kike,klote,kut,kutten,kys,lul,lullen,molester,mongolen,mongool,nazi,nazis,neger,negers,negro,neuk,neuken,neukt,neukte,nigga,niggas,nikker,nikkers,paedo,pedo,penis,pik,porn,porno,pussy,rape,raped,rapist,retard,retarded,retards,schijt,sex,sexy,shit,shithead,shits,shitty,slet,sletje,sletjes,sletten,slut,sluts,snol,spic,tering,tits,tranny,twat,vagina,wanker,whore,whores".split(",")
+};
+// END GENERATED NAME RULES
+
+// Same clean-up as normalize_name() and name_tokens() in the database
+function nameWords(name) {
+  let s = name.toLowerCase().replace(/ß/g, "ss").replace(/æ/g, "ae").replace(/œ/g, "oe");
+  const swap = (text, from, to) => Array.from(text, c => { const i = from.indexOf(c); return i < 0 ? c : to[i]; }).join("");
+  s = swap(s, NAME_RULES.accentFrom, NAME_RULES.accentTo);
+  s = swap(s, "013457@$!+", "oieastasit");
+  return s.replace(/[^a-z]+/g, " ").trim().split(" ").filter(Boolean);
+}
+
+// Whitespace becomes one space (a byte order mark is not whitespace here, as in the database)
+const cleanName = (raw) => String(raw).replace(/[^\S\ufeff]+/g, " ").replace(/^ +| +$/g, "");
+const clipName = (raw) => cleanName(raw).slice(0, 20).replace(/ +$/, "");
+
+// Returns null when the name is fine, otherwise "empty", "email", "url" or "blocked"
+function nameProblem(raw) {
+  const n = cleanName(raw);
+  if (!n) return "empty";
+  if (/[\u0001-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202f\u2060-\u206f\ufeff]/.test(n)) return "empty";
+  if (!/[\p{L}\p{N}]/u.test(n)) return "empty";
+  if (/[^ @]+@[^ @]+/.test(n)) return "email";
+  if (/(https?:|www\.|[a-z0-9-]\.(com|net|org|nl|be|io|co|uk|eu|ru|tk|ly|gg|xyz|app|dev|info|biz|link|click|shop|site|online|top|store|live|me)([^a-z0-9]|$))/.test(n.toLowerCase())) return "url";
+  const words = nameWords(n), squashed = words.join("");
+  if (NAME_RULES.anywhere.some(w => squashed.includes(w)) || NAME_RULES.wholeWord.some(w => words.includes(w))) return "blocked";
+  return null;
+}
+
+// Friendly text for a name problem found by the game itself or by the database
+function nameMessage(code) {
+  return code === "blocked"
+    ? T`That name isn't allowed on the leaderboard. Please pick another one.`
+    : T`A name can't be empty or look like a link or an email address.`;
+}
+
+// The database says no with a short code (see source/supabase-security.sql);
+// no connection at all is a different thing (status 0)
+class ApiError extends Error {
+  constructor(status, code) { super(`Server answered ${status} ${code}`); this.status = status; this.code = code; }
+}
+
+// Friendly text for a failed request. what: "board" or "feedback"
+function onlineMessage(e, what) {
+  const code = (e && e.code) || "";
+  if (code === "rate_limit") return T`The server is very busy right now. Please try again in a little while.`;
+  if (code.startsWith("name_")) return nameMessage(code === "name_blocked" ? "blocked" : "empty");
+  if (code === "score_invalid") return T`This result can't be put on the leaderboard.`;
+  if (code === "feedback_invalid") return T`Your message couldn't be sent. Check it and try again.`;
+  if (e && e.status) return T`Something went wrong on the server. Please try again later.`;
+  return what === "feedback" ? T`Couldn't send it. Check your internet and try again.` : T`Couldn't reach the leaderboard. Check your internet and try again.`;
+}
 const online = () => Boolean(ONLINE.url && ONLINE.key);
 
 async function api(path, options = {}) {
@@ -3400,7 +3483,11 @@ async function api(path, options = {}) {
       ...(options.headers || {})
     }
   });
-  if (!res.ok) throw new Error(`Server answered ${res.status}`);
+  if (!res.ok) {
+    let code = "";
+    try { code = String((await res.json()).message || ""); } catch (e) {}
+    throw new ApiError(res.status, code);
+  }
   return options.method === "POST" ? null : res.json();
 }
 
@@ -3445,7 +3532,9 @@ function renderBoardForm() {
     <div class="row">
       <input id="board-name" maxlength="20" placeholder="${T`Your name`}" value="${name.replace(/"/g, "&quot;")}">
       <button class="act go" id="board-submit">${T`Add`}</button>
-    </div>`;
+    </div>
+    <div class="privacy-note">${T`Your name and the date are shown publicly on the leaderboard. Pick any name you like.`} <a href="privacy.html" target="_blank" rel="noopener">${T`Privacy`}</a></div>
+    <div id="board-form-error" class="form-error"></div>`;
   form.style.display = "flex";
   document.getElementById("board-submit").onclick = submitScore;
 }
@@ -3464,6 +3553,7 @@ async function postScore(name) {
   }) });
   game.submitted = game.submitted || {};
   game.submitted[category] = true;
+  game.notice = null;
   board.highlight = { name, years };
   try {
     const faster = await api(`scores?select=years&difficulty=eq.${game.difficulty}&category=eq.${category}&years=lt.${years}&limit=1000`);
@@ -3473,8 +3563,12 @@ async function postScore(name) {
 
 async function submitScore() {
   const input = document.getElementById("board-name");
-  const name = input.value.trim().slice(0, 20);
+  const name = clipName(input.value);
+  const problem = document.getElementById("board-form-error");
+  problem.textContent = "";
   if (!name) { input.focus(); return; }
+  const bad = nameProblem(name);
+  if (bad) { problem.textContent = nameMessage(bad); input.focus(); return; }
   try { localStorage.setItem("lords-name", name); } catch (e) {}
   const years = game.year - RULES.startYear;
   const button = document.getElementById("board-submit");
@@ -3488,7 +3582,7 @@ async function submitScore() {
     render();
   } catch (e) {
     button.disabled = false;
-    document.getElementById("board-status").textContent = T`Couldn't reach the leaderboard. Check your internet and try again.`;
+    problem.textContent = onlineMessage(e, "board");
   }
 }
 
@@ -3551,7 +3645,7 @@ async function sendFeedback() {
     document.getElementById("fb-text").value = "";
   } catch (e) {
     document.getElementById("fb-send").disabled = false;
-    status.textContent = T`Couldn't send it. Check your internet and try again.`;
+    status.textContent = onlineMessage(e, "feedback");
   }
 }
 
@@ -3643,6 +3737,7 @@ function openShareForm() {
   document.getElementById("share-name").value = savedName();
   const box = document.getElementById("share-board-row");
   box.style.display = canSubmitScore() ? "flex" : "none";
+  document.getElementById("share-board-note").style.display = canSubmitScore() ? "block" : "none";
   document.getElementById("share-board").checked = true;
   document.getElementById("share-status").textContent = "";
   document.getElementById("share-go").disabled = false;
@@ -3652,16 +3747,29 @@ function openShareForm() {
 // Step 2: put the result on the leaderboard if asked, draw the image, share it
 async function shareGame() {
   const input = document.getElementById("share-name");
-  const name = input.value.trim().slice(0, 20);
-  if (!name) { input.focus(); document.getElementById("share-status").textContent = T`Fill in a name first.`; return; }
+  const name = clipName(input.value);
+  const status = document.getElementById("share-status");
+  status.textContent = "";
+  if (!name) { input.focus(); status.textContent = T`Fill in a name first.`; return; }
+  const toBoard = canSubmitScore() && document.getElementById("share-board").checked;
+  const bad = toBoard ? nameProblem(name) : null;
+  if (bad) { input.focus(); status.textContent = nameMessage(bad); return; }
   try { localStorage.setItem("lords-name", name); } catch (e) {}
   const button = document.getElementById("share-go");
   button.disabled = true;
   button.textContent = T`Drawing…`;
   let rank = null;
-  if (canSubmitScore() && document.getElementById("share-board").checked) {
+  if (toBoard) {
     try { rank = await postScore(name); } catch (e) {
-      document.getElementById("share-status").textContent = T`Couldn't reach the leaderboard. Check your internet and try again.`;
+      if (e && e.code && (e.code.startsWith("name_") || e.code === "score_invalid")) {
+        // The database refused the name or the result: the player can fix the name, so stay here
+        status.textContent = onlineMessage(e, "board");
+        button.disabled = false;
+        button.textContent = T`Share 📤`;
+        return;
+      }
+      // No connection, a busy server or a server error: share the picture anyway and say so
+      game.notice = onlineMessage(e, "board") + " " + T`Your picture is still ready to share. You can try the leaderboard again later.`;
     }
   }
   hide("shareform");
