@@ -264,6 +264,45 @@
   .dip-row button.act { min-height: 40px; font-size: 13px; }
   #diplo-msg { margin-bottom: 10px; }
 
+  /* Developments screen */
+  #devs { justify-content: flex-start; padding: calc(10px + env(safe-area-inset-top)) 10px 0; }
+  #devs .box { width: 100%; max-width: 420px; text-align: left; flex: 1; min-height: 0; overflow-y: auto; padding: 4px 4px 8px; }
+  #devs h1 { text-align: center; font-size: 22px; margin: 0 0 6px; }
+  #dev-status { text-align: center; background: var(--parchment-dark); border-radius: 8px; padding: 6px 8px; margin-bottom: 8px; font-size: 15px; }
+  #dev-status .sub { font-size: 13px; color: var(--ink-soft); }
+  #dev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .dev-col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .dev-head { font-family: 'Cinzel', serif; font-weight: 800; font-size: 14px; text-align: center; padding: 5px 0; border-bottom: 4px solid var(--branch); }
+  .dev-tl { text-align: center; font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+  .dev-tile {
+    min-height: 58px; padding: 3px; min-width: 0; font: inherit; color: var(--ink); cursor: pointer;
+    background: var(--parchment); border: 2px solid var(--ink); border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  }
+  .dev-emoji { font-size: 20px; line-height: 1; }
+  .dev-name { font-family: 'Cinzel', serif; font-weight: 800; font-size: 11px; line-height: 1.1; text-align: center; overflow-wrap: anywhere; }
+  .dev-tile.done { background: #ecd88a; border-color: #7a5c1e; }
+  .dev-tile.current { background: #f4e6b5; border-style: dashed; }
+  .dev-tile.locked { opacity: .5; }
+  .dev-tile.other { opacity: .35; }
+  .dev-tile.sel { outline: 3px solid #7a2e22; outline-offset: 1px; }
+  /* The detail panel stays pinned to the bottom, so the buttons never scroll out of view */
+  #dev-detail {
+    width: calc(100% + 20px); max-width: 440px; flex: none; text-align: left; box-sizing: border-box;
+    padding: 10px 14px calc(12px + env(safe-area-inset-bottom)); background: var(--parchment-dark);
+    border-top: 3px solid var(--ink); border-radius: 12px 12px 0 0; display: flex; flex-direction: column; gap: 4px;
+  }
+  #dev-detail h2 { margin: 0; font-size: 18px; }
+  #dev-detail .sub { font-size: 14px; color: var(--ink-soft); }
+  #dev-detail .row { margin-top: 6px; }
+  #dev-detail .row button.act { font-size: 13px; }
+  button.act.attn { position: relative; }
+  button.act.attn::after {
+    content: ""; position: absolute; top: -6px; right: -4px; width: 14px; height: 14px;
+    border-radius: 50%; background: #d23b2b; border: 2px solid var(--parchment);
+  }
+  .row.three button.act { font-size: 12px; padding: 4px 3px; }
+
   /* Event cards */
   #eventcard { background: rgba(43, 33, 24, 0.82); z-index: 20; }
   #eventcard .card {
@@ -424,6 +463,8 @@
         <li>A conquered province pays nothing for 3 years while it calms down.</li>
         <li>Lose your capital 👑 and your income drops by a quarter for 3 years. Retake it to end that early.</li>
       </ul>
+      <h3>Developments</h3>
+      <p>Press <b>Developments 📜</b> to research improvements in three branches: Trade, War and Rule. Every branch has three tiers, and in each tier you choose one of two options, so no two games develop the same way. A development costs gold when you start it and takes 3 years, and only one can be developed at a time. Your first tier I pick is free. Your realm's favourite branch (★) is 20% cheaper. The other realms develop too.</p>
       <h3>Credits</h3>
       <p>Made by IceSpiked123132, with Claude. Map data: Natural Earth (public domain). Fonts: Cinzel and EB Garamond (SIL Open Font License). The coats of arms are drawn for this game after the medieval arms of Holland, Utrecht, Gelre and Brabant.</p>
       </div>
@@ -473,6 +514,8 @@
         <li>Een veroverde provincie levert 3 jaar niets op terwijl de rust terugkeert.</li>
         <li>Verlies je je hoofdstad 👑, dan daalt je inkomen 3 jaar lang met een kwart. Herover haar om dat eerder te beëindigen.</li>
       </ul>
+      <h3>Ontwikkelingen</h3>
+      <p>Druk op <b>Ontwikkelingen 📜</b> om verbeteringen te onderzoeken in drie takken: Handel, Oorlog en Bestuur. Elke tak heeft drie niveaus, en per niveau kies je één van twee opties, dus geen twee spellen ontwikkelen zich hetzelfde. Een ontwikkeling kost goud als je begint en duurt 3 jaar, en je kunt er maar één tegelijk ontwikkelen. Je eerste keuze van niveau I is gratis. De favoriete tak van je rijk (★) is 20% goedkoper. De andere rijken ontwikkelen ook.</p>
       <h3>Makers</h3>
       <p>Gemaakt door IceSpiked123132, met Claude. Kaartgegevens: Natural Earth (publiek domein). Lettertypen: Cinzel en EB Garamond (SIL Open Font License). De wapens zijn voor dit spel getekend naar de middeleeuwse wapens van Holland, Utrecht, Gelre en Brabant.</p>
       </div>
@@ -565,6 +608,14 @@
       <div id="diplo-list"></div>
       <button class="act" style="width:100%;margin-top:6px" onclick="closeDiplomacy()" data-t>Back to the map</button>
     </div>
+  </div>
+  <div id="devs" class="overlay" style="display:none">
+    <div class="box">
+      <h1 data-t>Developments</h1>
+      <div id="dev-status"></div>
+      <div id="dev-grid"></div>
+    </div>
+    <div id="dev-detail"></div>
   </div>
   <div id="install" class="overlay" style="display:none">
     <div class="card">
@@ -885,7 +936,92 @@ const NL = {
   "Install 📲": "Installeren 📲",
   "Not now": "Nu niet",
   "Tap the Share button <b>⬆️</b> at the bottom of Safari.": "Tik op de deelknop <b>⬆️</b> onderin Safari.",
-  "Choose <b>Add to Home Screen</b>.": "Kies <b>Zet op beginscherm</b>."
+  "Choose <b>Add to Home Screen</b>.": "Kies <b>Zet op beginscherm</b>.",
+  // Developments
+  "Developments": "Ontwikkelingen",
+  "Developments 📜": "Ontwikkelingen 📜",
+  "Trade": "Handel",
+  "War": "Oorlog",
+  "Rule": "Bestuur",
+  "Market rights": "Marktrechten",
+  "Harbour tolls": "Havengelden",
+  "Dikes and sluices": "Dijken en sluizen",
+  "Guild halls": "Gildehuizen",
+  "Merchant bank": "Handelsbank",
+  "Trade fleet": "Handelsvloot",
+  "Crossbowmen": "Kruisbogen",
+  "Pikemen": "Piekeniers",
+  "Stone castles": "Stenen kastelen",
+  "Mercenary contracts": "Huurlingen",
+  "Captains": "Kapiteins",
+  "Plunder": "Plundering",
+  "Town privileges": "Stadsrechten",
+  "Marriage alliances": "Huwelijken",
+  "Charters": "Handvesten",
+  "Tax collectors": "Tollenaars",
+  "Peace of the land": "Landvrede",
+  "Standing army": "Staand leger",
+  "+{} 💰 a year for every province of yours with a farm.": "+{0} 💰 per jaar voor elke provincie van jou met een boerderij.",
+  "+1 💰 a year for every {} coastal provinces ⚓ you hold.": "+1 💰 per jaar voor elke {0} kustprovincies ⚓ die je bezit.",
+  "Farms cost {} 💰 instead of {}, and storm floods no longer wash away your farms.": "Boerderijen kosten {0} 💰 in plaats van {1}, en stormvloeden spoelen je boerderijen niet meer weg.",
+  "+1 💰 a year for every {} provinces you hold.": "+1 💰 per jaar voor elke {0} provincies die je bezit.",
+  "+{}% income.": "+{0}% inkomen.",
+  "Hanseatic merchants come twice as often and pay +{} 💰 per port ⚓.": "Hanzekooplieden komen twee keer zo vaak en betalen +{0} 💰 per haven ⚓.",
+  "Your attacks are {}% stronger.": "Je aanvallen zijn {0}% sterker.",
+  "Your defenders are {}% stronger.": "Je verdedigers zijn {0}% sterker.",
+  "Castles cost {} 💰 instead of {}.": "Kastelen kosten {0} 💰 in plaats van {1}.",
+  "Once a year you can recruit a regiment without using manpower, for {} 💰 extra.": "Eén keer per jaar kun je een regiment rekruteren zonder mankracht, voor {0} 💰 extra.",
+  "Your battle luck roll runs from {} to {} instead of {} to {}, in attack and in defense.": "Je geluksworp in veldslagen loopt van {0} tot {1} in plaats van {2} tot {3}, bij aanval en verdediging.",
+  "Taking a province gives you {} 💰 in plunder.": "Een ingenomen provincie levert je {0} 💰 aan buit op.",
+  "+1 💰 a year for every {} of your home provinces with income 1.": "+1 💰 per jaar voor elke {0} van je thuisprovincies met inkomen 1.",
+  "Your allies join the wars you declare, and alliances are easier to make: no common enemy needed.": "Je bondgenoten doen mee aan de oorlogen die jij verklaart, en verbonden sluiten is makkelijker: geen gezamenlijke vijand nodig.",
+  "Conquered provinces pay again after {} years instead of {}.": "Veroverde provincies betalen weer na {0} jaar in plaats van {1}.",
+  "Your truces last {} years longer, and enemies offer you peace {} years sooner.": "Je bestanden duren {0} jaar langer, en vijanden bieden je {1} jaar eerder vrede aan.",
+  "Your upkeep is {}% lower, by at least 1 💰.": "Je onderhoud is {0}% lager, minstens 1 💰.",
+  "Farmers may sell their surplus on the town square, and the town takes its share.": "Boeren mogen hun overschot op het marktplein verkopen, en de stad krijgt zijn deel.",
+  "Every ship that drops anchor now pays for the privilege.": "Elk schip dat voor anker gaat, betaalt daar nu voor.",
+  "Strong dikes and clever sluices hold back the sea, and the fields stay dry.": "Sterke dijken en slimme sluizen houden de zee tegen, en de akkers blijven droog.",
+  "The craftsmen raise guild halls in every town, and their dues fill your coffers.": "De ambachtslieden bouwen gildehuizen in elke stad, en hun bijdragen vullen je schatkist.",
+  "Bankers from Lombardy open a counter in your lands and lend at a fair price.": "Bankiers uit Lombardije openen een kantoor in je land en lenen tegen een eerlijke prijs.",
+  "A fleet of sturdy cogs sails under your flag, from the Zuiderzee to the Baltic.": "Een vloot stevige koggen vaart onder je vlag, van de Zuiderzee tot de Oostzee.",
+  "Your archers trade their bows for crossbows that pierce armour from afar.": "Je boogschutters ruilen hun bogen in voor kruisbogen die van ver harnassen doorboren.",
+  "Rows of long pikes make a bristling wall that no horseman wants to charge.": "Rijen lange pieken vormen een stekelige muur waar geen ruiter tegenaan wil rijden.",
+  "Masons replace the old timber with stone, and the walls rise faster and cheaper.": "Metselaars vervangen het oude hout door steen, en de muren rijzen sneller en goedkoper.",
+  "The captains of the Free Lances sign a contract: gold today, swords tomorrow.": "De aanvoerders van de vrije lansen tekenen een contract: goud vandaag, zwaarden morgen.",
+  "Seasoned captains lead from the front, and fewer battles are lost to bad luck.": "Ervaren kapiteins leiden vanaf het front, en minder veldslagen gaan verloren door pech.",
+  "Your soldiers are promised the spoils of every town they take.": "Je soldaten krijgen de buit van elke stad die ze innemen beloofd.",
+  "Small towns receive privileges of their own, and trade begins to bloom there.": "Kleine steden krijgen eigen privileges, en de handel begint er te bloeien.",
+  "A wedding between two noble houses seals a friendship that outlasts the feast.": "Een huwelijk tussen twee edele huizen bezegelt een vriendschap die het feest overleeft.",
+  "Written charters tell the conquered what they owe and what they are promised.": "Schriftelijke handvesten vertellen de veroverden wat ze verschuldigd zijn en wat hen beloofd is.",
+  "Honest collectors, mostly, count every penny that is owed.": "Eerlijke inners, meestal, tellen elke penning die verschuldigd is.",
+  "The lords swear to keep the peace, and a broken oath is a stain on any name.": "De heren zweren de vrede te bewaren, en een gebroken eed is een smet op elke naam.",
+  "A core of paid soldiers stays under arms all year, fed from the crown's own stores.": "Een kern van betaalde soldaten blijft het hele jaar onder de wapens, gevoed uit de eigen voorraden van de kroon.",
+  " Plunder: +{} 💰.": " Plundering: +{0} 💰.",
+  "Development: {}": "Ontwikkeling: {0}",
+  "You can still pick a free first development.": "Je kunt nog een gratis eerste ontwikkeling kiezen.",
+  "{} joins {} in the war against {}.": "{0} sluit zich aan bij {1} in de oorlog tegen {2}.",
+  "{} accepts. A royal wedding seals your friendship.": "{0} stemt toe. Een vorstelijk huwelijk bezegelt jullie vriendschap.",
+  "🎁 Choose your free first development. Any tier I option costs nothing.": "🎁 Kies je gratis eerste ontwikkeling. Elke optie van niveau I kost niets.",
+  "⏳ {}: {} {} to go": "⏳ {0}: nog {1} {2}",
+  "Nothing is being developed. One at a time.": "Er wordt niets ontwikkeld. Steeds één tegelijk.",
+  "Treasury: {} 💰": "Schatkist: {0} 💰",
+  "Tap a development to read what it does. You follow one option per tier. A ★ marks your favourite branch: 20% cheaper.": "Tik op een ontwikkeling om te lezen wat ze doet. Je volgt één optie per niveau. Een ★ markeert je favoriete tak: 20% goedkoper.",
+  "You have this development.": "Je hebt deze ontwikkeling.",
+  "This one is being developed now.": "Deze wordt nu ontwikkeld.",
+  "You took the other option of this tier.": "Je koos de andere optie van dit niveau.",
+  "First finish a tier {} development in this branch.": "Rond eerst een ontwikkeling van niveau {0} in deze tak af.",
+  "Only one development at a time.": "Maar één ontwikkeling tegelijk.",
+  "You need {} more 💰.": "Je hebt nog {0} 💰 nodig.",
+  "tier {}": "niveau {0}",
+  "Free pick: ready at once.": "Gratis keuze: meteen klaar.",
+  "Cost: {} 💰. Ready in {} {}.": "Kosten: {0} 💰. Klaar over {1} {2}.",
+  "Take it for free 🎁": "Gratis nemen 🎁",
+  "Done ✅": "Klaar ✅",
+  "Develop for {} 💰": "Ontwikkelen voor {0} 💰",
+  "A storm flood strikes {}. Your dikes save the farm, but the province pays nothing for 2 years.": "Een stormvloed treft {0}. Je dijken redden de boerderij, maar de provincie levert 2 jaar niets op.",
+  "pikemen 🔱": "piekeniers 🔱",
+  "🎁 You may pick a free first development.": "🎁 Je mag een gratis eerste ontwikkeling kiezen.",
+  "Mercenary": "Huurling"
 };
 
 // =====================================================================
@@ -929,21 +1065,104 @@ const RULES = {
   endYear: 1400
 };
 
+// =====================================================================
+// MODIFIERS: ONE SYSTEM FOR REALM ABILITIES AND DEVELOPMENTS
+// Everything that bends the rules for one realm is a modifier: a key and a
+// number. A realm's modifiers come from its own ability (ABILITIES) and from
+// the developments it has finished (DEVELOPMENTS). The rules never look at
+// those tables: they ask mod(realm, "key"), which adds everything up
+// (0 = no effect). To tune balance, change the numbers in the two tables.
+//
+//   income:     farmGold (gold per farm), coastGold (gold per coastal province),
+//               flatGold, provinceGold (per province held), poorHomeGold (per home province with income 1),
+//               incomePct (0.1 = +10%)
+//   costs:      farmCost, castleCost, recruitGold (added to the base price)
+//   war:        attack, defense (0.1 = +10%), luckMin (raises the bottom of the
+//               combat roll), noRiver (rivers don't protect you), mercGold,
+//               plunderGold, upkeepPct (0.1 = 10% less upkeep, at least 1 gold)
+//   events:     stormProof, hanseGold, hanseWeight
+//   diplomacy:  unrestYears (added), truceYears, peaceSooner, peaceAfter,
+//               peaceChance, allyJoin, alliance
+// =====================================================================
+
 // Each realm has one ability of its own. The AI realms use theirs too.
-// The texts players see are in TRAIT_TEXT further down.
-const TRAITS = {
-  holland: { tradeGold: 0.5,      // Trade: +1 gold a year for every 2 coastal provinces held (rounded down, none in unrest)
-             hanseGold: 6,        //   Hanseatic merchants pay this per port (others get 3)
-             hanseWeight: 4 },    //   and come twice as often (others: 2)
-  utrecht: { titheGold: 2,        // Prince-Bishop: church income every year, whatever the realm's size
-             peaceAfter: 2,       //   peace after this many years of war, whoever is winning
-             peaceChance: 0.3 },  //   yearly chance two AI realms end such a war (others: 0.15 after 3 years)
-  gelre:   { charge: 1.3,         // Knights: attack strength x1.3
-             noRiver: true },     //   but rivers don't protect Gelre's own provinces
-  brabant: { farmBonus: 2,        // Rich cities: a farm gives +2 income (others: +1)
-             recruitGold: 6 }     //   but burghers would rather pay than fight: recruits cost 6 (others: 5)
+// The texts players see are in traitName / traitShort / traitLong below.
+const ABILITIES = {
+  holland: { mods: { coastGold: 0.5,    // Trade: +1 gold a year for every 2 coastal provinces held (rounded down, none in unrest)
+                     hanseGold: 3,      //   Hanseatic merchants pay 3 more per port (6 instead of 3)
+                     hanseWeight: 2 } },//   and come twice as often (weight 4 instead of 2)
+  utrecht: { mods: { flatGold: 2,       // Prince-Bishop: church income every year, whatever the realm's size
+                     peaceAfter: 2,     //   peace after this many years of war, whoever is winning
+                     peaceChance: 0.3 } },//  yearly chance two AI realms end such a war (others: 0.15 after 3 years)
+  gelre:   { mods: { attack: 0.3,       // Knights: attack strength x1.3
+                     noRiver: 1 } },    //   but rivers don't protect Gelre's own provinces
+  brabant: { mods: { farmGold: 1,       // Rich cities: a farm gives +2 income (others: +1)
+                     recruitGold: 1 } } //   but burghers would rather pay than fight: recruits cost 6 (others: 5)
 };
-const trait = (id) => TRAITS[id] || {};
+const abilityMods = (id) => (ABILITIES[id] || {}).mods || {};
+
+// Developments: three branches, three tiers, two options per tier. A realm can
+// follow one option per tier. Cost is paid when it starts, it takes DEV.years.
+const DEV = {
+  costs: [20, 35, 55],      // gold per tier
+  years: 3,                 // years to finish one
+  favouriteDiscount: 0.2,   // a realm's favourite branch is this much cheaper
+  sizeSurcharge: 0,         // extra cost per province above the starting size (0.03 = +3% each), against snowballing
+  aiSavePct: 0.4,           // the AI holds back this share of its income while it wants a development
+  aiReserve: 3,             // the AI keeps at least this much gold after paying (plus twice any yearly shortfall)
+  spare: 10                 // the red dot on the button: you could pay for the cheapest option with this much to spare
+};
+const BRANCHES = ["trade", "war", "rule"];
+const FAVOURITE = { holland: "trade", utrecht: "rule", gelre: "war", brabant: "rule" };
+const DEVELOPMENTS = [
+  // Trade (Handel)
+  { id: "market",   branch: "trade", tier: 1, emoji: "🏪", mods: { farmGold: 1 } },
+  { id: "tolls",    branch: "trade", tier: 1, emoji: "⚓", mods: { coastGold: 0.25 } },
+  { id: "dikes",    branch: "trade", tier: 2, emoji: "🌊", mods: { farmCost: -5, stormProof: 1 } },
+  { id: "guilds",   branch: "trade", tier: 2, emoji: "🏛️", mods: { provinceGold: 0.25 } },
+  { id: "bank",     branch: "trade", tier: 3, emoji: "🏦", mods: { incomePct: 0.1 } },
+  { id: "fleet",    branch: "trade", tier: 3, emoji: "⛵", mods: { hanseGold: 2, hanseWeight: 2 } },
+  // War (Oorlog)
+  { id: "crossbow", branch: "war",   tier: 1, emoji: "🏹", mods: { attack: 0.1 } },
+  { id: "pikes",    branch: "war",   tier: 1, emoji: "🔱", mods: { defense: 0.1 } },
+  { id: "castles",  branch: "war",   tier: 2, emoji: "🏰", mods: { castleCost: -5 } },
+  { id: "mercs",    branch: "war",   tier: 2, emoji: "🗡️", mods: { mercGold: 4 } },
+  { id: "captains", branch: "war",   tier: 3, emoji: "🎖️", mods: { luckMin: 0.1 } },
+  { id: "plunder",  branch: "war",   tier: 3, emoji: "🔥", mods: { plunderGold: 4 } },
+  // Rule (Bestuur)
+  { id: "town",     branch: "rule",  tier: 1, emoji: "🏘️", mods: { poorHomeGold: 0.5 } },
+  { id: "marriage", branch: "rule",  tier: 1, emoji: "💍", mods: { allyJoin: 1, alliance: 1 } },
+  { id: "charters", branch: "rule",  tier: 2, emoji: "📜", mods: { unrestYears: -1 } },
+  { id: "tax",      branch: "rule",  tier: 2, emoji: "🧾", mods: { incomePct: 0.1 } },
+  { id: "peace",    branch: "rule",  tier: 3, emoji: "🕊️", mods: { truceYears: 5, peaceSooner: 2 } },
+  { id: "standing", branch: "rule",  tier: 3, emoji: "🪖", mods: { upkeepPct: 0.1 } }
+];
+const DEV_BY_ID = {};
+for (const o of DEVELOPMENTS) DEV_BY_ID[o.id] = o;
+
+// What the AI likes (1 = normal). Favourite branch gets x1.5 on top.
+const DEV_WEIGHTS = {
+  holland: { tolls: 3, fleet: 3, dikes: 2, bank: 2, marriage: 1.5, peace: 1.5 },
+  utrecht: { charters: 3, peace: 3, marriage: 2, tax: 2, town: 1.5, pikes: 2, guilds: 1.5 },
+  gelre:   { crossbow: 3, captains: 3, plunder: 2.5, mercs: 2, standing: 2, charters: 2 },
+  brabant: { market: 3, guilds: 2.5, bank: 3, town: 3, tax: 2, castles: 1.5, standing: 1.5 }
+};
+
+// All modifiers of one realm, added up once and remembered (resetMods() when they change)
+let modCache = {};
+const resetMods = () => { modCache = {}; };
+function mod(realm, key) {
+  let m = modCache[realm];
+  if (!m) {
+    m = modCache[realm] = {};
+    const add = (mods) => { for (const k in mods) m[k] = (m[k] || 0) + mods[k]; };
+    add(abilityMods(realm));
+    const d = game.dev && game.dev[realm];
+    if (d) for (const id of d.done) if (DEV_BY_ID[id]) add(DEV_BY_ID[id].mods);
+  }
+  return m[key] || 0;
+}
+
 // Decimal numbers the way each language writes them (1.3 / 1,3)
 const num = (x) => LANG === "nl" ? String(x).replace(".", ",") : String(x);
 // What players read about each ability: a name, a short line (start screen,
@@ -956,12 +1175,71 @@ function traitShort(id) {
            gelre: T`Strong attacks, no river shield`, brabant: T`Rich farms, costly recruits` }[id] || "";
 }
 function traitLong(id) {
-  const t = trait(id);
-  if (id === "holland") return T`+1 💰 a year for every ${Math.round(1 / t.tradeGold)} coastal provinces ⚓ you hold, and Hanseatic merchants come twice as often and pay double.`;
-  if (id === "utrecht") return T`A church tithe of +${t.titheGold} 💰 a year, however small your realm. Any war with the Bishopric can end in peace after ${t.peaceAfter} ${yearsWord(t.peaceAfter)}, whoever is winning.`;
-  if (id === "gelre") return T`Your attacks are ×${num(t.charge)} stronger, but rivers don't protect your own provinces.`;
-  if (id === "brabant") return T`Farms give +${t.farmBonus} 💰 instead of +${RULES.farmBonus}, but your recruits cost ${t.recruitGold} 💰 instead of ${RULES.recruitGold}.`;
+  const t = abilityMods(id);
+  if (id === "holland") return T`+1 💰 a year for every ${Math.round(1 / t.coastGold)} coastal provinces ⚓ you hold, and Hanseatic merchants come twice as often and pay double.`;
+  if (id === "utrecht") return T`A church tithe of +${t.flatGold} 💰 a year, however small your realm. Any war with the Bishopric can end in peace after ${t.peaceAfter} ${yearsWord(t.peaceAfter)}, whoever is winning.`;
+  if (id === "gelre") return T`Your attacks are ×${num(1 + t.attack)} stronger, but rivers don't protect your own provinces.`;
+  if (id === "brabant") return T`Farms give +${RULES.farmBonus + t.farmGold} 💰 instead of +${RULES.farmBonus}, but your recruits cost ${RULES.recruitGold + t.recruitGold} 💰 instead of ${RULES.recruitGold}.`;
   return "";
+}
+
+// Names and texts of the developments (the numbers come from the table above)
+const branchName = (b) => ({ trade: T`Trade`, war: T`War`, rule: T`Rule` }[b]);
+const branchIcon = (b) => ({ trade: "⚓", war: "⚔️", rule: "👑" }[b]);
+function devName(id) {
+  return {
+    market: T`Market rights`, tolls: T`Harbour tolls`, dikes: T`Dikes and sluices`, guilds: T`Guild halls`,
+    bank: T`Merchant bank`, fleet: T`Trade fleet`,
+    crossbow: T`Crossbowmen`, pikes: T`Pikemen`, castles: T`Stone castles`, mercs: T`Mercenary contracts`,
+    captains: T`Captains`, plunder: T`Plunder`,
+    town: T`Town privileges`, marriage: T`Marriage alliances`, charters: T`Charters`, tax: T`Tax collectors`,
+    peace: T`Peace of the land`, standing: T`Standing army`
+  }[id];
+}
+function devEffect(id) {
+  const m = DEV_BY_ID[id].mods;
+  switch (id) {
+    case "market": return T`+${m.farmGold} 💰 a year for every province of yours with a farm.`;
+    case "tolls": return T`+1 💰 a year for every ${Math.round(1 / m.coastGold)} coastal provinces ⚓ you hold.`;
+    case "dikes": return T`Farms cost ${RULES.farmCost + m.farmCost} 💰 instead of ${RULES.farmCost}, and storm floods no longer wash away your farms.`;
+    case "guilds": return T`+1 💰 a year for every ${Math.round(1 / m.provinceGold)} provinces you hold.`;
+    case "bank": case "tax": return T`+${Math.round(m.incomePct * 100)}% income.`;
+    case "fleet": return T`Hanseatic merchants come twice as often and pay +${m.hanseGold} 💰 per port ⚓.`;
+    case "crossbow": return T`Your attacks are ${Math.round(m.attack * 100)}% stronger.`;
+    case "pikes": return T`Your defenders are ${Math.round(m.defense * 100)}% stronger.`;
+    case "castles": return T`Castles cost ${RULES.castleCost + m.castleCost} 💰 instead of ${RULES.castleCost}.`;
+    case "mercs": return T`Once a year you can recruit a regiment without using manpower, for ${m.mercGold} 💰 extra.`;
+    case "captains": return T`Your battle luck roll runs from ${num(RULES.luckMin + m.luckMin)} to ${num(RULES.luckMax)} instead of ${num(RULES.luckMin)} to ${num(RULES.luckMax)}, in attack and in defense.`;
+    case "plunder": return T`Taking a province gives you ${m.plunderGold} 💰 in plunder.`;
+    case "town": return T`+1 💰 a year for every ${Math.round(1 / m.poorHomeGold)} of your home provinces with income 1.`;
+    case "marriage": return T`Your allies join the wars you declare, and alliances are easier to make: no common enemy needed.`;
+    case "charters": return T`Conquered provinces pay again after ${RULES.unrestYears + m.unrestYears} years instead of ${RULES.unrestYears}.`;
+    case "peace": return T`Your truces last ${m.truceYears} years longer, and enemies offer you peace ${m.peaceSooner} years sooner.`;
+    case "standing": return T`Your upkeep is ${Math.round(m.upkeepPct * 100)}% lower, by at least 1 💰.`;
+  }
+  return "";
+}
+function devFlavour(id) {
+  return {
+    market: T`Farmers may sell their surplus on the town square, and the town takes its share.`,
+    tolls: T`Every ship that drops anchor now pays for the privilege.`,
+    dikes: T`Strong dikes and clever sluices hold back the sea, and the fields stay dry.`,
+    guilds: T`The craftsmen raise guild halls in every town, and their dues fill your coffers.`,
+    bank: T`Bankers from Lombardy open a counter in your lands and lend at a fair price.`,
+    fleet: T`A fleet of sturdy cogs sails under your flag, from the Zuiderzee to the Baltic.`,
+    crossbow: T`Your archers trade their bows for crossbows that pierce armour from afar.`,
+    pikes: T`Rows of long pikes make a bristling wall that no horseman wants to charge.`,
+    castles: T`Masons replace the old timber with stone, and the walls rise faster and cheaper.`,
+    mercs: T`The captains of the Free Lances sign a contract: gold today, swords tomorrow.`,
+    captains: T`Seasoned captains lead from the front, and fewer battles are lost to bad luck.`,
+    plunder: T`Your soldiers are promised the spoils of every town they take.`,
+    town: T`Small towns receive privileges of their own, and trade begins to bloom there.`,
+    marriage: T`A wedding between two noble houses seals a friendship that outlasts the feast.`,
+    charters: T`Written charters tell the conquered what they owe and what they are promised.`,
+    tax: T`Honest collectors, mostly, count every penny that is owed.`,
+    peace: T`The lords swear to keep the peace, and a broken oath is a stain on any name.`,
+    standing: T`A core of paid soldiers stays under arms all year, fed from the crown's own stores.`
+  }[id] || "";
 }
 
 // Difficulty only changes the AI realms; your own rules stay the same
@@ -1141,9 +1419,14 @@ function newGame(playerRealm, difficulty) {
       capital: REALMS[id].capital,       // can move if the capital is lost
       homeCapital: REALMS[id].capital,   // the original capital
       penalty: 0,                        // turns of halved income left
-      built: false                       // already built something this year
+      built: false,                      // already built something this year
+      mercUsed: false                    // already hired a mercenary regiment this year
     };
   }
+  // Developments: every realm starts with one free tier 1 pick (the AI makes its pick on its first turn)
+  game.dev = {};
+  for (const id of REALM_IDS) game.dev[id] = { done: [], current: null, free: true };
+  resetMods();
 
   // Copy the province data and give each one a neighbor list
   for (const id in PROVINCES) {
@@ -1191,24 +1474,32 @@ const isCapital = (p) => game.realms[p.owner].capital === p.id;
 const random = (min, max) => min + Math.random() * (max - min);
 const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 
-const farmBonusOf = (realm) => trait(realm).farmBonus ?? RULES.farmBonus;
+const farmBonusOf = (realm) => RULES.farmBonus + mod(realm, "farmGold");
 const provinceIncome = (p) => p.unrest > 0 ? 0 : p.income + (p.building === "farm" ? farmBonusOf(p.owner) : 0);
 const provinceManpower = (p) => p.unrest > 0 ? 0 : p.manpower;
 
 function incomeOf(realm) {
   const base = provincesOf(realm).reduce((sum, p) => sum + provinceIncome(p), 0);
   const income = game.realms[realm].penalty > 0 ? Math.floor(base * 0.75) : base;
-  return income + traitIncome(realm);
+  return Math.floor(income * (1 + mod(realm, "incomePct")) + 1e-9) + bonusIncome(realm);
 }
-// Gold from the realm's ability: Holland's sea trade, Utrecht's tithe
-function traitIncome(realm) {
-  const t = trait(realm);
+// Extra gold on top of the provinces: sea trade, church tithe, guild halls, town privileges
+function bonusIncome(realm) {
   if (provincesOf(realm).length === 0) return 0;
   const ports = provincesOf(realm).filter(p => COASTAL.includes(p.id) && p.unrest === 0).length;
-  return Math.floor(ports * (t.tradeGold || 0)) + (t.titheGold || 0);
+  const guilds = Math.floor(provincesOf(realm).filter(p => p.unrest === 0).length * mod(realm, "provinceGold") + 1e-9);
+  const poor = provincesOf(realm).filter(p => p.core === realm && p.income === 1 && p.unrest === 0).length;
+  const towns = Math.floor(poor * mod(realm, "poorHomeGold") + 1e-9);
+  return Math.floor(ports * mod(realm, "coastGold") + 1e-9) + mod(realm, "flatGold") + guilds + towns;
+}
+// Upkeep for an army of this size (Standing army makes it cheaper)
+function upkeepAt(realm, army) {
+  const full = army * RULES.upkeep;
+  const pct = mod(realm, "upkeepPct");
+  return pct > 0 && full > 0 ? full - Math.max(1, Math.floor(full * pct + 1e-9)) : full;
 }
 function upkeepOf(realm) {
-  return armyOf(realm) * RULES.upkeep;
+  return upkeepAt(realm, armyOf(realm));
 }
 
 // =====================================================================
@@ -1217,34 +1508,45 @@ function upkeepOf(realm) {
 // =====================================================================
 
 // Recruits are cheaper for a realm that has lost ground
-const recruitCost = (realm) => behind(realm) ? RULES.underdogRecruitGold : (trait(realm).recruitGold || RULES.recruitGold);
+const recruitCost = (realm) => behind(realm) ? RULES.underdogRecruitGold : RULES.recruitGold + mod(realm, "recruitGold");
+
+// What one recruit costs right now: gold and manpower, or null when it can't be paid.
+// With mercenary contracts, a regiment can be hired without manpower once a year.
+function recruitPlan(realm) {
+  const r = game.realms[realm], gold = recruitCost(realm);
+  if (r.gold >= gold && r.manpower >= RULES.recruitManpower) return { gold, men: RULES.recruitManpower, merc: false };
+  const extra = mod(realm, "mercGold");
+  if (extra > 0 && !r.mercUsed && r.gold >= gold + extra) return { gold: gold + extra, men: 0, merc: true };
+  return null;
+}
 
 function canRecruit(p) {
-  const r = game.realms[p.owner];
-  return r.gold >= recruitCost(p.owner) && r.manpower >= RULES.recruitManpower;
+  return recruitPlan(p.owner) !== null;
 }
 
 function recruit(p) {
-  if (!canRecruit(p)) return;
+  const plan = recruitPlan(p.owner);
+  if (!plan) return;
   const r = game.realms[p.owner];
-  r.gold -= recruitCost(p.owner);
-  r.manpower -= RULES.recruitManpower;
+  r.gold -= plan.gold;
+  r.manpower -= plan.men;
+  if (plan.merc) r.mercUsed = true;
   p.army += 1;
   p.spent += 1;   // new recruits can't move until next turn
 }
 
-const buildCost = (type) => type === "farm" ? RULES.farmCost : RULES.castleCost;
+const buildCost = (type, realm) => type === "farm" ? RULES.farmCost + mod(realm, "farmCost") : RULES.castleCost + mod(realm, "castleCost");
 
 // One building per province, one building per realm per year
 function canBuild(p, type) {
   const r = game.realms[p.owner];
-  return !p.building && !r.built && r.gold >= buildCost(type);
+  return !p.building && !r.built && r.gold >= buildCost(type, p.owner);
 }
 
 function build(p, type) {
   if (!canBuild(p, type)) return;
   const r = game.realms[p.owner];
-  r.gold -= buildCost(type);
+  r.gold -= buildCost(type, p.owner);
   r.built = true;
   p.building = type;
 }
@@ -1260,14 +1562,17 @@ function moveArmy(from, to, count) {
 // Militia: 1 everywhere, 2 in a realm's own home provinces
 const militiaOf = (p) => RULES.militia + (p.owner !== "independent" && p.core === p.owner ? RULES.homeMilitia : 0);
 // Attack strength multiplier (Gelre's knights)
-const chargeOf = (realm) => trait(realm).charge || 1;
+const chargeOf = (realm) => 1 + mod(realm, "attack");
+// A realm's luck roll: usually 0.8 to 1.2, narrower with Captains
+const rollOf = (realm) => random(RULES.luckMin + mod(realm, "luckMin"), RULES.luckMax);
 const defenseSize = (p) => p.army + militiaOf(p);
 
 // How much stronger the defenders of "to" are when attacked from "from"
 function defenseBonus(from, to) {
   let bonus = 1;
   if (to.building === "castle") bonus *= RULES.castleBonus;
-  if (to.riverBorders.includes(from.id) && !trait(to.owner).noRiver) bonus *= RULES.riverBonus;
+  if (to.riverBorders.includes(from.id) && !mod(to.owner, "noRiver")) bonus *= RULES.riverBonus;
+  bonus *= 1 + mod(to.owner, "defense");
   return bonus;
 }
 
@@ -1276,8 +1581,8 @@ function winChance(from, to, count) {
   const bonus = defenseBonus(from, to);
   let wins = 0;
   for (let i = 0; i < 2000; i++) {
-    const attack = count * chargeOf(from.owner) * random(RULES.luckMin, RULES.luckMax);
-    const defense = defenseSize(to) * bonus * random(RULES.luckMin, RULES.luckMax);
+    const attack = count * chargeOf(from.owner) * rollOf(from.owner);
+    const defense = defenseSize(to) * bonus * rollOf(to.owner);
     if (attack > defense) wins++;
   }
   return wins / 2000;
@@ -1291,14 +1596,14 @@ function attack(from, to, count) {
 
   const bonus = defenseBonus(from, to);
   const charge = chargeOf(attacker);
-  const attackStrength = count * charge * random(RULES.luckMin, RULES.luckMax);
-  const defenseStrength = defenseSize(to) * bonus * random(RULES.luckMin, RULES.luckMax);
+  const attackStrength = count * charge * rollOf(attacker);
+  const defenseStrength = defenseSize(to) * bonus * rollOf(defender);
   const result = {
     attacker, defender, from: from.id, to: to.id, place: to.name,
     sent: count, defenders, militia: militiaOf(to), defenseSize: defenseSize(to),
-    bonus, castle: to.building === "castle", river: to.riverBorders.includes(from.id) && !trait(defender).noRiver, charge,
+    bonus, castle: to.building === "castle", river: to.riverBorders.includes(from.id) && !mod(defender, "noRiver"), charge, pikes: mod(defender, "defense") > 0,
     attackStrength, defenseStrength,
-    won: false, attackLoss: 0, defenseLoss: 0, note: ""
+    won: false, attackLoss: 0, defenseLoss: 0, note: "", plunder: 0
   };
 
   // Higher strength wins, ties go to the defender
@@ -1306,6 +1611,8 @@ function attack(from, to, count) {
     // The winner loses half the defenders (militia included, rounded up), but always keeps one
     const losses = Math.max(0, Math.min(Math.ceil(defenseSize(to) / 2), count - 1));
     result.won = true;
+    result.plunder = mod(attacker, "plunderGold");
+    game.realms[attacker].gold += result.plunder;
     result.attackLoss = losses;
     result.defenseLoss = defenders;
     scoreConquest(attacker, defender);
@@ -1346,6 +1653,7 @@ function describe(r) {
     if (!r.won) return null;
     text = T`${them(r.attacker)} took ${r.place} from ${them(r.defender)}.`;
   }
+  if (r.attacker === me && r.plunder > 0) text += T` Plunder: +${r.plunder} 💰.`;
   return capitalize(text + r.note);
 }
 
@@ -1358,7 +1666,7 @@ function capture(p, newOwner, survivors) {
   p.owner = newOwner;
   p.army = survivors;
   // Taking back one of your own home provinces causes no unrest
-  p.unrest = (p.core === newOwner) ? 0 : RULES.unrestYears;
+  p.unrest = (p.core === newOwner) ? 0 : Math.max(0, RULES.unrestYears + mod(newOwner, "unrestYears"));
   p.spent = survivors;
 
   // The old owner lost its capital: it moves to their richest province
@@ -1386,6 +1694,112 @@ function capture(p, newOwner, survivors) {
 }
 
 // =====================================================================
+// 3b. DEVELOPMENTS
+// game.dev[realm] = { done: [ids], current: { id, left } or null, free: true while
+// the free first pick is waiting }. Old saves have no game.dev: devOf() then
+// creates "nothing researched, no free pick pending".
+// =====================================================================
+
+function devOf(realm) {
+  if (!game.dev) game.dev = {};
+  if (!game.dev[realm]) game.dev[realm] = { done: [], current: null, free: false };
+  return game.dev[realm];
+}
+
+// done / current / other (the other option of this tier is taken) / locked (needs the tier before) / open
+function devState(realm, o) {
+  const d = devOf(realm);
+  if (d.done.includes(o.id)) return "done";
+  if (d.current && d.current.id === o.id) return "current";
+  const sameTier = (id) => DEV_BY_ID[id].branch === o.branch && DEV_BY_ID[id].tier === o.tier;
+  if (d.done.some(sameTier) || (d.current && sameTier(d.current.id))) return "other";
+  if (o.tier > 1 && !d.done.some(id => DEV_BY_ID[id].branch === o.branch && DEV_BY_ID[id].tier === o.tier - 1)) return "locked";
+  return "open";
+}
+const openDevs = (realm) => DEVELOPMENTS.filter(o => devState(realm, o) === "open");
+
+function devCost(realm, o) {
+  let cost = DEV.costs[o.tier - 1];
+  if (FAVOURITE[realm] === o.branch) cost *= 1 - DEV.favouriteDiscount;
+  const extra = Math.max(0, provincesOf(realm).length - (START_COUNT[realm] || 0));
+  return Math.round(cost * (1 + DEV.sizeSurcharge * extra));
+}
+const isFreePick = (realm, o) => devOf(realm).free && o.tier === 1;
+
+function canStartDev(realm, o) {
+  if (devState(realm, o) !== "open") return false;
+  if (isFreePick(realm, o)) return true;
+  return !devOf(realm).current && game.realms[realm].gold >= devCost(realm, o);
+}
+
+// Starts a development (the free pick is finished at once). Returns the development if it was finished right away.
+function startDev(realm, o) {
+  if (!canStartDev(realm, o)) return null;
+  const d = devOf(realm);
+  if (isFreePick(realm, o)) { d.free = false; return completeDev(realm, o); }
+  game.realms[realm].gold -= devCost(realm, o);
+  d.current = { id: o.id, left: DEV.years };
+  return null;
+}
+
+function completeDev(realm, o) {
+  const d = devOf(realm);
+  d.done.push(o.id);
+  if (d.current && d.current.id === o.id) d.current = null;
+  resetMods();
+  return o;
+}
+
+// Once a year: the current development gets one year closer. Returns it when it finishes.
+function tickDev(realm) {
+  const d = devOf(realm);
+  if (!d.current) return null;
+  d.current.left -= 1;
+  return d.current.left <= 0 ? completeDev(realm, DEV_BY_ID[d.current.id]) : null;
+}
+
+// The card shown when a development is finished
+const devCard = (o) => ({
+  emoji: o.emoji, sound: "develop",
+  title: T`Development: ${devName(o.id)}`,
+  text: `${devFlavour(o.id)} ${devEffect(o.id)}`
+});
+
+function weightedDev(realm, list) {
+  const w = (o) => ((DEV_WEIGHTS[realm] || {})[o.id] || 1) * (FAVOURITE[realm] === o.branch ? 1.5 : 1);
+  let roll = Math.random() * list.reduce((sum, o) => sum + w(o), 0);
+  for (const o of list) { roll -= w(o); if (roll <= 0) return o; }
+  return list[list.length - 1];
+}
+
+// The AI is always at its upkeep limit, so it has to save on purpose. While it wants
+// a development it holds back a share of its income (a slightly smaller army), and keeps
+// the gold for the cheapest option it could start instead of spending it on farms.
+function aiSavings(id) {
+  const d = devOf(id);
+  const open = d.free || d.current ? [] : openDevs(id);
+  if (open.length === 0) return { rate: 0, earmark: 0 };
+  return { rate: DEV.aiSavePct, earmark: Math.min(...open.map(o => devCost(id, o))) + DEV.aiReserve };
+}
+
+// Starts a development when it can pay and still keeps a cushion: next year's
+// shortfall (income minus upkeep) twice over, plus DEV.aiReserve. Never goes broke.
+function aiDevelop(id) {
+  const d = devOf(id), realm = game.realms[id];
+  const open = openDevs(id);
+  if (d.free) {
+    const first = open.filter(o => o.tier === 1);
+    if (first.length) startDev(id, weightedDev(id, first)); else d.free = false;
+    return;
+  }
+  if (d.current || open.length === 0) return;
+  const net = Math.round(incomeOf(id) * diff().aiIncome) - upkeepOf(id);
+  const reserve = DEV.aiReserve + Math.max(0, -net) * 2;
+  const affordable = open.filter(o => realm.gold - devCost(id, o) >= reserve);
+  if (affordable.length) startDev(id, weightedDev(id, affordable));
+}
+
+// =====================================================================
 // 4. THE AI
 // Deliberately simple. Each AI realm, on its turn:
 //   1. recruits where its wars are (or at its most threatened border),
@@ -1402,6 +1816,9 @@ function aiTurn(id) {
   const lands = () => provincesOf(id);
   if (lands().length === 0) return results;
   const margin = random(RULES.aiMarginMin, RULES.aiMarginMax) + diff().aiMargin;   // bold or careful this year
+  const realm = game.realms[id];
+  if (devOf(id).free) aiDevelop(id);   // the free first pick comes before anything else
+  const save = aiSavings(id);
   const near = (p) => p.neighbors.map(n => game.provinces[n]);
   // Places to fight: realms we're at war with (also while mobilizing) and the independents
   const hostile = (q) => q.owner !== id && (q.owner === "independent" || rel(id, q.owner).state === "war");
@@ -1413,7 +1830,8 @@ function aiTurn(id) {
   // 1. Recruit where the fighting is, or else at the most threatened border
   const front = fronts().sort((a, b) => threat(b) - threat(a))[0]
     || lands().slice().sort((a, b) => threat(b) - threat(a))[0];
-  while (canRecruit(front) && Math.round(incomeOf(id) * diff().aiIncome) - (armyOf(id) + 1) * RULES.upkeep >= 0) {
+  while (canRecruit(front) &&
+         Math.round(incomeOf(id) * diff().aiIncome * (1 - save.rate)) - upkeepAt(id, armyOf(id) + 1) >= 0) {
     recruit(front);
   }
 
@@ -1428,7 +1846,7 @@ function aiTurn(id) {
         if (count * chargeOf(id) < needed) continue;
         // Prefer weak targets, and rich ones when it's close.
         // A trading realm also likes ports (they pay it extra).
-        const port = trait(id).tradeGold && COASTAL.includes(to.id) ? 0.4 : 0;
+        const port = mod(id, "coastGold") > 0 && COASTAL.includes(to.id) ? 0.4 : 0;
         const score = defenseSize(to) * defenseBonus(from, to) - provinceIncome(to) * 0.1 - port + random(0, 0.5);
         if (!best || score < best.score) best = { from, to, count, score };
       }
@@ -1461,7 +1879,6 @@ function aiTurn(id) {
 
   // 4. Build: a castle where the enemy outnumbers us, otherwise a farm
   //    (keeping a little gold aside for recruiting)
-  const realm = game.realms[id];
   const danger = lands()
     .filter(p => !p.building && threat(p) > p.army + militiaOf(p))
     .sort((a, b) => threat(b) - threat(a))[0];
@@ -1469,8 +1886,11 @@ function aiTurn(id) {
     build(danger, "castle");
   } else {
     const field = lands().filter(p => !p.building).sort((a, b) => b.income - a.income)[0];
-    if (field && realm.gold >= RULES.farmCost + recruitCost(id)) build(field, "farm");
+    if (field && realm.gold - save.earmark >= buildCost("farm", id) + recruitCost(id)) build(field, "farm");
   }
+
+  // 5. Develop, but only with gold to spare
+  aiDevelop(id);
 
   return results;
 }
@@ -1510,6 +1930,7 @@ function endTurn() {
     const realm = game.realms[id];
     const lands = provincesOf(id);
     realm.built = false;
+    realm.mercUsed = false;
     if (lands.length === 0) continue;
 
     const income = incomeOf(id);
@@ -1530,6 +1951,10 @@ function endTurn() {
 
     const newMen = lands.reduce((sum, p) => sum + provinceManpower(p), 0);
     realm.manpower = Math.min(RULES.maxManpower, realm.manpower + newMen);
+
+    // Developments move on a year
+    const finished = tickDev(id);
+    if (finished && id === game.player) cards.push(devCard(finished));
 
     if (id === game.player) {
       report = T`Income +${income}, upkeep −${upkeep}.`;
@@ -1579,7 +2004,8 @@ function unusedWarnings() {
     const names = [...targets];
     warnings.push(T`Your armies could probably take ${names.slice(0, 3).join(", ")}${names.length > 3 ? T` and ${names.length - 3} more` : ""}.`);
   }
-  if (!realm.built && mine.some(p => !p.building) && realm.gold >= RULES.farmCost) {
+  if (devOf(me).free) warnings.push(T`You can still pick a free first development.`);
+  if (!realm.built && mine.some(p => !p.building) && realm.gold >= buildCost("farm", me)) {
     warnings.push(T`You haven't built anything this year, and you have ${realm.gold} 💰.`);
   }
   if (realm.manpower >= RULES.maxManpower && realm.gold >= recruitCost(me)) {
@@ -1607,6 +2033,11 @@ function unusedWarnings() {
 // =====================================================================
 
 const REALM_IDS = ["holland", "utrecht", "gelre", "brabant"];
+// A treaty lasts longer if either side has Peace of the land; peace comes sooner for them too
+const truceFor = (a, b) => RULES.truceYears + Math.max(mod(a, "truceYears"), mod(b, "truceYears"));
+const soonerFor = (a, b) => Math.max(mod(a, "peaceSooner"), mod(b, "peaceSooner"));
+// How many years of war until the Church's word ends it (Utrecht), or undefined
+const peaceAfterOf = (a, b) => mod(a, "peaceAfter") || mod(b, "peaceAfter") || undefined;
 const alive = (id) => id !== "independent" && provincesOf(id).length > 0;
 const nameOf = (id) => REALMS[id].short;
 
@@ -1650,6 +2081,21 @@ function declareWar(a, b, notes, coalition) {
   else text = T`${capitalize(nameOf(a))} declares war on ${who(b, true)}!`;
   notes.push({ text, kind, warOnMe: b === game.player });
 
+  // With marriage alliances, the attacker's own allies ride along
+  if (mod(a, "allyJoin") > 0) {
+    for (const c of alliesOf(a)) {
+      if (c === b || allied(c, b) || rel(c, b).state === "war" || rel(c, b).truce > 0) continue;
+      Object.assign(rel(c, b), { state: "war", truce: 0, since: game.year, score: { [b]: 0, [c]: 0 } });
+      notes.push({
+        text: c === game.player
+          ? T`As ${nameOf(a)}'s ally, you are now at war with ${nameOf(b)}.`
+          : T`${capitalize(nameOf(c))} joins ${who(a, true)} in the war against ${who(b, true)}.`,
+        kind: b === game.player ? "bad" : "",
+        warOnMe: b === game.player
+      });
+    }
+  }
+
   // The defender's allies honor the alliance
   for (const c of alliesOf(b)) {
     if (c === a || allied(c, a) || rel(c, a).state === "war" || rel(c, a).truce > 0) continue;
@@ -1666,8 +2112,9 @@ function declareWar(a, b, notes, coalition) {
 }
 
 function makePeace(a, b, notes) {
-  Object.assign(rel(a, b), { state: "peace", truce: RULES.truceYears });
-  notes.push({ text: T`${capitalize(who(a))} and ${who(b)} make peace (${RULES.truceYears}-year truce).`, kind: "" });
+  const years = truceFor(a, b);
+  Object.assign(rel(a, b), { state: "peace", truce: years });
+  notes.push({ text: T`${capitalize(who(a))} and ${who(b)} make peace (${years}-year truce).`, kind: "" });
 }
 
 function makeAlliance(a, b, notes) {
@@ -1703,18 +2150,20 @@ function aiDiplomacy(id, notes) {
     const r = rel(id, b);
     const years = game.year - r.since;
     const lead = (r.score[id] || 0) - (r.score[b] || 0);
-    const bishop = trait(id).peaceAfter ?? trait(b).peaceAfter;   // Utrecht's wars end sooner
+    const bishop = peaceAfterOf(id, b);   // Utrecht's wars end sooner
+    const sooner = soonerFor(id, b);      // so do wars with a realm that has Peace of the land
     if (b === game.player) {
       const losing = lead < 0 || myArmy < armyOf(b) * 0.7;
       // The Prince-Bishop offers peace as soon as it is ahead, to keep what it took
-      const early = trait(id).peaceAfter !== undefined && years >= trait(id).peaceAfter && lead > 0;
-      if (game.year - r.lastOffer >= 3 && (early || (years >= 2 && (losing || years >= diff().peaceYears)))) {
+      const early = mod(id, "peaceAfter") > 0 && years >= mod(id, "peaceAfter") && lead > 0;
+      if (game.year - r.lastOffer >= Math.max(1, 3 - sooner) &&
+          (early || (years >= Math.max(1, 2 - sooner) && (losing || years >= Math.max(2, diff().peaceYears - sooner))))) {
         r.lastOffer = game.year;
         game.offers.push(id);
       }
     } else if (id < b && bishop !== undefined) {
-      if (years >= bishop && Math.random() < trait("utrecht").peaceChance) makePeace(id, b, notes);
-    } else if (id < b && years >= 3) {
+      if (years >= bishop && Math.random() < mod("utrecht", "peaceChance")) makePeace(id, b, notes);
+    } else if (id < b && years >= Math.max(1, 3 - sooner)) {
       if (Math.random() < 0.15 + (Math.abs(lead) >= 2 ? 0.15 : 0)) makePeace(id, b, notes);
     }
   }
@@ -1740,7 +2189,8 @@ function aiDiplomacy(id, notes) {
   }
 
   // 4. Team up with another neighbor of a big realm
-  if (leader && provincesOf(leader).length >= 7 && bordering(id, leader) && alliesOf(id).length === 0 && Math.random() < 0.3) {
+  if (leader && provincesOf(leader).length >= 7 && bordering(id, leader) && alliesOf(id).length === 0 &&
+      Math.random() < (mod(id, "alliance") > 0 ? 0.5 : 0.3)) {
     const partner = REALM_IDS.find(c => c !== id && c !== leader && c !== game.player && alive(c) &&
       rel(id, c).state === "peace" && bordering(c, leader) && alliesOf(c).length === 0);
     if (partner) makeAlliance(id, partner, notes);
@@ -1753,9 +2203,9 @@ function proposePeace(b) {
   const years = game.year - r.since;
   const lead = (r.score[b] || 0) - (r.score[me] || 0);   // > 0: they're winning
   // The Church's word carries weight: a war with Utrecht ends after a short time, whoever is winning
-  const after = trait(me).peaceAfter ?? trait(b).peaceAfter;
+  const after = peaceAfterOf(me, b);
   const bishop = after !== undefined && years >= after;
-  const ok = bishop || (years >= 1 && lead <= 0) || armyOf(b) < armyOf(me) * 0.8 || years >= diff().peaceYears;
+  const ok = bishop || (years >= 1 && lead <= 0) || armyOf(b) < armyOf(me) * 0.8 || years >= Math.max(2, diff().peaceYears - soonerFor(me, b));
   if (!ok) return { ok, text: T`${capitalize(nameOf(b))} refuses. They think they're winning this war.` };
   const notes = [];
   makePeace(me, b, notes);
@@ -1771,10 +2221,11 @@ function proposeAlliance(b) {
   }
   const threat = REALM_IDS.find(c => c !== me && c !== b && alive(c) &&
     (rel(b, c).state === "war" || (provincesOf(c).length > provincesOf(b).length && bordering(b, c))));
-  if (!threat) return { ok: false, text: T`${capitalize(nameOf(b))} sees no need for an alliance right now.` };
+  if (!threat && !mod(me, "alliance")) return { ok: false, text: T`${capitalize(nameOf(b))} sees no need for an alliance right now.` };
   const notes = [];
   makeAlliance(me, b, notes);
-  return { ok: true, text: T`${capitalize(nameOf(b))} accepts. Together you stand against ${nameOf(threat)}.` };
+  return { ok: true, text: threat ? T`${capitalize(nameOf(b))} accepts. Together you stand against ${nameOf(threat)}.`
+                                  : T`${capitalize(nameOf(b))} accepts. A royal wedding seals your friendship.` };
 }
 
 // --- The diplomacy screen ---
@@ -1850,6 +2301,88 @@ document.getElementById("diplo").addEventListener("click", (e) => {
 
 function closeDiplomacy() { hide("diplo"); render(); }
 
+// --- The Developments screen: three columns (branches), tiers stacked, two options per tier ---
+const devUI = { sel: null };
+const ROMAN = ["I", "II", "III"];
+
+// A red dot on the button: a free pick waits, or nothing is being developed and there is gold to spare
+function devAttention() {
+  const me = game.player;
+  if (!me || !game.realms[me]) return false;
+  const d = devOf(me), open = openDevs(me);
+  if (d.free) return true;
+  if (d.current || open.length === 0) return false;
+  return game.realms[me].gold >= Math.min(...open.map(o => devCost(me, o))) + DEV.spare;
+}
+
+function openDevelopments() {
+  devUI.sel = null;
+  renderDevelopments();
+  show("devs");
+}
+function closeDevelopments() { hide("devs"); render(); }
+
+function renderDevelopments() {
+  const me = game.player, d = devOf(me), realm = game.realms[me];
+  const status = d.free ? T`🎁 Choose your free first development. Any tier I option costs nothing.`
+    : d.current ? T`⏳ ${devName(d.current.id)}: ${d.current.left} ${yearsWord(d.current.left)} to go`
+    : T`Nothing is being developed. One at a time.`;
+  document.getElementById("dev-status").innerHTML = `<div>${status}</div><div class="sub">${T`Treasury: ${realm.gold} 💰`}</div>`;
+
+  const colors = { trade: "#b8860b", war: "#8f2d22", rule: "#2f5d9e" };
+  document.getElementById("dev-grid").innerHTML = BRANCHES.map(b => {
+    const star = FAVOURITE[me] === b ? " ★" : "";
+    const tiers = [1, 2, 3].map(t => {
+      const options = DEVELOPMENTS.filter(o => o.branch === b && o.tier === t);
+      const price = d.free && t === 1 ? "🎁" : `${devCost(me, options[0])}💰`;
+      const tiles = options.map(o => {
+        const st = devState(me, o);
+        const icon = st === "done" ? "✅" : st === "current" ? "⏳" : o.emoji;
+        return `<button class="dev-tile ${st}${devUI.sel === o.id ? " sel" : ""}" data-dev="${o.id}"><span class="dev-emoji">${icon}</span><span class="dev-name">${devName(o.id)}</span></button>`;
+      }).join("");
+      return `<div class="dev-tl">${ROMAN[t - 1]} · ${price}</div>${tiles}`;
+    }).join("");
+    return `<div class="dev-col" style="--branch:${colors[b]}"><div class="dev-head">${branchIcon(b)} ${branchName(b)}${star}</div>${tiers}</div>`;
+  }).join("");
+  document.getElementById("dev-detail").innerHTML = devDetailHTML();
+}
+
+function devDetailHTML() {
+  const me = game.player, d = devOf(me), realm = game.realms[me];
+  const o = devUI.sel && DEV_BY_ID[devUI.sel];
+  const back = `<button class="act light" onclick="closeDevelopments()">${T`Back to the map`}</button>`;
+  if (!o) return `<div class="hint">${T`Tap a development to read what it does. You follow one option per tier. A ★ marks your favourite branch: 20% cheaper.`}</div><div class="row">${back}</div>`;
+  const st = devState(me, o), cost = devCost(me, o), free = isFreePick(me, o);
+  let why = "";
+  if (st === "done") why = T`You have this development.`;
+  else if (st === "current") why = T`This one is being developed now.`;
+  else if (st === "other") why = T`You took the other option of this tier.`;
+  else if (st === "locked") why = T`First finish a tier ${ROMAN[o.tier - 2]} development in this branch.`;
+  else if (!free && d.current) why = T`Only one development at a time.`;
+  else if (!free && realm.gold < cost) why = T`You need ${cost - realm.gold} more 💰.`;
+  return `
+    <h2>${o.emoji} ${devName(o.id)}</h2>
+    <div class="sub">${branchName(o.branch)} · ${T`tier ${ROMAN[o.tier - 1]}`}</div>
+    <div>${devEffect(o.id)}</div>
+    <div class="sub"><i>${devFlavour(o.id)}</i></div>
+    ${st === "open" || st === "locked" ? `<div class="sub">${free ? T`Free pick: ready at once.` : T`Cost: ${cost} 💰. Ready in ${DEV.years} ${yearsWord(DEV.years)}.`}</div>` : ""}
+    ${why ? `<div class="hint">${why}</div>` : ""}
+    <div class="row">${back}<button class="act go" data-devgo="${o.id}" ${canStartDev(me, o) ? "" : "disabled"}>${st === "done" ? T`Done ✅` : free ? T`Take it for free 🎁` : T`Develop for ${cost} 💰`}</button></div>`;
+}
+
+document.getElementById("devs").addEventListener("click", (e) => {
+  const tile = e.target.closest("button[data-dev]");
+  if (tile) { devUI.sel = tile.dataset.dev; renderDevelopments(); return; }
+  const go = e.target.closest("button[data-devgo]");
+  if (!go || go.disabled) return;
+  const finished = startDev(game.player, DEV_BY_ID[go.dataset.devgo]);
+  saveGame();
+  renderDevelopments();
+  render();
+  if (finished) showCard(devCard(finished), renderDevelopments);
+  else playSound("coin");
+});
+
 // =====================================================================
 // HISTORICAL AND RANDOM EVENTS
 // Run at the start of every year. Events that matter to the player become
@@ -1924,8 +2457,8 @@ function runEvents(notes, cards) {
     if (target === me) cards.push({ emoji: "🛡️", title: T`Volunteers`, text: T`Men from across your lands flock to ${capital.name} to defend the realm: +1 regiment there and +3 manpower.` });
   }});
   const ports = lands.filter(p => COASTAL.includes(p.id));
-  if (ports.length) options.push({ weight: trait(target).hanseWeight || 2, run: () => {
-    const gold = (trait(target).hanseGold || 3) * ports.length;
+  if (ports.length) options.push({ weight: 2 + mod(target, "hanseWeight"), run: () => {
+    const gold = (3 + mod(target, "hanseGold")) * ports.length;
     realm.gold += gold;
     if (target === me) cards.push({ emoji: "⛵", title: T`Hanseatic merchants`, text: ports.length === 1 ? T`Trading ships crowd your harbor. Your coastal province brings in ${gold} 💰 extra.` : T`Trading ships crowd your harbors. Your ${ports.length} coastal provinces bring in ${gold} 💰 extra.` });
   }});
@@ -1947,9 +2480,11 @@ function runEvents(notes, cards) {
       badLuck(target);
       const p = pick(coast);
       const farm = p.building === "farm";
-      if (farm) p.building = null;
+      const saved = farm && mod(target, "stormProof") > 0;
+      if (farm && !saved) p.building = null;
       p.unrest = Math.max(p.unrest, 2);
-      const text = farm ? T`A storm flood strikes ${p.name}. The farm is washed away, and the province pays nothing for 2 years.`
+      const text = saved ? T`A storm flood strikes ${p.name}. Your dikes save the farm, but the province pays nothing for 2 years.`
+                 : farm ? T`A storm flood strikes ${p.name}. The farm is washed away, and the province pays nothing for 2 years.`
                         : T`A storm flood strikes ${p.name}. The province pays nothing for 2 years.`;
       if (target === me) cards.push({ emoji: "🌊", title: T`Storm flood`, text });
       else notes.push({ text, kind: "" });
@@ -2021,7 +2556,7 @@ function peaceOfferCard(b) {
   const me = game.player, r = rel(me, b);
   return {
     emoji: "🕊️", title: T`${capitalize(nameOf(b))} offers peace`,
-    text: T`After ${game.year - r.since} years of war (provinces taken: you ${r.score[me] || 0}, them ${r.score[b] || 0}), ${nameOf(b)} proposes a ${RULES.truceYears}-year truce. Everyone keeps what they hold now.`,
+    text: T`After ${game.year - r.since} years of war (provinces taken: you ${r.score[me] || 0}, them ${r.score[b] || 0}), ${nameOf(b)} proposes a ${truceFor(me, b)}-year truce. Everyone keeps what they hold now.`,
     choices: [
       { label: T`Accept peace`, run: () => { if (rel(me, b).state !== "war") return ""; const n = []; makePeace(me, b, n); return n[0].text; } },
       { label: T`Refuse, the war goes on`, run: () => "" }
@@ -2173,7 +2708,8 @@ function saveGame() {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       year: game.year, player: game.player, stats: game.stats,
       realms: game.realms, provinces: game.provinces,
-      relations: game.relations, flags: game.flags, endless: game.endless, difficulty: game.difficulty
+      relations: game.relations, flags: game.flags, endless: game.endless, difficulty: game.difficulty,
+      dev: game.dev
     }));
   } catch (e) { /* storage not available: just don't save */ }
 }
@@ -2194,9 +2730,11 @@ function continueGame(data) {
     year: data.year, player: data.player, stats: data.stats,
     realms: data.realms, provinces: data.provinces,
     relations: data.relations || {}, flags: data.flags || {}, endless: !!data.endless, difficulty: data.difficulty || "normal",
+    dev: data.dev || {},   // saves from before developments: nothing researched, no free pick waiting
     selected: null, order: null, over: false, lastTurn: [], confirmEnd: null, endInfo: null, offers: [],
     message: T`Welcome back. The year is ${data.year}.`
   });
+  resetMods();
   // Saves from before diplomacy existed: everyone was at war with everyone
   if (!data.relations) {
     initRelations("war");
@@ -2449,6 +2987,7 @@ function renderPanel() {
   const msg = game.message ? `<div class="msg">${game.message}</div>` : "";
   const endTurnButton = `<button class="act" data-do="endturn">${T`End turn ⏳`}</button>`;
   const diploButton = `<button class="act light" data-do="diplomacy">${T`Diplomacy 🤝`}</button>`;
+  const devButton = `<button class="act light${devAttention() ? " attn" : ""}" data-do="developments">${T`Developments 📜`}</button>`;
 
   // --- The player pressed End turn but still has things to do ---
   if (game.confirmEnd) {
@@ -2475,7 +3014,8 @@ function renderPanel() {
       const bonus = defenseBonus(from, to);
       const why = [];
       if (to.building === "castle") why.push(T`castle`);
-      if (to.riverBorders.includes(from.id) && !trait(to.owner).noRiver) why.push(T`river 🌊`);
+      if (to.riverBorders.includes(from.id) && !mod(to.owner, "noRiver")) why.push(T`river 🌊`);
+      if (mod(to.owner, "defense") > 0) why.push(T`pikemen 🔱`);
       const chance = Math.round(winChance(from, to, count) * 100);
       const charge = chargeOf(game.player);
       details = `
@@ -2514,9 +3054,10 @@ function renderPanel() {
       ${msg}
       <div>${wars.length ? T`⚔️ At war with ${wars.join(", ")}` : T`🕊️ At peace with every realm`}${allies.length ? T` · 🤝 Allied with ${allies.join(", ")}` : ""}</div>
       ${danger}
+      ${devOf(game.player).free ? `<div class="hint">${T`🎁 You may pick a free first development.`}</div>` : ""}
       <div class="hint">${T`Tap one of your provinces to recruit or to send its army.`} ${goal}</div>
       <div class="spacer"></div>
-      <div class="row">${diploButton}${endTurnButton}</div>`;
+      <div class="row three">${diploButton}${devButton}${endTurnButton}</div>`;
     return;
   }
 
@@ -2536,11 +3077,12 @@ function renderPanel() {
     hint = ready(p) > 0
       ? T`Tap a neighboring province to move or attack.`
       : (p.army > 0 ? T`This army has already acted this year.` : "");
-    recruitButton = `<button class="act light" data-do="recruit" ${canRecruit(p) ? "" : "disabled"}>${T`Recruit`}<br>${recruitCost(game.player)}💰 ${RULES.recruitManpower}⚔️</button>`;
+    const plan = recruitPlan(game.player);
+    recruitButton = `<button class="act light" data-do="recruit" ${plan ? "" : "disabled"}>${plan && plan.merc ? T`Mercenary` : T`Recruit`}<br>${plan ? plan.gold : recruitCost(game.player)}💰 ${plan && plan.merc ? "🗡️" : RULES.recruitManpower + "⚔️"}</button>`;
     if (!p.building) {
       buildButtons =
-        `<button class="act light" data-do="farm" ${canBuild(p, "farm") ? "" : "disabled"}>${T`Farm 🌾`}<br>${RULES.farmCost}💰</button>` +
-        `<button class="act light" data-do="castle" ${canBuild(p, "castle") ? "" : "disabled"}>${T`Castle 🏰`}<br>${RULES.castleCost}💰</button>`;
+        `<button class="act light" data-do="farm" ${canBuild(p, "farm") ? "" : "disabled"}>${T`Farm 🌾`}<br>${buildCost("farm", game.player)}💰</button>` +
+        `<button class="act light" data-do="castle" ${canBuild(p, "castle") ? "" : "disabled"}>${T`Castle 🏰`}<br>${buildCost("castle", game.player)}💰</button>`;
     }
     if (!p.building && game.realms[game.player].built) hint += T` You already built something this year.`;
   } else if (p.owner === "independent") {
@@ -2567,7 +3109,7 @@ function renderPanel() {
     ${hint ? `<div class="hint">${hint}</div>` : ""}
     <div class="spacer"></div>
     ${yours ? `<div class="row">${recruitButton}${buildButtons}</div>` : ""}
-    <div class="row">${yours || p.owner === "independent" ? "" : diploButton}${endTurnButton}</div>`;
+    <div class="row three">${yours || p.owner === "independent" ? "" : diploButton}${devButton}${endTurnButton}</div>`;
 }
 
 // =====================================================================
@@ -2605,6 +3147,7 @@ function showBattle(r, onDone) {
   const why = [];
   if (r.castle) why.push(T`castle 🏰`);
   if (r.river) why.push(T`river 🌊`);
+  if (r.pikes) why.push(T`pikemen 🔱`);
   $("b-def-sub").textContent =
     T`${r.defenders === 1 ? T`regiment` : T`regiments`} + ${r.militia} militia` +
     (why.length ? ` · ×${r.bonus.toFixed(2).replace(/0$/, "")} ${why.join(" ")}` : "");
@@ -2874,6 +3417,10 @@ function playSound(name) {
       tone(ctx, 1320, t, 0.8, "sine", 0.04);
       tone(ctx, 1980, t, 0.5, "sine", 0.02);
     }
+  } else if (name === "develop") {
+    // A short fanfare with a bell on top: something new was built or learned
+    [392, 523, 659].forEach((f, i) => tone(ctx, f, i * 0.13, 0.28, "triangle", 0.12));
+    tone(ctx, 1047, 0.42, 0.7, "sine", 0.08);
   } else if (name === "event") {
     tone(ctx, 587, 0, 0.3, "sine", 0.1);
     tone(ctx, 880, 0.12, 0.45, "sine", 0.08);
@@ -2900,7 +3447,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-16.5";
+const GAME_VERSION = "2026-11-16.6";
 const online = () => Boolean(ONLINE.url && ONLINE.key);
 
 async function api(path, options = {}) {
@@ -3450,6 +3997,7 @@ document.getElementById("panel").addEventListener("click", (e) => {
   if (action === "newgame") { clearSave(); game.over = true; game.endInfo = null; showStart(); return; }
   if (game.over) return;
   if (action === "diplomacy") { openDiplomacy(); return; }
+  if (action === "developments") { openDevelopments(); return; }
 
   if (action === "endturn") {
     const warnings = unusedWarnings();
@@ -3563,6 +4111,7 @@ function buildRealmCards() {
       if (loadSave() && !confirmNewGame()) return;
       hide("start");
       newGame(id, chosenDifficulty);
+      setTimeout(openDevelopments, 400);   // the free first pick
     };
     buttons.appendChild(b);
   }

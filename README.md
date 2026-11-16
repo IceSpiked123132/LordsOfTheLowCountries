@@ -17,10 +17,15 @@ Play it at https://icespiked123132.github.io/LordsOfTheLowCountries/
 | `og-image.png` | The preview image shown when the link is shared on social media or in chat apps. |
 | `stats.html` | Your statistics page (games started, finished, won, per realm and per day). Not linked from the game. |
 | `source/supabase-setup.sql` | Creates the online database for the leaderboard, statistics and feedback. |
+| `source/balance_sim.py` | Plays N AI-only games in the built game and prints win share per realm, game length and comebacks (optional JSON overrides). |
+| `source/dev_ablation.py` | Ablation test for developments: gives one realm one development from turn 1 and shows the change in its win rate. |
+| `source/check_translations.js` | Lists English texts that have no Dutch version yet. |
 
 ## Changing the game
 
-Most balance changes are a single number in the `RULES` block near the top of `source/template.html`. Each realm's own ability (trade, tithe, knights, rich cities) is tuned in the `TRAITS` block right below it.
+Most balance changes are a single number in the `RULES` block near the top of `source/template.html`. Everything that bends the rules for one realm is a modifier: a realm's own ability (trade, tithe, knights, rich cities) lives in the
+`ABILITIES` table and the 18 developments (Trade, War, Rule, three tiers each, one of two options per tier) in `DEVELOPMENTS`, both right below `RULES`.
+The rules only ever call `mod(realm, "key")`, which adds everything up, so a balance change is a number in one of those two tables.
 Province income, manpower and positions are in `PROVINCES` just below it.
 
 After editing, rebuild `index.html`:
