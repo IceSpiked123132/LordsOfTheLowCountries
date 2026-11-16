@@ -1,10 +1,12 @@
 // Keeps the game working offline once it's installed.
-// It loads the newest version when online, and the saved copy when offline.
-const CACHE = "lords-v2";
+// Every time you're online it checks the server for a newer version first
+// (so updates arrive right away); only when offline does it use the saved copy.
+// Requests to other sites (the leaderboard database) are left alone.
+const CACHE = "lords-v3";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png", "fonts/cinzel.woff2", "fonts/eb-garamond.woff2"];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: "reload" })))));
   self.skipWaiting();
 });
 
@@ -14,17 +16,15 @@ self.addEventListener("activate", (e) => {
   self.clients.claim();
 });
 
-// Try the network first (so updates show up), fall back to the cache offline.
-// Fonts are cached the first time they load.
 self.addEventListener("fetch", (e) => {
-  if (e.request.method !== "GET") return;
+  if (e.request.method !== "GET" || new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: "no-cache" })
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(e.request, copy));
         return res;
       })
-      .catch(() => caches.match(e.request))
+      .catch(() => caches.match(e.request, { ignoreSearch: true }))
   );
 });

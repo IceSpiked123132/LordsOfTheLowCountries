@@ -212,6 +212,14 @@
   #board-list .who small { font-size: 13px; color: var(--ink-soft); }
   #board-list .yrs { font-family: 'Cinzel', serif; font-weight: 800; }
   #board-status, #fb-status { color: var(--ink-soft); font-style: italic; text-align: center; }
+  #shareform { justify-content: flex-start; overflow-y: auto; padding-top: calc(20px + env(safe-area-inset-top)); }
+  #shareform .box { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; text-align: left; }
+  #shareform h1 { text-align: center; margin: 0 0 4px; }
+  #share-name { font-family: 'EB Garamond', serif; font-size: 18px; padding: 10px 12px; border: 2px solid var(--ink); border-radius: 8px; background: #fffaf0; color: var(--ink); }
+  .check-row { display: flex; align-items: center; gap: 10px; font-size: 17px; }
+  .check-row input { width: 22px; height: 22px; accent-color: #7a2e22; }
+  #share-status { color: #9a2c2c; font-style: italic; }
+  .start-version { font-size: 12px; color: var(--ink-soft); opacity: .7; }
   #share-img { width: 100%; border: 3px solid var(--ink); border-radius: 6px; -webkit-touch-callout: default; user-select: auto; }
   #topbar .realm .crest { margin: -4px 0; }
   .b-name { display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -336,6 +344,7 @@
         <button class="act light" style="min-height:42px" onclick="showHelp()" data-t>How to play</button>
         <button class="act light" id="start-board" style="min-height:42px;display:none" onclick="openBoard(false)" data-t>Leaderboard 🏆</button>
       </div>
+      <div class="start-version" id="start-version"></div>
     </div>
   </div>
   <div id="menu" class="overlay" style="display:none">
@@ -347,6 +356,7 @@
       <button class="act light" onclick="showHelp()" data-t>How to play</button>
       <button class="act light" id="sound-btn" onclick="toggleSound()">Sound: on 🔊</button>
       <button class="act light" id="lang-btn" onclick="setLanguage(LANG === 'nl' ? 'en' : 'nl')">🌐 Language: English</button>
+      <button class="act light" id="menu-board" onclick="closeMenu(); openBoard(false)" data-t>Leaderboard 🏆</button>
       <button class="act light" onclick="closeMenu(); openFeedback()" data-t>Send feedback 💬</button>
       <button class="act light" onclick="quitToStart()" data-t>Main menu (game is saved)</button>
     </div>
@@ -496,6 +506,17 @@
       <div id="fb-offline" class="msg" data-t>The feedback form isn't switched on yet. You can leave a message on <a href="https://github.com/IceSpiked123132/LordsOfTheLowCountries/issues" target="_blank" rel="noopener">GitHub</a>.</div>
       <div id="fb-status"></div>
       <button class="act light" onclick="hide('feedback')" data-t>Close</button>
+    </div>
+  </div>
+  <div id="shareform" class="overlay" style="display:none">
+    <div class="box">
+      <h1 data-t>Share your game</h1>
+      <div data-t>Your name goes on the picture, so everyone knows whose realm this is.</div>
+      <input id="share-name" maxlength="20" placeholder="Your name" data-tp>
+      <label id="share-board-row" class="check-row"><input type="checkbox" id="share-board" checked> <span data-t>Also put my result on the leaderboard 🏆</span></label>
+      <div id="share-status"></div>
+      <button class="act go" id="share-go" onclick="shareGame()" data-t>Share 📤</button>
+      <button class="act light" onclick="hide('shareform')" data-t>Cancel</button>
     </div>
   </div>
   <div id="sharebox" class="overlay" style="display:none">
@@ -793,7 +814,13 @@ const NL = {
   "Normal": "Normaal",
   "A fair fight.": "Een eerlijke strijd.",
   "Hard": "Moeilijk",
-  "The other realms are richer, hungrier for war and slow to make peace.": "De andere rijken zijn rijker, beluster op oorlog en sluiten minder snel vrede."
+  "The other realms are richer, hungrier for war and slow to make peace.": "De andere rijken zijn rijker, beluster op oorlog en sluiten minder snel vrede.",
+  "Fill in a name first.": "Vul eerst een naam in.",
+  "{} is #{} on the Lords of the Low Countries leaderboard ({}), playing {}. Can you do better?": "{0} staat #{1} op de ranglijst van Lords of the Low Countries ({2}), met {3}. Kun jij het beter?",
+  "{} played Lords of the Low Countries as {}. Can you do better?": "{0} speelde Lords of the Low Countries als {1}. Kun jij het beter?",
+  "{} · #{} on the leaderboard": "{0} · #{1} op de ranglijst",
+  "Your name goes on the picture, so everyone knows whose realm this is.": "Je naam komt op de afbeelding, zodat iedereen weet wiens rijk dit is.",
+  "Also put my result on the leaderboard 🏆": "Zet mijn resultaat ook op de ranglijst 🏆"
 };
 
 // =====================================================================
@@ -2744,7 +2771,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-16";
+const GAME_VERSION = "2026-11-16.2";
 const online = () => Boolean(ONLINE.url && ONLINE.key);
 
 async function api(path, options = {}) {
@@ -2795,8 +2822,7 @@ function openBoard(submit) {
 function renderBoardForm() {
   const form = document.getElementById("board-form");
   if (!board.submitting) { form.style.display = "none"; return; }
-  let name = "";
-  try { name = localStorage.getItem("lords-name") || ""; } catch (e) {}
+  const name = savedName();
   const years = game.year - RULES.startYear;
   form.innerHTML = `
     <div>${crest(game.player, 28)} <b>${REALMS[game.player].name}</b>: ${board.category === "united" ? T`united the Low Countries in ${years} ${yearsWord(years)}` : T`victory in ${years} ${yearsWord(years)}`} (${tr(diff().label).toLowerCase()})</div>
@@ -2808,6 +2834,27 @@ function renderBoardForm() {
   document.getElementById("board-submit").onclick = submitScore;
 }
 
+// The leaderboard this game's result belongs on, if it's a win
+const scoreCategory = () => (game.endInfo && game.endInfo.won ? (game.endInfo.final ? "united" : "victory") : null);
+const canSubmitScore = () => online() && scoreCategory() && !(game.submitted || {})[scoreCategory()];
+function savedName() { try { return localStorage.getItem("lords-name") || ""; } catch (e) { return ""; } }
+
+// Adds this game to the leaderboard; returns its place (1 = best)
+async function postScore(name) {
+  const category = scoreCategory(), years = game.year - RULES.startYear;
+  await api("scores", { method: "POST", body: JSON.stringify({
+    name, realm: game.player, difficulty: game.difficulty, category,
+    years, provinces: provincesOf(game.player).length
+  }) });
+  game.submitted = game.submitted || {};
+  game.submitted[category] = true;
+  board.highlight = { name, years };
+  try {
+    const faster = await api(`scores?select=years&difficulty=eq.${game.difficulty}&category=eq.${category}&years=lt.${years}&limit=1000`);
+    return faster.length + 1;
+  } catch (e) { return null; }
+}
+
 async function submitScore() {
   const input = document.getElementById("board-name");
   const name = input.value.trim().slice(0, 20);
@@ -2817,12 +2864,7 @@ async function submitScore() {
   const button = document.getElementById("board-submit");
   button.disabled = true;
   try {
-    await api("scores", { method: "POST", body: JSON.stringify({
-      name, realm: game.player, difficulty: game.difficulty, category: board.category,
-      years, provinces: provincesOf(game.player).length
-    }) });
-    game.submitted = game.submitted || {};
-    game.submitted[board.category] = true;
+    await postScore(name);
     board.submitting = false;
     board.highlight = { name, years };
     renderBoardForm();
@@ -2930,7 +2972,7 @@ function mapSvg() {
   return out + "</svg>";
 }
 
-async function buildShareImage() {
+async function buildShareImage(name, rank) {
   const W = 1080, H = 1350;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
@@ -2964,6 +3006,10 @@ async function buildShareImage() {
   c.font = "600 36px 'EB Garamond'";
   c.fillText(T`${REALMS[game.player].name} · ${provincesOf(game.player).length} of ${allProvinces().length} provinces`, 260, 1152);
   c.fillText(T`${years} ${yearsWord(years)} · ${s.won} battles won · ${tr(diff().label)} difficulty`, 260, 1198);
+  if (name) {
+    c.font = "800 32px Cinzel"; c.fillStyle = "#7a2e22";
+    c.fillText(rank ? T`${name} · #${rank} on the leaderboard` : name, 260, 1246);
+  }
   c.textAlign = "center";
   c.font = "600 28px Cinzel"; c.fillStyle = "#6b5338";
   c.fillText(T`Play free: ${SITE_URL.replace("https://", "").replace(/\/$/, "")}`, W / 2, 1300);
@@ -2971,13 +3017,40 @@ async function buildShareImage() {
   return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
 }
 
+// Step 1: a small form for your name (and, after a win, the leaderboard)
+function openShareForm() {
+  document.getElementById("share-name").value = savedName();
+  const box = document.getElementById("share-board-row");
+  box.style.display = canSubmitScore() ? "flex" : "none";
+  document.getElementById("share-board").checked = true;
+  document.getElementById("share-status").textContent = "";
+  document.getElementById("share-go").disabled = false;
+  show("shareform");
+}
+
+// Step 2: put the result on the leaderboard if asked, draw the image, share it
 async function shareGame() {
-  const button = document.querySelector("[data-do=share]");
-  if (button) { button.disabled = true; button.textContent = T`Drawing…`; }
+  const input = document.getElementById("share-name");
+  const name = input.value.trim().slice(0, 20);
+  if (!name) { input.focus(); document.getElementById("share-status").textContent = T`Fill in a name first.`; return; }
+  try { localStorage.setItem("lords-name", name); } catch (e) {}
+  const button = document.getElementById("share-go");
+  button.disabled = true;
+  button.textContent = T`Drawing…`;
+  let rank = null;
+  if (canSubmitScore() && document.getElementById("share-board").checked) {
+    try { rank = await postScore(name); } catch (e) {
+      document.getElementById("share-status").textContent = T`Couldn't reach the leaderboard. Check your internet and try again.`;
+    }
+  }
+  hide("shareform");
+  render();
   try {
-    const blob = await buildShareImage();
+    const blob = await buildShareImage(name, rank);
     const file = new File([blob], "lords-of-the-low-countries.png", { type: "image/png" });
-    const text = T`I played Lords of the Low Countries as ${REALMS[game.player].name}. Can you do better?`;
+    const text = rank
+      ? T`${name} is #${rank} on the Lords of the Low Countries leaderboard (${tr(diff().label).toLowerCase()}), playing ${REALMS[game.player].name}. Can you do better?`
+      : T`${name} played Lords of the Low Countries as ${REALMS[game.player].name}. Can you do better?`;
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ files: [file], title: "Lords of the Low Countries", text: `${text} ${SITE_URL}` });
     } else {
@@ -2989,7 +3062,8 @@ async function shareGame() {
   } catch (e) {
     // Closing the share menu without sharing also lands here: nothing to do
   }
-  if (button) { button.disabled = false; button.textContent = T`Share 📤`; }
+  button.disabled = false;
+  button.textContent = T`Share 📤`;
 }
 
 // =====================================================================
@@ -3172,7 +3246,7 @@ document.getElementById("panel").addEventListener("click", (e) => {
   const action = button.dataset.do;
   const order = game.order;
   if (action === "keepplaying") { keepPlaying(); return; }
-  if (action === "share") { shareGame(); return; }
+  if (action === "share") { openShareForm(); return; }
   if (action === "addscore") { openBoard(true); return; }
   if (action === "board") { openBoard(false); return; }
   if (action === "newgame") { clearSave(); game.over = true; game.endInfo = null; showStart(); return; }
@@ -3351,7 +3425,9 @@ document.querySelector(".lang-switch").addEventListener("click", (e) => {
 });
 
 setLanguage(LANG);
+document.getElementById("start-version").textContent = "v" + GAME_VERSION;
 if (online()) document.getElementById("start-board").style.display = "";
+if (!online()) document.getElementById("menu-board").style.display = "none";
 // iPhones only allow sound after a first touch: wake the sound system on the first tap
 document.addEventListener("pointerdown", () => { if (sound.on) audio(); }, { once: true });
 showStart();
@@ -3359,7 +3435,16 @@ showStart();
 // Installable app: lets "Add to Home Screen" work offline (only where the
 // game is hosted as its own website, not inside the claude.ai preview)
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-  navigator.serviceWorker.register("sw.js").catch(() => {});
+  navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then((reg) => reg.update()).catch(() => {});
+  // When a new version has been installed, reload into it, but never in the middle of a game:
+  // only on the start screen (or the next time you go back to it).
+  let updateWaiting = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (document.getElementById("start").style.display !== "none") location.reload();
+    else updateWaiting = true;
+  });
+  const originalShowStart = showStart;
+  showStart = function () { if (updateWaiting) { location.reload(); return; } originalShowStart(); };
 }
 </script>
 </body>
