@@ -13,8 +13,61 @@ lakes = [shape(f['geometry']) for f in load('ne_10m_lakes') if f['properties'].g
 flevo = [shape(f['geometry']) for f in adm1 if f['properties'].get('name')=='Flevoland' and f['properties'].get('admin')=='Netherlands']
 # The Afsluitdijk (1932) is cut out too: in 1350 the Zuiderzee was open sea
 afsluitdijk = LineString([(5.035, 52.938), (5.17, 53.005), (5.33, 53.072), (5.385, 53.098)]).buffer(0.013)
-water = unary_union(lakes + flevo + [afsluitdijk])
-land = land.difference(water)
+# Water around 1350 that is land today. Outlines are approximate (lon, lat), drawn from
+# historical maps at the scale of the game; small creeks and peat ponds are left out.
+HIST_WATER = {
+    # Kop van Noord-Holland: Wieringermeer (drained 1930), Amstelmeer/Balgzand (Anna Paulowna,
+    # 1846) and the Zijpe (1597). Wieringen becomes an island again; the dunes from Petten to
+    # Den Helder stay as a thin strip, broken by the Zijpe inlet.
+    "kop": [(4.700, 52.790), (4.745, 52.790), (4.790, 52.808), (4.840, 52.800), (4.900, 52.786),
+            (4.960, 52.775), (5.040, 52.772), (5.095, 52.770), (5.130, 52.790), (5.130, 52.910),
+            (5.060, 52.905), (5.000, 52.888), (4.930, 52.878), (4.870, 52.880), (4.845, 52.893),
+            (4.830, 52.915), (4.790, 52.965), (4.765, 52.940), (4.745, 52.900),
+            (4.735, 52.860), (4.715, 52.830), (4.690, 52.800)],
+    "zijpe_inlet": [(4.660, 52.800), (4.700, 52.790), (4.715, 52.820), (4.672, 52.830)],
+    # The IJ: a wide arm of the Zuiderzee from Amsterdam to Spaarndam, with the Wijkermeer
+    # (drained 1873, North Sea Canal 1876)
+    "ij": [(5.060, 52.390), (4.990, 52.393), (4.930, 52.388), (4.880, 52.386), (4.830, 52.394), (4.770, 52.405),
+           (4.715, 52.410), (4.690, 52.420), (4.665, 52.440), (4.665, 52.468), (4.690, 52.475),
+           (4.715, 52.458), (4.740, 52.440), (4.790, 52.425), (4.840, 52.412), (4.890, 52.404),
+           (4.940, 52.404), (4.990, 52.410), (5.060, 52.414)],
+    # Haarlemmermeer (drained 1852), here at its smaller medieval size
+    "haarlemmermeer": [(4.640, 52.355), (4.680, 52.365), (4.720, 52.350), (4.735, 52.322),
+                       (4.715, 52.300), (4.680, 52.292), (4.650, 52.305), (4.632, 52.330)],
+    # North Holland lakes drained in the 17th century (the smaller Wormer and
+    # Leidsemeer are left out: at game scale they looked like map markers)
+    "schermer": [(4.775, 52.635), (4.825, 52.640), (4.860, 52.620), (4.860, 52.585), (4.825, 52.565),
+                 (4.790, 52.572), (4.770, 52.600)],
+    "beemster": [(4.875, 52.585), (4.935, 52.590), (4.975, 52.565), (4.965, 52.530), (4.920, 52.518),
+                 (4.880, 52.528), (4.868, 52.555)],
+    "purmer": [(4.950, 52.538), (4.990, 52.540), (5.010, 52.520), (4.995, 52.500), (4.960, 52.502)],
+    # Friesland: the last part of the Middelzee, now Het Bildt (diked 1505)
+    "middelzee": [(5.520, 53.310), (5.590, 53.258), (5.650, 53.245), (5.720, 53.238),
+                  (5.770, 53.268), (5.790, 53.330), (5.700, 53.400), (5.520, 53.380)],
+    # The Lauwerszee, much bigger before the dikes of the 16th to 20th century
+    "lauwerszee": [(6.060, 53.420), (6.050, 53.350), (6.100, 53.300), (6.170, 53.285),
+                   (6.250, 53.310), (6.290, 53.360), (6.300, 53.430)],
+    # The Dollard, which the sea started eating from 1277 on (here before the 1362 flood)
+    "dollard": [(7.040, 53.320), (7.010, 53.265), (7.050, 53.215), (7.120, 53.200),
+                (7.200, 53.215), (7.260, 53.250), (7.260, 53.320)],
+    # Zeeland: the Sloe kept Walcheren an island until the railway dam of 1871; it runs on
+    # through the Veerse Gat (dammed 1961), which the land data shows as closed
+    "sloe": [(3.680, 51.630), (3.720, 51.630), (3.732, 51.500), (3.748, 51.470), (3.742, 51.425),
+             (3.700, 51.425), (3.708, 51.470), (3.695, 51.500)],
+}
+def smooth(c, rounds=3):
+    # Chaikin corner cutting, so the hand-drawn outlines look like real shores
+    for _ in range(rounds):
+        c = [q for a, b in zip(c, c[1:] + c[:1]) for q in ((0.75*a[0]+0.25*b[0], 0.75*a[1]+0.25*b[1]),
+                                                       (0.25*a[0]+0.75*b[0], 0.25*a[1]+0.75*b[1]))]
+    return Polygon(c)
+hist = [smooth(c) for c in HIST_WATER.values()]
+# Islands in the Zuiderzee that disappeared into the Noordoostpolder (1942)
+ISLANDS = [Point(5.598, 52.662).buffer(0.010), Polygon([(5.755, 52.670), (5.775, 52.660), (5.795, 52.615),
+           (5.780, 52.612), (5.760, 52.655)])]  # Urk, Schokland
+water = unary_union(lakes + flevo + [afsluitdijk] + hist)
+land = land.difference(water).union(unary_union(ISLANDS))
+assert all(Polygon(c).is_valid for c in HIST_WATER.values())
 # Drop leftover bits of the dike floating in the Zuiderzee
 from shapely.geometry import MultiPolygon
 dike_area = box(5.05, 52.93, 5.36, 53.09)

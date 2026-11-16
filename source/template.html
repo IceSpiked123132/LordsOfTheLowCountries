@@ -587,6 +587,8 @@ function T(strings, ...values) {
 }
 const tr = (text) => (LANG === "nl" && NL[text] !== undefined ? NL[text] : text);
 const yearsWord = (n) => (n === 1 ? T`year` : T`years`);
+const battlesWon = (n) => (n === 1 ? T`${n} battle won` : T`${n} battles won`);
+const provincesConquered = (n) => (n === 1 ? T`${n} province conquered` : T`${n} provinces conquered`);
 
 // Names that change with the language
 const REALM_NAMES_NL = {
@@ -704,7 +706,11 @@ const NL = {
   "It is {} and {} holds the most provinces ({} against your {}).": "Het is {0} en {1} heeft de meeste provincies ({2} tegen jouw {3}).",
   "The war goes on. Conquer all {} provinces to unite the Low Countries!": "De oorlog gaat door. Verover alle {0} provincies om de Lage Landen te verenigen!",
   "Welcome back. The year is {}.": "Welkom terug. Het is {0}.",
-  "{} ({}) · {} years · {} battles won, {} lost · {} provinces conquered · most held at once: {}": "{0} ({1}) · {2} jaar · {3} veldslagen gewonnen, {4} verloren · {5} provincies veroverd · meeste tegelijk: {6}",
+  "{} ({}) · {} {} · {}, {} lost · {} · most held at once: {}": "{0} ({1}) · {2} {3} · {4}, {5} verloren · {6} · meeste tegelijk: {7}",
+  "{} battle won": "{0} veldslag gewonnen",
+  "{} battles won": "{0} veldslagen gewonnen",
+  "{} province conquered": "{0} provincie veroverd",
+  "{} provinces conquered": "{0} provincies veroverd",
   "Share 📤": "Delen 📤",
   "Leaderboard 🏆": "Ranglijst 🏆",
   "Keep conquering": "Verder veroveren",
@@ -798,10 +804,9 @@ const NL = {
   "Thank you! Your message has been sent.": "Dank je! Je bericht is verstuurd.",
   "Couldn't send it. Check your internet and try again.": "Versturen lukte niet. Controleer je internet en probeer het opnieuw.",
   "{} · {} of {} provinces": "{0} · {1} van {2} provincies",
-  "{} {} · {} battles won · {} difficulty": "{0} {1} · {2} veldslagen gewonnen · moeilijkheid: {3}",
+  "{} {} · {} · {} difficulty": "{0} {1} · {2} · moeilijkheid: {3}",
   "Play free: {}": "Gratis spelen: {0}",
   "Drawing…": "Tekenen…",
-  "I played Lords of the Low Countries as {}. Can you do better?": "Ik speelde Lords of the Low Countries als {0}. Kun jij het beter?",
   "{} · {} · {} provinces · {}": "{0} · {1} · {2} provincies · {3}",
   "{}, {}, {}. Your game is saved automatically.": "{0}, {1}, {2}. Je spel wordt automatisch opgeslagen.",
   "{} provinces": "{0} provincies",
@@ -878,8 +883,8 @@ const RULES = {
   provincesToWin: 16,    // a victory (you can keep playing to conquer them all)
   truceYears: 10,        // after a peace treaty, no war between the two for this long
   coalitionAt: 12,        // a realm this big makes its neighbors gang up on it
-  aiWarChance: 0.45,
-  aiWarRatio: 1.0,       // the AI declares war on realms no stronger than this times its own army     // yearly chance an AI looks for a new war
+  aiWarChance: 0.45,     // yearly chance an AI looks for a new war
+  aiWarRatio: 1.0,       // the AI only declares war on realms whose army is at most this times its own
   revoltChance: 0.15,    // yearly chance an unguarded, freshly conquered province revolts
   uprisingChance: 0.12,  // yearly chance an unguarded conquered home province goes back to its realm
   underdogRecruitGold: 3,// recruit price for a realm with fewer provinces than it started with
@@ -2276,7 +2281,7 @@ function renderPanel() {
       <h2 class="end-title ${e.won ? "win" : "lose"}">${e.title}</h2>
       <div>${e.text}</div>
       <div class="end-stats">
-        ${T`${REALMS[game.player].name} (${tr(diff().label).toLowerCase()}) · ${game.year - RULES.startYear} years · ${s.won} battles won, ${s.lost} lost · ${s.taken} provinces conquered · most held at once: ${Math.max(s.peak, provincesOf(game.player).length)}`}
+        ${T`${REALMS[game.player].name} (${tr(diff().label).toLowerCase()}) · ${game.year - RULES.startYear} ${yearsWord(game.year - RULES.startYear)} · ${battlesWon(s.won)}, ${s.lost} lost · ${provincesConquered(s.taken)} · most held at once: ${Math.max(s.peak, provincesOf(game.player).length)}`}
       </div>
       <div class="spacer"></div>
       <div class="row">
@@ -2739,7 +2744,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-16.3";
+const GAME_VERSION = "2026-11-16.4";
 const online = () => Boolean(ONLINE.url && ONLINE.key);
 
 async function api(path, options = {}) {
@@ -2973,7 +2978,7 @@ async function buildShareImage(name, rank) {
   c.fillStyle = "#3b2a1a";
   c.font = "600 36px 'EB Garamond'";
   c.fillText(T`${REALMS[game.player].name} · ${provincesOf(game.player).length} of ${allProvinces().length} provinces`, 260, 1152);
-  c.fillText(T`${years} ${yearsWord(years)} · ${s.won} battles won · ${tr(diff().label)} difficulty`, 260, 1198);
+  c.fillText(T`${years} ${yearsWord(years)} · ${battlesWon(s.won)} · ${tr(diff().label)} difficulty`, 260, 1198);
   if (name) {
     c.font = "800 32px Cinzel"; c.fillStyle = "#7a2e22";
     c.fillText(rank ? T`${name} · #${rank} on the leaderboard` : name, 260, 1246);
