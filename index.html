@@ -220,6 +220,16 @@
   .check-row input { width: 22px; height: 22px; accent-color: #7a2e22; }
   #share-status { color: #9a2c2c; font-style: italic; }
   .start-version { font-size: 12px; color: var(--ink-soft); opacity: .7; }
+  #install { background: rgba(43, 33, 24, 0.82); z-index: 25; }
+  #install .card {
+    width: 100%; max-width: 360px; background: var(--parchment); border-radius: 12px; border: 3px solid var(--ink);
+    padding: 22px 18px 16px; box-shadow: 0 10px 30px rgba(0,0,0,.4); animation: drop .35s ease-out;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .ev-title-like { font-family: 'Cinzel', serif; font-weight: 800; font-size: 22px; }
+  #install-text { font-size: 17px; }
+  #install-text ol { text-align: left; margin: 6px 0 0; padding-left: 22px; }
+  #install-buttons { width: 100%; }
   #share-img { width: 100%; border: 3px solid var(--ink); border-radius: 6px; -webkit-touch-callout: default; user-select: auto; }
   #topbar .realm .crest { margin: -4px 0; }
   .b-name { display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -357,6 +367,7 @@
       <button class="act light" id="sound-btn" onclick="toggleSound()">Sound: on 🔊</button>
       <button class="act light" id="lang-btn" onclick="setLanguage(LANG === 'nl' ? 'en' : 'nl')">🌐 Language: English</button>
       <button class="act light" id="menu-board" onclick="closeMenu(); openBoard(false)" data-t>Leaderboard 🏆</button>
+      <button class="act light" id="menu-install" style="display:none" onclick="closeMenu(); showInstall()" data-t>Install the app 📲</button>
       <button class="act light" onclick="closeMenu(); openFeedback()" data-t>Send feedback 💬</button>
       <button class="act light" onclick="quitToStart()" data-t>Main menu (game is saved)</button>
     </div>
@@ -534,6 +545,14 @@
       <div id="diplo-msg" class="msg"></div>
       <div id="diplo-list"></div>
       <button class="act" style="width:100%;margin-top:6px" onclick="closeDiplomacy()" data-t>Back to the map</button>
+    </div>
+  </div>
+  <div id="install" class="overlay" style="display:none">
+    <div class="card">
+      <img src="icon-192.png" alt="" width="84" height="84" style="border-radius:18px;box-shadow:0 3px 10px rgba(0,0,0,.3)">
+      <div id="install-title" class="ev-title-like" data-t>Play it like an app</div>
+      <div id="install-text"></div>
+      <div id="install-buttons" class="stack"></div>
     </div>
   </div>
   <div id="eventcard" class="overlay" style="display:none">
@@ -820,7 +839,14 @@ const NL = {
   "{} played Lords of the Low Countries as {}. Can you do better?": "{0} speelde Lords of the Low Countries als {1}. Kun jij het beter?",
   "{} · #{} on the leaderboard": "{0} · #{1} op de ranglijst",
   "Your name goes on the picture, so everyone knows whose realm this is.": "Je naam komt op de afbeelding, zodat iedereen weet wiens rijk dit is.",
-  "Also put my result on the leaderboard 🏆": "Zet mijn resultaat ook op de ranglijst 🏆"
+  "Also put my result on the leaderboard 🏆": "Zet mijn resultaat ook op de ranglijst 🏆",
+  "Play it like an app": "Speel het als een app",
+  "Install the app 📲": "Installeer de app 📲",
+  "Add Lords of the Low Countries to your home screen: it opens full screen like a real app, starts faster and works without internet.": "Zet Lords of the Low Countries op je beginscherm: het opent schermvullend als een echte app, start sneller en werkt zonder internet.",
+  "Install 📲": "Installeren 📲",
+  "Not now": "Nu niet",
+  "Tap the Share button <b>⬆️</b> at the bottom of Safari.": "Tik op de deelknop <b>⬆️</b> onderin Safari.",
+  "Choose <b>Add to Home Screen</b>.": "Kies <b>Zet op beginscherm</b>."
 };
 
 // =====================================================================
@@ -2025,6 +2051,8 @@ function endGame(title, text, won, final) {
   hide("yearview");
   resetView();
   render();
+  // After a finished game is a good moment to suggest installing the app
+  setTimeout(maybeSuggestInstall, 2500);
 }
 
 function keepPlaying() {
@@ -2771,7 +2799,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-16.2";
+const GAME_VERSION = "2026-11-16.3";
 const online = () => Boolean(ONLINE.url && ONLINE.key);
 
 async function api(path, options = {}) {
@@ -3064,6 +3092,70 @@ async function shareGame() {
   }
   button.disabled = false;
   button.textContent = T`Share 📤`;
+}
+
+// =====================================================================
+// INSTALL AS AN APP
+// After a finished game (the first, and once more later if you said "not
+// now"), suggest adding the game to the home screen. On Android/Chrome the
+// browser hands us an install prompt; on iPhone we explain the two taps.
+// Never shown when the game already runs as an installed app.
+// =====================================================================
+
+let installPrompt = null;   // the browser's install dialog, when it offers one
+const isInstalled = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const canInstall = () => !isInstalled() && (installPrompt !== null || isIOS());
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();           // we show our own popup at a better moment
+  installPrompt = e;
+  updateInstallButton();
+});
+window.addEventListener("appinstalled", () => {
+  installPrompt = null;
+  try { localStorage.setItem("lords-installed", "yes"); } catch (err) {}
+  hide("install");
+  updateInstallButton();
+});
+
+function updateInstallButton() {
+  const b = document.getElementById("menu-install");
+  if (b) b.style.display = canInstall() ? "" : "none";
+}
+
+function maybeSuggestInstall() {
+  if (!canInstall()) return;
+  let asked = 0;
+  try {
+    if (localStorage.getItem("lords-installed") === "yes") return;
+    asked = Number(localStorage.getItem("lords-install-asked") || 0);
+  } catch (e) { return; }
+  if (asked >= 2) return;          // ask after the first game, and once more after another
+  const busy = ["battle", "eventcard", "shareform", "sharebox", "board"].some(id => document.getElementById(id).style.display === "flex");
+  if (busy) { setTimeout(maybeSuggestInstall, 3000); return; }
+  try { localStorage.setItem("lords-install-asked", String(asked + 1)); } catch (e) {}
+  showInstall();
+}
+
+function showInstall() {
+  const text = document.getElementById("install-text"), buttons = document.getElementById("install-buttons");
+  if (installPrompt) {
+    text.textContent = T`Add Lords of the Low Countries to your home screen: it opens full screen like a real app, starts faster and works without internet.`;
+    buttons.innerHTML = `<button class="act go" id="install-yes">${T`Install 📲`}</button><button class="act light" onclick="hide('install')">${T`Not now`}</button>`;
+    document.getElementById("install-yes").onclick = async () => {
+      hide("install");
+      installPrompt.prompt();
+      try { await installPrompt.userChoice; } catch (e) {}
+      installPrompt = null;
+      updateInstallButton();
+    };
+  } else {
+    text.innerHTML = T`Add Lords of the Low Countries to your home screen: it opens full screen like a real app, starts faster and works without internet.` +
+      `<ol><li>${T`Tap the Share button <b>⬆️</b> at the bottom of Safari.`}</li><li>${T`Choose <b>Add to Home Screen</b>.`}</li></ol>`;
+    buttons.innerHTML = `<button class="act" onclick="hide('install')">${T`Got it`}</button>`;
+  }
+  show("install");
 }
 
 // =====================================================================
@@ -3427,6 +3519,7 @@ document.querySelector(".lang-switch").addEventListener("click", (e) => {
 setLanguage(LANG);
 document.getElementById("start-version").textContent = "v" + GAME_VERSION;
 if (online()) document.getElementById("start-board").style.display = "";
+updateInstallButton();
 if (!online()) document.getElementById("menu-board").style.display = "none";
 // iPhones only allow sound after a first touch: wake the sound system on the first tap
 document.addEventListener("pointerdown", () => { if (sound.on) audio(); }, { once: true });
