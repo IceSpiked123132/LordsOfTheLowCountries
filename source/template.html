@@ -357,7 +357,6 @@
   .stack .pair { display: flex; gap: 10px; }
   .stack .pair button.act { flex: 1; width: auto; min-height: 44px; font-size: 13px; }
   .stack .group-label { font-family: 'Cinzel', serif; font-weight: 800; font-size: 11px; letter-spacing: .12em; color: var(--ink-soft); text-align: left; margin: 6px 0 -4px; }
-  button.act.ghost { background: none; border-color: transparent; color: var(--ink-soft); font-family: 'EB Garamond', serif; font-weight: 400; font-size: 16px; min-height: 40px; text-decoration: underline; }
   #menu p { margin-bottom: 18px; }
   #help .box { width: 100%; max-width: 400px; text-align: left; overflow-y: auto; max-height: 100%; }
   #help h1 { text-align: center; }
@@ -469,10 +468,10 @@
       </div>
       <div class="pair">
         <button class="act light" id="menu-board" onclick="closeMenu(); openBoard(false)" data-t>Leaderboard 🏆</button>
-        <button class="act light" onclick="closeMenu(); openFeedback()" data-t>Send feedback 💬</button>
+        <button class="act light" onclick="closeMenu(); openFeedback()" data-t>Feedback 💬</button>
       </div>
       <button class="act light" id="menu-install" style="display:none" onclick="closeMenu(); showInstall()" data-t>Install the app 📲</button>
-      <button class="act ghost" onclick="quitToStart()" data-t>Main menu (game is saved)</button>
+      <button class="act light" onclick="quitToStart()" data-t>Main menu (game is saved)</button>
     </div>
   </div>
   <div id="help" class="overlay" style="display:none">
@@ -1018,7 +1017,7 @@ const NL = {
   "knights 🐎": "ridders 🐎",
   "Paused": "Gepauzeerd",
   "Resume": "Verder spelen",
-  "Send feedback 💬": "Feedback sturen 💬",
+  "Feedback 💬": "Feedback 💬",
   "Main menu (game is saved)": "Hoofdmenu (spel is opgeslagen)",
   "Show the first-game tips again": "Toon de beginnerstips opnieuw",
   "vs": "tegen",
@@ -3546,7 +3545,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-16.8";
+const GAME_VERSION = "2026-11-16.9";
 
 // Leaderboard name rules. The same rules run in the database (source/supabase-security.sql),
 // this copy only gives the player a friendly message first. The word list is generated
