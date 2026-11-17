@@ -300,24 +300,35 @@
   #devs { justify-content: flex-start; padding: calc(10px + env(safe-area-inset-top)) 10px 0; }
   #devs .box { width: 100%; max-width: 420px; text-align: left; flex: 1; min-height: 0; overflow-y: auto; padding: 4px 4px 8px; }
   #devs h1 { text-align: center; font-size: 22px; margin: 0 0 6px; }
-  #dev-status { text-align: center; background: var(--parchment-dark); border-radius: 8px; padding: 6px 8px; margin-bottom: 8px; font-size: 15px; }
-  #dev-status .sub { font-size: 13px; color: var(--ink-soft); }
-  #dev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .dev-col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-  .dev-head { font-family: 'Cinzel', serif; font-weight: 800; font-size: 14px; text-align: center; padding: 5px 0; border-bottom: 4px solid var(--branch); }
-  .dev-tl { text-align: center; font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
-  .dev-tile {
-    min-height: 58px; padding: 3px; min-width: 0; font: inherit; color: var(--ink); cursor: pointer;
-    background: var(--parchment); border: 2px solid var(--ink); border-radius: 8px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  #dev-status { text-align: center; background: var(--parchment-dark); border-radius: 8px; padding: 7px 10px; margin-bottom: 10px; font-size: 15px; line-height: 1.25; }
+  #dev-status .sub { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+  /* One branch at a time: three tabs */
+  #dev-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+  .dev-tab {
+    flex: 1; font: inherit; color: var(--ink); cursor: pointer; background: none; border: none; border-bottom: 4px solid var(--branch);
+    padding: 6px 2px 5px; opacity: .55; font-family: 'Cinzel', serif; font-weight: 800; font-size: 14px; line-height: 1.2;
   }
-  .dev-emoji { font-size: 20px; line-height: 1; }
-  .dev-name { font-family: 'Cinzel', serif; font-weight: 800; font-size: 11px; line-height: 1.1; text-align: center; overflow-wrap: anywhere; }
-  .dev-tile.done { background: #ecd88a; border-color: #7a5c1e; }
-  .dev-tile.current { background: #f4e6b5; border-style: dashed; }
-  .dev-tile.locked { opacity: .5; }
-  .dev-tile.other { opacity: .35; }
-  .dev-tile.sel { outline: 3px solid #7a2e22; outline-offset: 1px; }
+  .dev-tab.on { opacity: 1; background: var(--parchment-dark); border-radius: 8px 8px 0 0; }
+  .dev-tab small { display: block; font-family: 'EB Garamond', serif; font-weight: 400; font-size: 13px; color: var(--ink-soft); letter-spacing: .1em; }
+  .dev-note { text-align: center; font-size: 14px; color: var(--ink-soft); margin: 0 0 6px; }
+  /* A tier: a small heading and two option cards side by side */
+  .dev-tier { margin-top: 10px; }
+  .dev-th { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; color: var(--ink-soft); margin: 0 2px 4px; }
+  .dev-th b { font-family: 'Cinzel', serif; font-weight: 800; font-size: 13px; letter-spacing: .08em; color: var(--ink); }
+  .dev-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .dev-card {
+    min-width: 0; min-height: 112px; padding: 9px 10px; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
+    background: var(--parchment); border: 2px solid var(--ink); border-radius: 10px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .dev-card .dev-name { font-family: 'Cinzel', serif; font-weight: 800; font-size: 13px; line-height: 1.15; text-align: left; display: flex; gap: 6px; align-items: flex-start; }
+  .dev-card .dev-emoji { font-size: 18px; line-height: 1; }
+  .dev-card .dev-fx { font-size: 14px; line-height: 1.2; color: var(--ink-soft); }
+  .dev-card.done { background: #ecd88a; border-color: #7a5c1e; }
+  .dev-card.current { background: #f4e6b5; border-style: dashed; }
+  .dev-card.locked { opacity: .5; border-color: rgba(59,42,26,.5); }
+  .dev-card.other { opacity: .38; border-color: rgba(59,42,26,.5); }
+  .dev-card.sel { outline: 3px solid #7a2e22; outline-offset: 1px; }
   /* The detail panel stays pinned to the bottom, so the buttons never scroll out of view */
   #dev-detail {
     width: calc(100% + 20px); max-width: 440px; flex: none; text-align: left; box-sizing: border-box;
@@ -735,6 +746,8 @@
     <div class="box">
       <h1 data-t>Developments</h1>
       <div id="dev-status"></div>
+      <div id="dev-tabs"></div>
+      <div id="dev-note" class="dev-note"></div>
       <div id="dev-grid"></div>
     </div>
     <div id="dev-detail"></div>
@@ -1030,6 +1043,10 @@ const NL = {
   "Share your game": "Deel je spel",
   "Press and hold the image to save or share it.": "Houd de afbeelding ingedrukt om haar op te slaan of te delen.",
   "Download the image": "Download de afbeelding",
+  "Tap an option to choose it.": "Tik op een optie om te kiezen.",
+  "★ Your favourite branch: 20% cheaper.": "★ Jouw favoriete tak: 20% goedkoper.",
+  "Tier {}": "Niveau {0}",
+  "Free 🎁": "Gratis 🎁",
   "Diplomacy": "Diplomatie",
   "Details ▾": "Details ▾",
   "Hide details ▴": "Verberg details ▴",
@@ -1140,14 +1157,12 @@ const NL = {
   "⏳ {}: {} {} to go": "⏳ {0}: nog {1} {2}",
   "Nothing is being developed. One at a time.": "Er wordt niets ontwikkeld. Steeds één tegelijk.",
   "Treasury: {} 💰": "Schatkist: {0} 💰",
-  "Tap a development to read what it does. You follow one option per tier. A ★ marks your favourite branch: 20% cheaper.": "Tik op een ontwikkeling om te lezen wat ze doet. Je volgt één optie per niveau. Een ★ markeert je favoriete tak: 20% goedkoper.",
   "You have this development.": "Je hebt deze ontwikkeling.",
   "This one is being developed now.": "Deze wordt nu ontwikkeld.",
   "You took the other option of this tier.": "Je koos de andere optie van dit niveau.",
   "First finish a tier {} development in this branch.": "Rond eerst een ontwikkeling van niveau {0} in deze tak af.",
   "Only one development at a time.": "Maar één ontwikkeling tegelijk.",
   "You need {} more 💰.": "Je hebt nog {0} 💰 nodig.",
-  "tier {}": "niveau {0}",
   "Free pick: ready at once.": "Gratis keuze: meteen klaar.",
   "Cost: {} 💰. Ready in {} {}.": "Kosten: {0} 💰. Klaar over {1} {2}.",
   "Take it for free 🎁": "Gratis nemen 🎁",
@@ -2377,7 +2392,7 @@ document.getElementById("diplo").addEventListener("click", (e) => {
 function closeDiplomacy() { hide("diplo"); render(); }
 
 // --- The Developments screen: three columns (branches), tiers stacked, two options per tier ---
-const devUI = { sel: null };
+const devUI = { sel: null, branch: null };
 const ROMAN = ["I", "II", "III"];
 
 // A red dot on the button: a free pick waits, or nothing is being developed and there is gold to spare
@@ -2392,6 +2407,7 @@ function devAttention() {
 
 function openDevelopments() {
   devUI.sel = null;
+  devUI.branch = devUI.branch || FAVOURITE[game.player] || BRANCHES[0];
   renderDevelopments();
   show("devs");
 }
@@ -2405,19 +2421,24 @@ function renderDevelopments() {
   document.getElementById("dev-status").innerHTML = `<div>${status}</div><div class="sub">${T`Treasury: ${realm.gold} 💰`}</div>`;
 
   const colors = { trade: "#b8860b", war: "#8f2d22", rule: "#2f5d9e" };
-  document.getElementById("dev-grid").innerHTML = BRANCHES.map(b => {
-    const star = FAVOURITE[me] === b ? " ★" : "";
-    const tiers = [1, 2, 3].map(t => {
-      const options = DEVELOPMENTS.filter(o => o.branch === b && o.tier === t);
-      const price = d.free && t === 1 ? "🎁" : `${devCost(me, options[0])}💰`;
-      const tiles = options.map(o => {
-        const st = devState(me, o);
-        const icon = st === "done" ? "✅" : st === "current" ? "⏳" : o.emoji;
-        return `<button class="dev-tile ${st}${devUI.sel === o.id ? " sel" : ""}" data-dev="${o.id}"><span class="dev-emoji">${icon}</span><span class="dev-name">${devName(o.id)}</span></button>`;
-      }).join("");
-      return `<div class="dev-tl">${ROMAN[t - 1]} · ${price}</div>${tiles}`;
+  const cur = devUI.branch;
+  // Tabs: the three branches, with a small progress count (tiers finished out of three)
+  document.getElementById("dev-tabs").innerHTML = BRANCHES.map(b => {
+    const done = DEVELOPMENTS.filter(o => o.branch === b && d.done.includes(o.id)).length;
+    return `<button class="dev-tab${b === cur ? " on" : ""}" data-branch="${b}" style="--branch:${colors[b]}">${branchIcon(b)} ${branchName(b)}${FAVOURITE[me] === b ? " ★" : ""}<small>${"●".repeat(done)}${"○".repeat(3 - done)}</small></button>`;
+  }).join("");
+  document.getElementById("dev-note").textContent = FAVOURITE[me] === cur ? T`★ Your favourite branch: 20% cheaper.` : "";
+
+  document.getElementById("dev-grid").innerHTML = [1, 2, 3].map(t => {
+    const options = DEVELOPMENTS.filter(o => o.branch === cur && o.tier === t);
+    const tierDone = options.some(o => d.done.includes(o.id));
+    const price = tierDone ? "✅" : d.free && t === 1 ? T`Free 🎁` : `${devCost(me, options[0])} 💰`;
+    const cards = options.map(o => {
+      const st = devState(me, o);
+      const icon = st === "done" ? "✅" : st === "current" ? "⏳" : st === "locked" ? "🔒" : o.emoji;
+      return `<button class="dev-card ${st}${devUI.sel === o.id ? " sel" : ""}" data-dev="${o.id}"><span class="dev-name"><span class="dev-emoji">${icon}</span>${devName(o.id)}</span><span class="dev-fx">${devEffect(o.id)}</span></button>`;
     }).join("");
-    return `<div class="dev-col" style="--branch:${colors[b]}"><div class="dev-head">${branchIcon(b)} ${branchName(b)}${star}</div>${tiers}</div>`;
+    return `<div class="dev-tier"><div class="dev-th"><b>${T`Tier ${ROMAN[t - 1]}`}</b><span>${price}</span></div><div class="dev-row">${cards}</div></div>`;
   }).join("");
   document.getElementById("dev-detail").innerHTML = devDetailHTML();
 }
@@ -2426,7 +2447,7 @@ function devDetailHTML() {
   const me = game.player, d = devOf(me), realm = game.realms[me];
   const o = devUI.sel && DEV_BY_ID[devUI.sel];
   const back = `<button class="act light" onclick="closeDevelopments()">${T`Back to the map`}</button>`;
-  if (!o) return `<div class="hint">${T`Tap a development to read what it does. You follow one option per tier. A ★ marks your favourite branch: 20% cheaper.`}</div><div class="row">${back}</div>`;
+  if (!o) return `<div class="hint">${T`Tap an option to choose it.`}</div><div class="row">${back}</div>`;
   const st = devState(me, o), cost = devCost(me, o), free = isFreePick(me, o);
   let why = "";
   if (st === "done") why = T`You have this development.`;
@@ -2436,16 +2457,14 @@ function devDetailHTML() {
   else if (!free && d.current) why = T`Only one development at a time.`;
   else if (!free && realm.gold < cost) why = T`You need ${cost - realm.gold} more 💰.`;
   return `
-    <h2>${o.emoji} ${devName(o.id)}</h2>
-    <div class="sub">${branchName(o.branch)} · ${T`tier ${ROMAN[o.tier - 1]}`}</div>
-    <div>${devEffect(o.id)}</div>
-    <div class="sub"><i>${devFlavour(o.id)}</i></div>
     ${st === "open" || st === "locked" ? `<div class="sub">${free ? T`Free pick: ready at once.` : T`Cost: ${cost} 💰. Ready in ${DEV.years} ${yearsWord(DEV.years)}.`}</div>` : ""}
     ${why ? `<div class="hint">${why}</div>` : ""}
     <div class="row">${back}<button class="act go" data-devgo="${o.id}" ${canStartDev(me, o) ? "" : "disabled"}>${st === "done" ? T`Done ✅` : free ? T`Take it for free 🎁` : T`Develop for ${cost} 💰`}</button></div>`;
 }
 
 document.getElementById("devs").addEventListener("click", (e) => {
+  const tab = e.target.closest("button[data-branch]");
+  if (tab) { devUI.branch = tab.dataset.branch; devUI.sel = null; renderDevelopments(); return; }
   const tile = e.target.closest("button[data-dev]");
   if (tile) { devUI.sel = tile.dataset.dev; renderDevelopments(); return; }
   const go = e.target.closest("button[data-devgo]");
@@ -3545,7 +3564,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-16.9";
+const GAME_VERSION = "2026-11-17.1";
 
 // Leaderboard name rules. The same rules run in the database (source/supabase-security.sql),
 // this copy only gives the player a friendly message first. The word list is generated
