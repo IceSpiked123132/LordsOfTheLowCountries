@@ -36,6 +36,11 @@
     --ink: #3b2a1a;
     --ink-soft: #6b5338;
     --sea: #9fb7c0;
+    --paper: #f7efd9;               /* raised surfaces: cards, tiles, light buttons */
+    --line: rgba(59,42,26,.22);     /* thin borders */
+    --shadow: 0 1px 2px rgba(43,33,24,.18), 0 4px 12px rgba(43,33,24,.12);
+    --shadow-lg: 0 14px 40px rgba(20,12,4,.45);
+    --radius: 12px;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -57,16 +62,16 @@
   /* Top bar with the player's realm stats */
   #topbar {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 14px; background: var(--ink); color: var(--parchment);
+    padding: 10px 14px; background: linear-gradient(#46341f, var(--ink)); color: var(--parchment);
     padding-top: calc(10px + env(safe-area-inset-top));
-    font-size: 15px;
+    font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,.3); position: relative; z-index: 3;
   }
   .menu-btn {
-    background: none; border: 1px solid var(--parchment); color: var(--parchment);
-    border-radius: 6px; font-size: 18px; width: 36px; height: 32px; padding: 0; cursor: pointer;
+    background: none; border: 1px solid rgba(239,227,196,.5); color: var(--parchment);
+    border-radius: 10px; font-size: 18px; width: 38px; height: 34px; display: grid; place-items: center; padding: 0; cursor: pointer;
   }
   #topbar .realm { font-family: 'Cinzel', serif; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-  #topbar .swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--parchment); }
+  #topbar .swatch { width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(239,227,196,.7); }
   #topbar .stats { display: flex; gap: 12px; }
 
   /* The map. The svg is allowed to draw outside its box (overflow: visible),
@@ -76,20 +81,20 @@
   #zoom-ctrl { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
   #guide {
     position: absolute; left: 8px; right: 58px; bottom: 8px; z-index: 4; display: none;
-    background: var(--parchment); border: 2px solid var(--ink); border-radius: 10px;
-    padding: 8px 12px; font-size: 15px; line-height: 1.3; box-shadow: 0 4px 14px rgba(0,0,0,.3);
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 8px 12px; font-size: 15px; line-height: 1.3; box-shadow: var(--shadow);
     animation: drop .35s ease-out;
   }
   .guide-head { font-family: 'Cinzel', serif; font-weight: 800; font-size: 11px; letter-spacing: .15em; color: var(--ink-soft); margin-bottom: 2px; }
   .guide-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
   .guide-buttons button {
-    font-family: 'Cinzel', serif; font-weight: 800; font-size: 12px; padding: 6px 12px; border-radius: 6px;
-    border: 2px solid var(--ink); background: var(--parchment); color: var(--ink); cursor: pointer;
+    font-family: 'Cinzel', serif; font-weight: 800; font-size: 12px; padding: 6px 12px; border-radius: 8px;
+    border: 1px solid var(--ink); background: var(--paper); color: var(--ink); cursor: pointer;
   }
   .guide-buttons button.on { background: var(--ink); color: var(--parchment); }
   #zoom-ctrl button {
-    width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--ink);
-    background: var(--parchment); color: var(--ink); font-size: 20px; font-weight: 800; cursor: pointer; opacity: .9;
+    width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--paper); color: var(--ink); font-size: 20px; font-weight: 800; cursor: pointer; box-shadow: var(--shadow);
   }
   /* Last year's attacks, drawn on the map */
   .changed-under { fill: none; stroke: var(--ink); stroke-width: 7; pointer-events: none; }
@@ -114,7 +119,12 @@
   .city circle { fill: var(--ink); stroke: var(--parchment); stroke-width: 2; cursor: pointer; }
   .city .army { font-family: 'Cinzel', serif; font-size: 17px; font-weight: 800; fill: #fff; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
   .city .label { font-size: 16px; font-weight: 600; fill: var(--ink); text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: var(--parchment); stroke-width: 4px; }
-  .city .capital, .city .bldg { font-size: 17px; text-anchor: middle; pointer-events: none; }
+  .city .badge { fill: #f6edd5; stroke: var(--ink); stroke-width: 1.3; pointer-events: none; }
+  .city .mi { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; color: var(--ink); pointer-events: none; }
+
+  /* Icons (see ICONS in the script): they take the size and colour of the text around them */
+  .ic { width: 1.2em; height: 1.2em; vertical-align: -.25em; flex: none; overflow: visible;
+        fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; margin: 0 .06em; }
 
   /* Info and action panel at the bottom */
   #panel {
@@ -126,18 +136,18 @@
   #panel h2 .owner { font-family: 'EB Garamond', serif; font-weight: 400; font-size: 15px; }
   #panel .sub { color: var(--ink-soft); font-size: 14px; line-height: 1.25; }
   #panel .hint { color: var(--ink-soft); font-style: italic; line-height: 1.25; }
-  #panel .msg { background: var(--parchment); border-left: 4px solid var(--ink); padding: 6px 10px; border-radius: 4px; line-height: 1.25; }
+  #panel .msg { background: var(--paper); border-left: 4px solid var(--ink); padding: 6px 10px; border-radius: 6px 10px 10px 6px; line-height: 1.25; }
   #panel .spacer { flex: 1; }
   /* Four numbers in a strip: icon and value, small label underneath */
   .stats4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
   .stats4 > div {
-    background: var(--parchment); border-radius: 8px; padding: 5px 2px 4px; text-align: center; line-height: 1.1;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 5px 2px 4px; text-align: center; line-height: 1.1;
   }
   .stats4 b { display: block; font-family: 'Cinzel', serif; font-weight: 800; font-size: 17px; }
   .stats4 small { display: block; font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
   /* One line of status chips */
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { background: var(--parchment); border-radius: 999px; padding: 2px 10px; font-size: 14px; line-height: 1.35; }
+  .chip { background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 14px; line-height: 1.35; }
   /* Extra info the player can open when wanted */
   button.more-toggle {
     align-self: flex-start; background: none; border: none; padding: 2px 0; cursor: pointer;
@@ -159,12 +169,16 @@
   button.act {
     flex: 1; min-height: 46px; padding: 6px 10px;
     font-family: 'Cinzel', serif; font-weight: 800; font-size: 14px;
-    color: var(--parchment); background: var(--ink);
-    border: 2px solid var(--ink); border-radius: 8px; cursor: pointer;
+    color: var(--parchment); background: linear-gradient(#4a3722, var(--ink));
+    border: 1px solid #1f160d; border-radius: 12px; cursor: pointer;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,240,200,.16);
+    transition: transform .08s ease, box-shadow .08s ease, filter .15s ease;
   }
-  button.act.light { background: var(--parchment); color: var(--ink); }
-  button.act.go { background: #7a2e22; border-color: #7a2e22; }
-  button.act:disabled { opacity: .4; }
+  button.act.light { background: linear-gradient(#fbf5e4, var(--paper)); color: var(--ink); border-color: var(--line); box-shadow: var(--shadow), inset 0 1px 0 #fff; }
+  button.act.go { background: linear-gradient(#92382a, #74291d); border-color: #5a1f15; }
+  button.act:active:not(:disabled) { transform: translateY(1px) scale(.99); box-shadow: 0 1px 2px rgba(43,33,24,.25); filter: brightness(.96); }
+  button.act:focus-visible { outline: 3px solid #c9a227; outline-offset: 2px; }
+  button.act:disabled { opacity: .4; box-shadow: none; }
   button.step { flex: 0 0 46px; font-size: 20px; }
   .count { min-width: 64px; text-align: center; font-family: 'Cinzel', serif; font-weight: 800; font-size: 18px; }
 
@@ -185,7 +199,7 @@
   }
   #start-map { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: .3; pointer-events: none; }
   .start-inner { position: relative; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-  .lang-switch { position: absolute; right: 0; top: -12px; display: flex; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; z-index: 2; }
+  .lang-switch { position: absolute; right: 0; top: -12px; display: flex; border: 1px solid var(--ink); border-radius: 12px; overflow: hidden; z-index: 2; }
   .lang-switch button { font-family: 'Cinzel', serif; font-weight: 800; font-size: 12px; padding: 5px 9px; border: none; background: rgba(255,250,235,.9); color: var(--ink); cursor: pointer; }
   .lang-switch button.on { background: var(--ink); color: var(--parchment); }
   html[lang="nl"] [data-lang="en"], html[lang="en"] [data-lang="nl"] { display: none !important; }
@@ -196,7 +210,7 @@
   #start-msg { min-height: 20px; font-size: 15px; color: #9a2c2c; text-align: center; }
   .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
   .realm-card {
-    background: rgba(255, 250, 235, .88); border: 2px solid var(--ink); border-top: 7px solid var(--side);
+    background: rgba(255, 250, 235, .88); border: 1px solid var(--line); border-top: 6px solid var(--side);
     border-radius: 10px; padding: 12px 8px 10px; display: flex; flex-direction: column; align-items: center; gap: 4px;
     cursor: pointer; font-family: inherit; color: var(--ink); box-shadow: 0 3px 10px rgba(59, 42, 26, .2);
     transition: transform .1s;
@@ -209,12 +223,12 @@
   .trait { font-size: 14px; line-height: 1.25; margin: 2px 0 4px; }
   .continue-btn {
     width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer;
-    background: var(--ink); color: var(--parchment); border: 2px solid var(--ink); border-radius: 10px; text-align: left;
+    background: var(--ink); color: var(--parchment); border: 1px solid #1f160d; border-radius: 14px; text-align: left;
     font-family: inherit; box-shadow: 0 3px 10px rgba(59, 42, 26, .3);
   }
   .continue-btn b { font-family: 'Cinzel', serif; font-size: 17px; display: block; }
   .continue-btn small { font-size: 14px; opacity: .85; }
-  .diff { display: flex; width: 100%; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; }
+  .diff { display: flex; width: 100%; border: 1px solid var(--ink); border-radius: 12px; overflow: hidden; }
   .diff button {
     flex: 1; padding: 9px 0; font-family: 'Cinzel', serif; font-weight: 800; font-size: 13px; cursor: pointer;
     background: rgba(255, 250, 235, .88); color: var(--ink); border: none; border-right: 1px solid var(--ink);
@@ -231,7 +245,7 @@
   #board-form { display: none; flex-direction: column; gap: 8px; background: var(--parchment-dark); border-radius: 8px; padding: 10px; }
   #board-form input, #feedback textarea, #feedback input {
     flex: 1; min-width: 0; font-family: 'EB Garamond', serif; font-size: 17px; padding: 8px 10px;
-    border: 2px solid var(--ink); border-radius: 8px; background: #fffaf0; color: var(--ink);
+    border: 1px solid var(--ink); border-radius: 12px; background: #fffaf0; color: var(--ink);
   }
   #feedback textarea { min-height: 140px; resize: vertical; }
   #board-list { list-style: none; margin: 0; padding: 0; }
@@ -245,7 +259,7 @@
   #shareform { justify-content: flex-start; overflow-y: auto; padding-top: calc(20px + env(safe-area-inset-top)); }
   #shareform .box { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; text-align: left; }
   #shareform h1 { text-align: center; margin: 0 0 4px; }
-  #share-name { font-family: 'EB Garamond', serif; font-size: 18px; padding: 10px 12px; border: 2px solid var(--ink); border-radius: 8px; background: #fffaf0; color: var(--ink); }
+  #share-name { font-family: 'EB Garamond', serif; font-size: 18px; padding: 10px 12px; border: 1px solid var(--ink); border-radius: 12px; background: #fffaf0; color: var(--ink); }
   .check-row { display: flex; align-items: center; gap: 10px; font-size: 17px; }
   .check-row input { width: 22px; height: 22px; accent-color: #7a2e22; }
   #share-status { color: #9a2c2c; font-style: italic; }
@@ -257,15 +271,15 @@
   .form-error:empty { display: none; }
   #install { background: rgba(43, 33, 24, 0.82); z-index: 25; }
   #install .card {
-    width: 100%; max-width: 360px; background: var(--parchment); border-radius: 12px; border: 3px solid var(--ink);
-    padding: 22px 18px 16px; box-shadow: 0 10px 30px rgba(0,0,0,.4); animation: drop .35s ease-out;
+    width: 100%; max-width: 360px; background: var(--paper); border-radius: 18px; border: 1px solid var(--line);
+    padding: 22px 18px 16px; box-shadow: var(--shadow-lg); animation: drop .35s ease-out;
     display: flex; flex-direction: column; align-items: center; gap: 10px;
   }
   .ev-title-like { font-family: 'Cinzel', serif; font-weight: 800; font-size: 22px; }
   #install-text { font-size: 17px; }
   #install-text ol { text-align: left; margin: 6px 0 0; padding-left: 22px; }
   #install-buttons { width: 100%; }
-  #share-img { width: 100%; border: 3px solid var(--ink); border-radius: 6px; -webkit-touch-callout: default; user-select: auto; }
+  #share-img { width: 100%; border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); -webkit-touch-callout: default; user-select: auto; }
   #topbar .realm .crest { margin: -4px 0; }
   .b-name { display: flex; align-items: center; justify-content: center; gap: 6px; }
   .dip-name { display: flex; align-items: center; gap: 8px; }
@@ -273,7 +287,7 @@
   #yearview { position: absolute; inset: 0; z-index: 15; cursor: pointer; }
   #year-banner {
     position: absolute; left: 10px; right: 10px; top: 58px;
-    background: var(--parchment); border: 2px solid var(--ink); border-radius: 10px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow);
     padding: 10px 14px 8px; box-shadow: 0 6px 18px rgba(0,0,0,.3);
     animation: drop .35s ease-out;
   }
@@ -318,7 +332,7 @@
   .dev-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .dev-card {
     min-width: 0; min-height: 112px; padding: 9px 10px; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
-    background: var(--parchment); border: 2px solid var(--ink); border-radius: 10px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow);
     display: flex; flex-direction: column; gap: 4px;
   }
   .dev-card .dev-name { font-family: 'Cinzel', serif; font-weight: 800; font-size: 13px; line-height: 1.15; text-align: left; display: flex; gap: 6px; align-items: flex-start; }
@@ -348,11 +362,13 @@
   /* Event cards */
   #eventcard { background: rgba(43, 33, 24, 0.82); z-index: 20; }
   #eventcard .card {
-    width: 100%; max-width: 380px; background: var(--parchment); border-radius: 12px;
-    border: 3px solid var(--ink); padding: 20px 18px 16px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    width: 100%; max-width: 380px; background: var(--paper); border-radius: 18px;
+    border: 1px solid var(--line); padding: 22px 18px 16px; box-shadow: var(--shadow-lg);
     animation: drop .35s ease-out;
   }
-  #ev-emoji { font-size: 46px; }
+  #ev-emoji { font-size: 46px; width: 76px; height: 76px; margin: 0 auto 6px; border-radius: 50%; display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 35%, #fffaf0, #eadbb5); border: 1px solid var(--line); box-shadow: inset 0 -3px 6px rgba(59,42,26,.12); }
+  #ev-emoji .ic { width: 42px; height: 42px; stroke-width: 1.5; margin: 0; vertical-align: 0; }
   #ev-title { font-family: 'Cinzel', serif; font-weight: 800; font-size: 22px; margin: 4px 0 8px; }
   #ev-text { font-size: 17px; margin-bottom: 16px; }
   #ev-buttons { display: flex; flex-direction: column; gap: 8px; }
@@ -402,14 +418,14 @@
   /* Battle screen */
   #battle { background: rgba(43, 33, 24, 0.82); z-index: 20; }
   #battle .card {
-    width: 100%; max-width: 380px; background: var(--parchment); border-radius: 12px;
-    border: 3px solid var(--ink); padding: 18px 16px 16px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    width: 100%; max-width: 380px; background: var(--paper); border-radius: 18px;
+    border: 1px solid var(--line); padding: 18px 16px 16px; box-shadow: var(--shadow-lg);
   }
   #b-title { font-family: 'Cinzel', serif; font-weight: 800; font-size: 22px; margin-bottom: 14px; }
   .b-sides { display: flex; align-items: stretch; gap: 8px; }
   .b-vs { align-self: center; font-family: 'Cinzel', serif; font-weight: 800; color: var(--ink-soft); }
   .b-side {
-    flex: 1; border-radius: 8px; padding: 10px 8px; background: var(--parchment-dark);
+    flex: 1; border-radius: 12px; padding: 10px 8px; background: var(--parchment-dark);
     border-top: 6px solid var(--side); position: relative; transition: opacity .3s, transform .3s;
   }
   .b-side.win { transform: scale(1.04); box-shadow: 0 0 0 3px #ffd24a; }
@@ -771,6 +787,70 @@
 </div>
 
 <script>
+// =====================================================================
+// ICONS
+// Every picture in the interface is drawn from the icon set in source/icons.js (built into this
+// file). Texts in the game may still contain an emoji as a short code for an icon: the icon
+// renderer below swaps each known emoji for its icon, in any text on the page, as soon as it
+// is added. To use a new icon: add it to icons.js, then add its emoji to EMOJI_ICON.
+// =====================================================================
+__ICONS__
+const EMOJI_ICON = {
+  "💰": "coin", "⚔": "swords", "🛡": "shield", "⚓": "anchor", "🤝": "flag", "🕊": "olive", "🎁": "gift",
+  "🏆": "trophy", "🐎": "helm", "⏳": "hourglass", "🌊": "waves", "🏰": "castle", "🌾": "wheat", "👑": "crown",
+  "★": "star", "📤": "share", "⬆": "share", "🔊": "speaker", "🔇": "mute", "⛪": "mitre", "🏙": "city", "✅": "check",
+  "🔱": "spear", "💬": "bubble", "📜": "scroll", "✕": "close", "🌐": "globe", "🎲": "dice", "🏠": "house",
+  "🗡": "dagger", "🎯": "target", "👆": "pointer", "⛵": "sailboat", "☰": "menu", "🏪": "market", "🏛": "columns",
+  "🏦": "coins", "🏹": "bow", "🎖": "medal", "🔥": "flame", "🏘": "town", "💍": "ring", "🧾": "ledger",
+  "🪖": "kettle", "🔒": "lock", "💀": "skull", "🪝": "hook", "🐟": "fish", "⚰": "coffin", "🗺": "map",
+  "🏗": "hammer", "📲": "phone"
+};
+const iconSvg = (name) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-${name}"/></svg>`;
+const ICON_RX = new RegExp("(" + Object.keys(EMOJI_ICON).join("|") + ")️?", "gu");
+const ICON_TEST = new RegExp("(" + Object.keys(EMOJI_ICON).join("|") + ")", "u");
+const HTML_NS = "http://www.w3.org/1999/xhtml";
+
+(function setUpIcons() {
+  const host = document.createElement("div");
+  host.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${
+    Object.entries(ICONS).map(([k, v]) => `<symbol id="ic-${k}" viewBox="0 0 24 24">${v}</symbol>`).join("")}</defs></svg>`;
+  document.body.prepend(host.firstChild);
+
+  function iconizeText(node) {
+    const text = node.nodeValue;
+    if (!ICON_TEST.test(text)) return;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    text.replace(ICON_RX, (m, key, offset) => {
+      if (offset > last) frag.append(text.slice(last, offset).replace(/ $/, "\u00A0"));
+      const t = document.createElement("template");
+      t.innerHTML = iconSvg(EMOJI_ICON[key]);
+      frag.append(t.content.firstChild);
+      last = offset + m.length;
+      return m;
+    });
+    if (last < text.length) frag.append(text.slice(last));
+    node.replaceWith(frag);
+  }
+  function iconize(root) {
+    if (root.nodeType === 3) { if (root.parentNode && root.parentNode.namespaceURI === HTML_NS) iconizeText(root); return; }
+    if (root.nodeType !== 1 || root.namespaceURI !== HTML_NS) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: (n) =>
+      n.parentNode.namespaceURI === HTML_NS && !/^(SCRIPT|STYLE|TEXTAREA|OPTION|TITLE)$/.test(n.parentNode.nodeName)
+        ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(iconizeText);
+  }
+  new MutationObserver((list) => {
+    for (const m of list) {
+      if (m.type === "characterData") iconize(m.target);
+      else m.addedNodes.forEach(iconize);
+    }
+  }).observe(document.body, { childList: true, subtree: true, characterData: true });
+  iconize(document.body);
+})();
+
 // =====================================================================
 // 0. LANGUAGE
 // The game's text is written in English. Every sentence a player sees goes
@@ -2982,8 +3062,12 @@ function renderMap() {
     const r = p.army > 0 ? 15 : 7;
     el("circle", { cx: p.x, cy: p.y, r }, g);
     if (p.army > 0) el("text", { x: p.x, y: p.y + 1, class: "army" }, g).textContent = p.army;
-    if (isCapital(p)) el("text", { x: p.x + 15, y: p.y - 12, class: "capital" }, g).textContent = "👑";
-    if (p.building) el("text", { x: p.x - 16, y: p.y - 12, class: "bldg" }, g).textContent = p.building === "farm" ? "🌾" : "🏰";
+    const badge = (icon, cx, cy) => {
+      el("circle", { cx, cy, r: 10, class: "badge" }, g);
+      el("use", { href: "#ic-" + icon, x: cx - 7, y: cy - 7, width: 14, height: 14, class: "mi" }, g);
+    };
+    if (isCapital(p)) badge("crown", p.x + 16, p.y - 14);
+    if (p.building) badge(p.building === "farm" ? "wheat" : "castle", p.x - 16, p.y - 14);
     el("text", { x: p.x, y: p.y + r + 16, class: "label", "data-id": p.id }, g).textContent = p.name;
     g.addEventListener("click", (e) => { e.stopPropagation(); tapProvince(p.id); });
   }
@@ -3564,7 +3648,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-17.1";
+const GAME_VERSION = "2026-11-18.1";
 
 // Leaderboard name rules. The same rules run in the database (source/supabase-security.sql),
 // this copy only gives the player a friendly message first. The word list is generated
@@ -3833,7 +3917,7 @@ function mapSvg() {
   }
   out += `<path d="${MAP_SHAPES.rivers}" fill="none" stroke="#5f8fa3" stroke-width="3" stroke-linecap="round"/>`;
   for (const p of allProvinces()) {
-    if (isCapital(p)) out += `<text x="${p.x}" y="${p.y + 6}" font-size="18" text-anchor="middle">👑</text>`;
+    if (isCapital(p)) out += `<circle cx="${p.x}" cy="${p.y}" r="11" fill="#f6edd5" stroke="#3b2a1a" stroke-width="1.3"/><g transform="translate(${p.x - 8} ${p.y - 8}) scale(${16 / 24})" fill="none" stroke="#3b2a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:#3b2a1a">${ICONS.crown}</g>`;
   }
   return out + "</svg>";
 }

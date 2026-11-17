@@ -1,3 +1,4 @@
+import os
 # Builds the map shapes and writes them into the game template.
 import json, sys, re, shapely
 from shapely.geometry import shape, box, Point, MultiPoint, LineString, Polygon
@@ -117,7 +118,8 @@ print("viewBox", vb, "borders", len(borders))
 rows = ",\n".join('  ["%s","%s"%s]' % (a, b, ', true' if r else '') for a, b, r in borders)
 subs = {"__VIEWBOX__": vb, "__BORDERS__": rows,
         "__TERRITORIES__": json.dumps({i: path(cells[i]) for i in ids}),
-        "__MAP_SHAPES__": json.dumps({"land": path(land, tol=0.6), "rivers": path(rivers, tol=0.5)})}
+        "__MAP_SHAPES__": json.dumps({"land": path(land, tol=0.6), "rivers": path(rivers, tol=0.5)}),
+        "__ICONS__": open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons.js"), encoding="utf-8").read()}
 for k, v in subs.items():
     assert src.count(k) >= 1, k; src = src.replace(k, v)
 open(OUT, 'w').write(src)
