@@ -56,5 +56,22 @@ const ICONS = {
   coffin: `<path d="M9 3.5h6l3.5 5.5-3.5 11.5H9L5.5 9z" ${TINT}/><path d="M12 8v7M9.4 10.6h5.2"/>`,
   map: `<path d="M3.5 6L9 4l6 2.5 5.5-2v13.5L15 20l-6-2.5-5.5 2z" ${TINT}/><path d="M9 4v13.5M15 6.5V20" stroke-opacity=".55"/>`,
   hammer: `<path d="M12.5 4.5l7 7L16 15l-7-7z" ${TINT}/><path d="M12.5 11.8L5 19.3"/>`,
-  phone: `<rect x="7" y="3" width="10" height="18" rx="2.6" ${TINT}/><path d="M10.5 18h3" stroke-opacity=".6"/>`
+  phone: `<rect x="7" y="3" width="10" height="18" rx="2.6" ${TINT}/><path d="M10.5 18h3" stroke-opacity=".6"/>`,
+  // Fortune mode cards
+  cards: `<rect x="3.6" y="5.2" width="10" height="14" rx="1.8" transform="rotate(-12 8.6 12.2)" ${TINT}/><rect x="10.2" y="4.2" width="10" height="14" rx="1.8" transform="rotate(8 15.2 11.2)" fill="#f7efd9"/><path d="M15.2 8.2l1 2.2 2.4.3-1.8 1.6.5 2.4-2.1-1.2-2.1 1.2.5-2.4-1.8-1.6 2.4-.3z" ${GOLD} transform="rotate(8 15.2 11.2)"/>`,
+  spool: `<rect x="6" y="3.5" width="12" height="3" rx="1" ${TINT}/><rect x="6" y="17.5" width="12" height="3" rx="1" ${TINT}/><path d="M8.5 6.5v11M15.5 6.5v11"/><path d="M8.5 9.2h7M8.5 12h7M8.5 14.8h7" stroke="#a8412e"/><path d="M15.5 14.8c2 .5 3.5 2 4 5" stroke="#a8412e"/>`,
+  bridge: `<path d="M2.5 9.5h19M6 9.5V5.5M18 9.5V5.5M3.5 9.5v8M20.5 9.5v8"/><path d="M6.2 17.5c0-4 2.6-6 5.8-6s5.8 2 5.8 6" ${TINT}/><path d="M2.5 20.5c2-1.2 4-1.2 6 0s4 1.2 6 0 4-1.2 7 0" stroke="#3f7f9c"/>`,
+  scales: `<path d="M12 4v16M8 20.5h8M5 6.5h14"/><circle cx="12" cy="4" r="1.2" fill="currentColor" stroke="none"/><path d="M5 6.5l-2.4 6M5 6.5l2.4 6M19 6.5l-2.4 6M19 6.5l2.4 6" stroke-opacity=".6"/><path d="M2.4 12.5a2.6 2.3 0 0 0 5.2 0zM16.4 12.5a2.6 2.3 0 0 0 5.2 0z" ${GOLD}/>`,
+  cracked: `<circle cx="12" cy="12" r="8.6" ${GOLD}/><path d="M12.6 3.5l-1.8 4.4 2.8 2.6-2.4 3.4 2 2.8-.9 3.8"/>`,
+  club: `<path d="M4.5 20.5l8.2-8.2"/><rect x="11.4" y="3.8" width="5.4" height="9.4" rx="1.8" transform="rotate(45 14.1 8.5)" ${TINT}/><path d="M18.6 2.9l-1.3 2.8M12.2 9.8l-1.6-.6M15.6 13l.6 1.6M20.6 7.5l-2 .6"/>`,
+  boot: `<path d="M7.5 3.5h5.5v9.2l5.1 2.3a2.6 2.6 0 0 1 1.5 2.4V20h-14v-3.2l1.9-4z" ${TINT}/><path d="M5.6 17.4h14M9.6 6.8h3.4M9.6 9.8h3.4" stroke-opacity=".55"/>`,
+  trebuchet: `<path d="M3.5 20.5h17M7 20.5l4-9 4 9M11 11.5L19 5.2M11 11.5l-4.8 2.6"/><rect x="3.6" y="13.4" width="3.2" height="3" rx=".6" ${TINT}/><circle cx="19.4" cy="4.4" r="1.9" ${TINT}/>`,
+  spur: `<path d="M3.5 7.5c0 4.6 3.5 7.3 8 7.3h3.2M3.5 7.5h2.3c.3 2.8 2.5 4.6 5.8 4.6h3.1"/><circle cx="18.4" cy="13.5" r="1.7" ${GOLD}/><path d="M18.4 9.8v1.6M18.4 15.6v1.6M20.3 13.5h1.6M17 10.8l.6.9M19.8 15.3l.6.9M19.8 11.7l.6-.9M17 16.2l.6-.9"/>`,
+  key: `<circle cx="7.5" cy="12" r="3.9" ${TINT}/><circle cx="7.5" cy="12" r="1.3"/><path d="M11.4 12H21M17.4 12v3M20.2 12v2.4"/>`,
+  sack: `<path d="M9 3.8h6l-1.6 3.4c3.6 1.6 6.1 4.8 6.1 8.3 0 3.1-2.7 5-7.5 5s-7.5-1.9-7.5-5c0-3.5 2.5-6.7 6.1-8.3z" ${TINT}/><path d="M10.2 7.2h3.6"/><path d="M12 10.5v6.5M9.5 14.6l2.5 2.6 2.5-2.6" stroke="#a8412e"/>`,
+  sheaf: `<path d="M12 21v-9M12 12L8 5M12 12l4-7M12 12V4M8.8 21l3.2-5.5 3.2 5.5"/><path d="M9.6 13.6h4.8" stroke-width="2.2"/><ellipse cx="12" cy="3.6" rx="1.3" ry="2" ${GOLD}/><ellipse cx="7.6" cy="4.6" rx="1.3" ry="2" transform="rotate(-30 7.6 4.6)" ${GOLD}/><ellipse cx="16.4" cy="4.6" rx="1.3" ry="2" transform="rotate(30 16.4 4.6)" ${GOLD}/>`,
+  bread: `<path d="M3.8 16C3.8 11.2 7.5 8 12 8s8.2 3.2 8.2 8v2.5H3.8z" ${GOLD}/><path d="M8.4 10.6l1.6 3.2M12 9.8v3.6M15.6 10.6L14 13.8" stroke-opacity=".6"/>`,
+  letter: `<path d="M6 3.5h9l3.5 3.5v13.5H6z" ${TINT}/><path d="M15 3.5V7h3.5M8.5 10h7M8.5 13h5" stroke-opacity=".6"/><circle cx="14.6" cy="17" r="2.1" fill="#a8412e" stroke="none"/>`,
+  reliquary: `<path d="M4.5 11.5L12 6.5l7.5 5v8.5h-15z" ${GOLD}/><path d="M4.5 11.5h15M8 15h8" stroke-opacity=".6"/><path d="M12 1.8v3.8M10.3 3.4h3.4"/>`,
+  book: `<path d="M12 6.6C10 5 7 4.5 3.5 5v13.2c3.5-.5 6.5 0 8.5 1.6 2-1.6 5-2.1 8.5-1.6V5C17 4.5 14 5 12 6.6z" ${TINT}/><path d="M12 6.6v13.2M6 8.6h3.5M6 11.4h3.5M14.5 8.6H18M14.5 11.4H18" stroke-opacity=".55"/>`,
 };

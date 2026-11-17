@@ -359,6 +359,52 @@
     border-radius: 50%; background: #d23b2b; border: 2px solid var(--parchment);
   }
 
+  /* Fortune mode: the draft and your cards */
+  #fortune { justify-content: flex-start; padding: calc(10px + env(safe-area-inset-top)) 10px 0; z-index: 15; }
+  #fortune .box { width: 100%; max-width: 420px; text-align: left; flex: 1; min-height: 0; overflow-y: auto; padding: 4px 4px 8px; }
+  #fortune h1 { text-align: center; font-size: 22px; margin: 0 0 2px; }
+  #fo-sub { text-align: center; font-size: 15px; color: var(--ink-soft); margin-bottom: 4px; }
+  #fo-odds { text-align: center; font-size: 13px; color: var(--ink-soft); margin-bottom: 8px; }
+  #fo-offer { display: flex; flex-direction: column; gap: 8px; }
+  .fo-card {
+    --rar: #7d7466; width: 100%; font: inherit; color: var(--ink); text-align: left; cursor: pointer;
+    background: var(--paper); border: 1px solid var(--line); border-left: 6px solid var(--rar); border-radius: 14px;
+    box-shadow: var(--shadow); padding: 9px 10px; display: grid; grid-template-columns: 42px 1fr; column-gap: 10px; align-items: center;
+  }
+  .fo-card .fo-emoji {
+    grid-row: span 3; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 19px; line-height: 1; background: var(--parchment); border: 1.5px solid var(--rar); color: var(--ink);
+  }
+  .fo-card .fo-name { font-family: 'Cinzel', serif; font-weight: 800; font-size: 16px; line-height: 1.15; }
+  .fo-card .fo-meta { font-size: 13px; color: var(--rar); font-weight: 700; letter-spacing: .02em; }
+  .fo-card .fo-meta span { color: var(--ink-soft); font-weight: 400; }
+  .fo-card .fo-text { font-size: 15px; line-height: 1.2; grid-column: 2; }
+  .fo-card.sel { outline: 3px solid #7a2e22; outline-offset: 1px; }
+  .fo-card.cursed { background: #efe0d8; }
+  .r-common { --rar: #7d7466; } .r-rare { --rar: #2f5d9e; } .r-epic { --rar: #6b3fa0; }
+  .r-legendary { --rar: #b8860b; } .r-cursed { --rar: #8b1e3f; }
+  .fo-card.r-legendary { background: linear-gradient(135deg, #f6e7b0, var(--paper) 60%); }
+  .fo-label { font-family: 'Cinzel', serif; font-weight: 800; font-size: 12px; letter-spacing: .15em; color: #8b1e3f; text-align: center; margin: 10px 0 4px; }
+  #topbar .expbar { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(255,255,255,0.12); }
+  #topbar .expbar i { display: block; height: 100%; background: #d4a72c; transition: width .4s; }
+  .fo-how { font-size: 13px; color: var(--ink-soft); text-align: center; margin: 8px 4px 0; line-height: 1.3; }
+  .fo-label.mine { color: var(--ink-soft); margin-bottom: 0; }
+  .fo-sets { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .fo-set { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 7px 10px; font-size: 14px; line-height: 1.25; }
+  .fo-set h3 { margin: 0 0 2px; font-size: 14px; }
+  .fo-set .lvl { color: var(--ink-soft); }
+  .fo-set .lvl.on { color: var(--ink); font-weight: 700; }
+  .fo-owned { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .fo-chip { border-radius: 999px; padding: 1px 9px; font-size: 13px; background: var(--parchment); border: 1px solid var(--rar); }
+  .fo-empty { text-align: center; color: var(--ink-soft); font-style: italic; margin: 10px 0; }
+  #fo-detail {
+    width: calc(100% + 20px); max-width: 440px; flex: none; text-align: left; box-sizing: border-box;
+    padding: 10px 14px calc(12px + env(safe-area-inset-bottom)); background: var(--parchment-dark);
+    border-top: 3px solid var(--ink); border-radius: 12px 12px 0 0; display: flex; flex-direction: column; gap: 6px;
+  }
+  #fo-detail .sub { font-size: 14px; color: var(--ink-soft); }
+  #fo-detail .row button.act { font-size: 13px; }
+
   /* Event cards */
   #eventcard { background: rgba(43, 33, 24, 0.82); z-index: 20; }
   #eventcard .card {
@@ -470,6 +516,9 @@
       <h1>Lords of the<br>Low Countries</h1>
       <div class="start-rule"></div>
       <button id="continue" class="continue-btn" style="display:none"></button>
+      <div class="section-label" data-t>MODE</div>
+      <div class="diff" id="mode"></div>
+      <div class="diff-text" id="mode-text"></div>
       <div class="section-label" data-t>DIFFICULTY</div>
       <div class="diff" id="difficulty"></div>
       <div class="diff-text" id="difficulty-text"></div>
@@ -561,6 +610,12 @@
         </div>
       </details>
       <details>
+        <summary>Fortune mode</summary>
+        <div>
+        <p>Fortune is a second way to play, chosen on the start screen. The map, the realms and the year loop are the same, but there are no developments. Instead you earn EXP: 2 every year, 4 for every province you gain (8 for a capital), 3 for every defense you win, 3 for every province you lose and 1 for a failed attack. The bar under the top of the screen shows it. Every level, you pick 1 of 3 cards, and each level needs a bit more EXP than the last. Cards are Common, Rare, Epic or Legendary, and later in the game the rare ones show up more often. A Cursed card is always on offer as a 4th choice: strong, with a price. Each card belongs to a tag (Trade, War, Rule or Faith), and 3, 5 and 7 cards of one tag give a set bonus. Common and Rare cards can be picked more than once, and copies stack. A reroll costs gold. Only you get cards. Fortune games have their own save and are not on the leaderboard.</p>
+        </div>
+      </details>
+      <details>
         <summary>The map</summary>
         <div>
         <p>Pinch or use + and − to zoom, drag to move around. At the start of every year the map shows what the other realms did: an arrow for each attack (dashed with ✕ when it was beaten back) and a flashing yellow border on provinces that changed hands. Attacks on you are played out on the battle card first.</p>
@@ -639,6 +694,12 @@
         <summary>Ontwikkelingen</summary>
         <div>
         <p>Druk op <b>Ontwikkelingen 📜</b> om verbeteringen te onderzoeken in drie takken: Handel, Oorlog en Bestuur. Elke tak heeft drie niveaus, en per niveau kies je één van twee opties, dus geen twee spellen ontwikkelen zich hetzelfde. Een ontwikkeling kost goud als je begint en duurt 3 jaar, en je kunt er maar één tegelijk ontwikkelen. Je eerste keuze van niveau I is gratis. De favoriete tak van je rijk (★) is 20% goedkoper. De andere rijken ontwikkelen ook.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Fortuinmodus</summary>
+        <div>
+        <p>Fortuin is een tweede manier van spelen, te kiezen op het startscherm. De kaart, de rijken en de jaren zijn hetzelfde, maar er zijn geen ontwikkelingen. In plaats daarvan verdien je EXP: 2 per jaar, 4 voor elke provincie die je erbij krijgt (8 voor een hoofdstad), 3 voor elke verdediging die je wint, 3 voor elke provincie die je kwijtraakt en 1 voor een mislukte aanval. De balk bovenaan het scherm laat het zien. Bij elk nieuw niveau kies je 1 van 3 kaarten, en elk niveau vraagt iets meer EXP dan het vorige. Kaarten zijn Gewoon, Zeldzaam, Episch of Legendarisch, en later in het spel komen de zeldzame vaker langs. Er is altijd een Vervloekte kaart als 4e keuze: sterk, maar met een prijs. Elke kaart hoort bij een soort (Handel, Oorlog, Bestuur of Geloof), en 3, 5 en 7 kaarten van één soort geven een setbonus. Gewone en Zeldzame kaarten kun je vaker kiezen, en de kopieën tellen op. Opnieuw trekken kost goud. Alleen jij krijgt kaarten. Fortuinspellen hebben hun eigen opslag en staan niet op het scorebord.</p>
         </div>
       </details>
       <details>
@@ -768,6 +829,16 @@
     </div>
     <div id="dev-detail"></div>
   </div>
+  <div id="fortune" class="overlay" style="display:none">
+    <div class="box">
+      <h1 id="fo-title"></h1>
+      <div id="fo-sub"></div>
+      <div id="fo-odds"></div>
+      <div id="fo-offer"></div>
+      <div id="fo-sets" class="fo-sets"></div>
+    </div>
+    <div id="fo-detail"></div>
+  </div>
   <div id="install" class="overlay" style="display:none">
     <div class="card">
       <img src="icon-192.png" alt="" width="84" height="84" style="border-radius:18px;box-shadow:0 3px 10px rgba(0,0,0,.3)">
@@ -852,7 +923,24 @@ const ICONS = {
   coffin: `<path d="M9 3.5h6l3.5 5.5-3.5 11.5H9L5.5 9z" ${TINT}/><path d="M12 8v7M9.4 10.6h5.2"/>`,
   map: `<path d="M3.5 6L9 4l6 2.5 5.5-2v13.5L15 20l-6-2.5-5.5 2z" ${TINT}/><path d="M9 4v13.5M15 6.5V20" stroke-opacity=".55"/>`,
   hammer: `<path d="M12.5 4.5l7 7L16 15l-7-7z" ${TINT}/><path d="M12.5 11.8L5 19.3"/>`,
-  phone: `<rect x="7" y="3" width="10" height="18" rx="2.6" ${TINT}/><path d="M10.5 18h3" stroke-opacity=".6"/>`
+  phone: `<rect x="7" y="3" width="10" height="18" rx="2.6" ${TINT}/><path d="M10.5 18h3" stroke-opacity=".6"/>`,
+  // Fortune mode cards
+  cards: `<rect x="3.6" y="5.2" width="10" height="14" rx="1.8" transform="rotate(-12 8.6 12.2)" ${TINT}/><rect x="10.2" y="4.2" width="10" height="14" rx="1.8" transform="rotate(8 15.2 11.2)" fill="#f7efd9"/><path d="M15.2 8.2l1 2.2 2.4.3-1.8 1.6.5 2.4-2.1-1.2-2.1 1.2.5-2.4-1.8-1.6 2.4-.3z" ${GOLD} transform="rotate(8 15.2 11.2)"/>`,
+  spool: `<rect x="6" y="3.5" width="12" height="3" rx="1" ${TINT}/><rect x="6" y="17.5" width="12" height="3" rx="1" ${TINT}/><path d="M8.5 6.5v11M15.5 6.5v11"/><path d="M8.5 9.2h7M8.5 12h7M8.5 14.8h7" stroke="#a8412e"/><path d="M15.5 14.8c2 .5 3.5 2 4 5" stroke="#a8412e"/>`,
+  bridge: `<path d="M2.5 9.5h19M6 9.5V5.5M18 9.5V5.5M3.5 9.5v8M20.5 9.5v8"/><path d="M6.2 17.5c0-4 2.6-6 5.8-6s5.8 2 5.8 6" ${TINT}/><path d="M2.5 20.5c2-1.2 4-1.2 6 0s4 1.2 6 0 4-1.2 7 0" stroke="#3f7f9c"/>`,
+  scales: `<path d="M12 4v16M8 20.5h8M5 6.5h14"/><circle cx="12" cy="4" r="1.2" fill="currentColor" stroke="none"/><path d="M5 6.5l-2.4 6M5 6.5l2.4 6M19 6.5l-2.4 6M19 6.5l2.4 6" stroke-opacity=".6"/><path d="M2.4 12.5a2.6 2.3 0 0 0 5.2 0zM16.4 12.5a2.6 2.3 0 0 0 5.2 0z" ${GOLD}/>`,
+  cracked: `<circle cx="12" cy="12" r="8.6" ${GOLD}/><path d="M12.6 3.5l-1.8 4.4 2.8 2.6-2.4 3.4 2 2.8-.9 3.8"/>`,
+  club: `<path d="M4.5 20.5l8.2-8.2"/><rect x="11.4" y="3.8" width="5.4" height="9.4" rx="1.8" transform="rotate(45 14.1 8.5)" ${TINT}/><path d="M18.6 2.9l-1.3 2.8M12.2 9.8l-1.6-.6M15.6 13l.6 1.6M20.6 7.5l-2 .6"/>`,
+  boot: `<path d="M7.5 3.5h5.5v9.2l5.1 2.3a2.6 2.6 0 0 1 1.5 2.4V20h-14v-3.2l1.9-4z" ${TINT}/><path d="M5.6 17.4h14M9.6 6.8h3.4M9.6 9.8h3.4" stroke-opacity=".55"/>`,
+  trebuchet: `<path d="M3.5 20.5h17M7 20.5l4-9 4 9M11 11.5L19 5.2M11 11.5l-4.8 2.6"/><rect x="3.6" y="13.4" width="3.2" height="3" rx=".6" ${TINT}/><circle cx="19.4" cy="4.4" r="1.9" ${TINT}/>`,
+  spur: `<path d="M3.5 7.5c0 4.6 3.5 7.3 8 7.3h3.2M3.5 7.5h2.3c.3 2.8 2.5 4.6 5.8 4.6h3.1"/><circle cx="18.4" cy="13.5" r="1.7" ${GOLD}/><path d="M18.4 9.8v1.6M18.4 15.6v1.6M20.3 13.5h1.6M17 10.8l.6.9M19.8 15.3l.6.9M19.8 11.7l.6-.9M17 16.2l.6-.9"/>`,
+  key: `<circle cx="7.5" cy="12" r="3.9" ${TINT}/><circle cx="7.5" cy="12" r="1.3"/><path d="M11.4 12H21M17.4 12v3M20.2 12v2.4"/>`,
+  sack: `<path d="M9 3.8h6l-1.6 3.4c3.6 1.6 6.1 4.8 6.1 8.3 0 3.1-2.7 5-7.5 5s-7.5-1.9-7.5-5c0-3.5 2.5-6.7 6.1-8.3z" ${TINT}/><path d="M10.2 7.2h3.6"/><path d="M12 10.5v6.5M9.5 14.6l2.5 2.6 2.5-2.6" stroke="#a8412e"/>`,
+  sheaf: `<path d="M12 21v-9M12 12L8 5M12 12l4-7M12 12V4M8.8 21l3.2-5.5 3.2 5.5"/><path d="M9.6 13.6h4.8" stroke-width="2.2"/><ellipse cx="12" cy="3.6" rx="1.3" ry="2" ${GOLD}/><ellipse cx="7.6" cy="4.6" rx="1.3" ry="2" transform="rotate(-30 7.6 4.6)" ${GOLD}/><ellipse cx="16.4" cy="4.6" rx="1.3" ry="2" transform="rotate(30 16.4 4.6)" ${GOLD}/>`,
+  bread: `<path d="M3.8 16C3.8 11.2 7.5 8 12 8s8.2 3.2 8.2 8v2.5H3.8z" ${GOLD}/><path d="M8.4 10.6l1.6 3.2M12 9.8v3.6M15.6 10.6L14 13.8" stroke-opacity=".6"/>`,
+  letter: `<path d="M6 3.5h9l3.5 3.5v13.5H6z" ${TINT}/><path d="M15 3.5V7h3.5M8.5 10h7M8.5 13h5" stroke-opacity=".6"/><circle cx="14.6" cy="17" r="2.1" fill="#a8412e" stroke="none"/>`,
+  reliquary: `<path d="M4.5 11.5L12 6.5l7.5 5v8.5h-15z" ${GOLD}/><path d="M4.5 11.5h15M8 15h8" stroke-opacity=".6"/><path d="M12 1.8v3.8M10.3 3.4h3.4"/>`,
+  book: `<path d="M12 6.6C10 5 7 4.5 3.5 5v13.2c3.5-.5 6.5 0 8.5 1.6 2-1.6 5-2.1 8.5-1.6V5C17 4.5 14 5 12 6.6z" ${TINT}/><path d="M12 6.6v13.2M6 8.6h3.5M6 11.4h3.5M14.5 8.6H18M14.5 11.4H18" stroke-opacity=".55"/>`,
 };
 
 const EMOJI_ICON = {
@@ -863,7 +951,11 @@ const EMOJI_ICON = {
   "🗡": "dagger", "🎯": "target", "👆": "pointer", "⛵": "sailboat", "☰": "menu", "🏪": "market", "🏛": "columns",
   "🏦": "coins", "🏹": "bow", "🎖": "medal", "🔥": "flame", "🏘": "town", "💍": "ring", "🧾": "ledger",
   "🪖": "kettle", "🔒": "lock", "💀": "skull", "🪝": "hook", "🐟": "fish", "⚰": "coffin", "🗺": "map",
-  "🏗": "hammer", "📲": "phone"
+  "🏗": "hammer", "📲": "phone",
+  // Fortune mode
+  "🃏": "cards", "🧵": "spool", "🌉": "bridge", "⚖": "scales", "🪙": "cracked", "🔨": "club", "🥾": "boot",
+  "🪨": "trebuchet", "🥇": "spur", "🗝": "key", "😠": "sack", "🙏": "sheaf", "🍞": "bread", "📃": "letter",
+  "🦴": "reliquary", "📖": "book", "✓": "check"
 };
 const iconSvg = (name) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-${name}"/></svg>`;
 const ICON_RX = new RegExp("(" + Object.keys(EMOJI_ICON).join("|") + ")️?", "gu");
@@ -1310,7 +1402,124 @@ const NL = {
   "Develop for {} 💰": "Ontwikkelen voor {0} 💰",
   "A storm flood strikes {}. Your dikes save the farm, but the province pays nothing for 2 years.": "Een stormvloed treft {0}. Je dijken redden de boerderij, maar de provincie levert 2 jaar niets op.",
   "pikemen 🔱": "piekeniers 🔱",
-  "Mercenary": "Huurling"
+  "Mercenary": "Huurling",
+  // Fortune mode
+  "Faith": "Geloof",
+  "Common": "Gewoon",
+  "Rare": "Zeldzaam",
+  "Epic": "Episch",
+  "Legendary": "Legendarisch",
+  "Cursed": "Vervloekt",
+  "Flemish Weavers": "Vlaamse wevers",
+  "Herring Fishery": "Haringvisserij",
+  "Polder Works": "Inpolderingen",
+  "Rhine Tolls": "Rijntollen",
+  "Cloth Hall": "Lakenhal",
+  "Staple Right": "Stapelrecht",
+  "Hanseatic Charter": "Hanzebrief",
+  "Debased Coinage": "Muntontwaarding",
+  "Goedendag": "Goedendag",
+  "Civic Guard": "Schutterij",
+  "Ransom the Nobles": "Losgeld",
+  "Forced March": "Geforceerde mars",
+  "Blooded Veterans": "Gestaalde veteranen",
+  "Siege Engineers": "Belegeringsmeesters",
+  "Golden Spurs": "Gulden Sporen",
+  "Mercenary Debt": "Huurlingenschuld",
+  "Bailiffs": "Baljuws",
+  "Town Charters": "Stadsrechten",
+  "Loyal Vassals": "Trouwe leenmannen",
+  "Ducal Treasury": "Hertogelijke schatkist",
+  "Hook and Cod Feud": "Hoekse en Kabeljauwse twisten",
+  "Joyous Entry": "Blijde Inkomst",
+  "Tyrant's Tax": "Tirannieke belasting",
+  "Tithes": "Tienden",
+  "Monastery Granaries": "Kloosterschuren",
+  "Indulgences": "Aflaten",
+  "Relics of Saint Servatius": "Relieken van Sint-Servaas",
+  "Modern Devotion": "Moderne Devotie",
+  "Pact with the Bishop": "Pact met de bisschop",
+  "Excommunication": "Excommunicatie",
+  "+{} 💰 a year in every province with a farm.": "+{0} 💰 per jaar in elke provincie met een boerderij.",
+  "Farms cost {} 💰 less (at least 5).": "Boerderijen kosten {0} 💰 minder (minstens 5).",
+  "+{} 💰 a year for every province you hold on a major river.": "+{0} 💰 per jaar voor elke provincie van jou aan een grote rivier.",
+  "All your gold from the coast and the rivers (Herring Fishery, Rhine Tolls, Holland's trade) counts double.": "Al je goud van de kust en de rivieren (Haringvisserij, Rijntollen, de handel van Holland) telt dubbel.",
+  "Coastal provinces pay double, and every {} 💰 of income gives you a free regiment at your capital.": "Kustprovincies betalen dubbel, en elke {0} 💰 inkomen levert je een gratis regiment op in je hoofdstad.",
+  "+{} 💰 right now, but your income is {}% lower for the rest of the game.": "Nu meteen +{0} 💰, maar je inkomen is de rest van het spel {1}% lager.",
+  "+{} militia in every province you hold.": "+{0} militie in elke provincie van jou.",
+  "+{} 💰 for every enemy regiment destroyed in a battle you win.": "+{0} 💰 voor elk vijandelijk regiment dat sneuvelt in een veldslag die jij wint.",
+  "Once a year, an army that wins an attack can act again. Every copy adds one more time.": "Eén keer per jaar kan een leger dat een aanval wint nog een keer in actie komen. Elke kopie geeft er één keer bij.",
+  "Winning an attack adds {} regiment to the winning army.": "Een gewonnen aanval voegt {0} regiment toe aan het winnende leger.",
+  "Castles and rivers don't help defenders against your attacks.": "Kastelen en rivieren helpen verdedigers niet tegen jouw aanvallen.",
+  "+{} militia in every province you hold, and every defense you win adds 1 regiment.": "+{0} militie in elke provincie van jou, en elke verdediging die je wint levert 1 regiment op.",
+  "Your attacks are {}% stronger, but your upkeep is {}% higher.": "Je aanvallen zijn {0}% sterker, maar je onderhoud is {1}% hoger.",
+  "Conquered provinces are in unrest {} year less.": "Veroverde provincies zijn {0} jaar korter onrustig.",
+  "Conquered provinces pay +{} 💰 a year once their unrest is over.": "Veroverde provincies betalen +{0} 💰 per jaar zodra de onrust voorbij is.",
+  "Every year you get {}% of your gold as interest (at most {} 💰).": "Elk jaar krijg je {0}% van je goud als rente (hooguit {1} 💰).",
+  "When you take a capital, a neighbouring province of that realm defects to you.": "Als je een hoofdstad inneemt, loopt een naburige provincie van dat rijk naar jou over.",
+  "Conquered provinces have no unrest, and your provinces never rise up or revolt.": "Veroverde provincies zijn niet onrustig, en je provincies komen nooit in opstand.",
+  "+{}% income, but unrest lasts {} years longer and revolts are twice as likely.": "+{0}% inkomen, maar onrust duurt {1} jaar langer en opstanden zijn twee keer zo waarschijnlijk.",
+  "+{} 💰 a year.": "+{0} 💰 per jaar.",
+  "+{} manpower a year, and your maximum manpower is {} higher.": "+{0} mankracht per jaar, en je maximale mankracht is {1} hoger.",
+  "Recruits cost {} 💰 less (at least 1).": "Rekruten kosten {0} 💰 minder (minstens 1).",
+  "Your defenders are {}% stronger, and +{} manpower a year.": "Je verdedigers zijn {0}% sterker, en +{1} mankracht per jaar.",
+  "Every Faith card counts double for the Faith set bonuses.": "Elke Geloofkaart telt dubbel voor de setbonussen van Geloof.",
+  "The Bishopric accepts peace whenever you ask, and hands over a province that borders you when it does. But your income is {}% lower.": "Het Sticht neemt vrede aan wanneer je erom vraagt, en geeft je dan een provincie die aan jou grenst. Maar je inkomen is {0}% lager.",
+  "Your attacks are {}% stronger and taking a province gives {} 💰, but the Bishopric never makes peace with you and revolts are twice as likely.": "Je aanvallen zijn {0}% sterker en een ingenomen provincie levert {1} 💰 op, maar het Sticht sluit nooit vrede met jou en opstanden zijn twee keer zo waarschijnlijk.",
+  "+10% income": "+10% inkomen",
+  "Hanseatic merchants come twice as often and pay +3 💰 per port": "Hanzekooplieden komen twee keer zo vaak en betalen +3 💰 per haven",
+  "+25% income": "+25% inkomen",
+  "Attacks +10%": "Aanvallen +10%",
+  "Battle luck starts at 0.9 instead of 0.8": "Geluk in de strijd begint bij 0,9 in plaats van 0,8",
+  "+1 regiment for every attack you win": "+1 regiment voor elke aanval die je wint",
+  "Unrest 1 year shorter": "Onrust 1 jaar korter",
+  "+1 💰 a year for every 3 provinces": "+1 💰 per jaar voor elke 3 provincies",
+  "Conquered provinces never revolt and pay +1 💰": "Veroverde provincies komen nooit in opstand en betalen +1 💰",
+  "+2 manpower a year": "+2 mankracht per jaar",
+  "+3 💰 a year": "+3 💰 per jaar",
+  "Defenders +25%": "Verdedigers +25%",
+  " Ransom: +{} 💰.": " Losgeld: +{0} 💰.",
+  " 1 fresh regiment joins your army.": " 1 vers regiment sluit zich bij je leger aan.",
+  " {} fresh regiments join your army.": " {0} verse regimenten sluiten zich bij je leger aan.",
+  " Forced march: this army can act again this year.": " Geforceerde mars: dit leger kan dit jaar nog een keer in actie komen.",
+  " The feud splits {}: {} defects to you!": " De twist splijt {0}: {1} loopt naar jou over!",
+  "Your treasury earns {} 💰 interest.": "Je schatkist levert {0} 💰 rente op.",
+  "The Hanseatic towns send 1 regiment to {}.": "De Hanzesteden sturen 1 regiment naar {0}.",
+  "The Hanseatic towns send {} regiments to {}.": "De Hanzesteden sturen {0} regimenten naar {1}.",
+  " By the pact, the Bishop hands {} over to you.": " Volgens het pact geeft de bisschop {0} aan jou.",
+  "The Bishop will not make peace with an excommunicated lord.": "De bisschop sluit geen vrede met een geëxcommuniceerde heer.",
+  " · Fortune, {} cards": " · Fortuin, {0} kaarten",
+  "Your cards 🃏": "Je kaarten 🃏",
+  "Fortune runs are not on the leaderboard.": "Fortuinspellen staan niet op de ranglijst.",
+  "Cards": "Kaarten",
+  "🃏 Level {} · {}/{} EXP": "🃏 Niveau {0} · {1}/{2} EXP",
+  "Level {} · {}/{} EXP to the next card": "Niveau {0} · {1}/{2} EXP tot de volgende kaart",
+  "EXP: +{} every year, +{} for every province you gain (+{} more for a capital), +{} for every defense you win, +{} for every province you lose, +{} for a failed attack.": "EXP: +{0} per jaar, +{1} voor elke provincie die je erbij krijgt (+{2} extra voor een hoofdstad), +{3} voor elke verdediging die je wint, +{4} voor elke provincie die je kwijtraakt, +{5} voor een mislukte aanval.",
+  "Level {}!": "Niveau {0}!",
+  "Fortune smiles. Pick a card. Treasury: {} 💰": "Het lot lacht je toe. Kies een kaart. Schatkist: {0} 💰",
+  "Earn EXP every year and in battle. Each level, pick 1 of 3 cards that bend the rules. No developments, not on the leaderboard.": "Verdien EXP elk jaar en in de strijd. Kies bij elk niveau 1 van 3 kaarten die de regels buigen. Geen ontwikkelingen, niet op de ranglijst.",
+  "You took {}.": "Je koos {0}.",
+  " {} {} set bonus: {}!": " Setbonus {0} {1}: {2}!",
+  "you have {}": "je hebt er {0}",
+  " (counts double)": " (telt dubbel)",
+  "Your cards": "Je kaarten",
+  "Next draft: Common {}% · Rare {}% · Epic {}% · Legendary {}%": "Volgende keer: Gewoon {0}% · Zeldzaam {1}% · Episch {2}% · Legendarisch {3}%",
+  "Back": "Terug",
+  "Common {}% · Rare {}% · Epic {}% · Legendary {}%": "Gewoon {0}% · Zeldzaam {1}% · Episch {2}% · Legendarisch {3}%",
+  "OR TEMPT FATE": "OF DAAG HET LOT UIT",
+  "YOUR CARDS": "JE KAARTEN",
+  "No cards left to offer.": "Er zijn geen kaarten meer om te kiezen.",
+  "Reroll ({} 💰)": "Opnieuw ({0} 💰)",
+  "Take {}": "Neem {0}",
+  "Pick a card": "Kies een kaart",
+  "Tap a card to look at it, then take it.": "Tik op een kaart om hem te bekijken, en neem hem dan.",
+  " · {} cards": " · {0} kaarten",
+  "Continue Fortune": "Verder met Fortuin",
+  "Campaign": "Veldtocht",
+  "Fortune 🃏": "Fortuin 🃏",
+  "The classic game: conquer the Low Countries by 1400.": "Het klassieke spel: verover de Lage Landen voor 1400.",
+  "Fortune: ": "Fortuin: ",
+  "MODE": "SPELMODUS"
 };
 
 // =====================================================================
@@ -1448,6 +1657,7 @@ function mod(realm, key) {
     add(abilityMods(realm));
     const d = game.dev && game.dev[realm];
     if (d) for (const id of d.done) if (DEV_BY_ID[id]) add(DEV_BY_ID[id].mods);
+    if (realm === game.player && isFortune()) add(fortuneMods());   // Fortune: your cards and set bonuses
   }
   return m[key] || 0;
 }
@@ -1529,6 +1739,185 @@ function devFlavour(id) {
     peace: T`The lords swear to keep the peace, and a broken oath is a stain on any name.`,
     standing: T`A core of paid soldiers stays under arms all year, fed from the crown's own stores.`
   }[id] || "";
+}
+
+// =====================================================================
+// FORTUNE MODE: CARDS
+// Fortune is a roguelike variant of the campaign. Only the player gets cards,
+// and only in Fortune mode (game.mode === "fortune"). Every card is a bundle of
+// modifiers, added up by mod() just like abilities and developments, so in the
+// campaign none of this has any effect.
+//
+// There are no developments in Fortune (for any realm): the cards replace them.
+//
+// Card-only modifier keys (all 0 in the campaign):
+//   income:   coastMult (coastal provinces' base income x(1+n)), riverGold (per river province),
+//             stapleMult (coast and river bonus gold x(1+n)), conqGold (per conquered province),
+//             interestPct (share of your gold paid as interest, at most FORTUNE.interestMax),
+//             goldRegiment (every n gold of income gives a free regiment)
+//   war:      militiaPlus, ransomGold (per enemy regiment destroyed), winRecruit, defendRecruit,
+//             momentum (times a year a winning army may act again), ignoreWalls, upkeepExtraPct
+//   realm:    manpowerFlat, maxManpower, noUnrest, noRevolt, revoltMult (1 = twice as likely),
+//             capitalDefect, bishopPact, excommunicated
+// =====================================================================
+
+const FORTUNE = {
+  // EXP: every level up gives you a card. Level n+1 costs levelBase + levelStep x n EXP (10, 12, 14 ...)
+  exp: { year: 2, province: 4, capital: 4, defense: 3, lost: 3, failed: 1 },
+  levelBase: 10,
+  levelStep: 2,
+  rerollGold: 5,          // a reroll costs this, times the number of rerolls in this draft (5, 10, 15 ...)
+  setAt: [3, 5, 7],       // cards of one tag needed for each set bonus
+  interestMax: 20,        // Ducal Treasury pays at most this much a year
+  tagPull: 0.35,          // each card you own of a tag makes that tag this much more likely
+  // Rarity weights at the first draft, how much they move per draft made, and their limits
+  odds:  { common: 62, rare: 26, epic: 9, legendary: 3 },
+  shift: { common: -5, rare: 1, epic: 2.5, legendary: 1.5 },
+  min:   { common: 25 },
+  max:   { rare: 34, epic: 26, legendary: 15 }
+};
+const TAGS = ["trade", "war", "rule", "faith"];
+const RARITIES = ["common", "rare", "epic", "legendary", "cursed"];
+const stacks = (c) => c.rarity === "common" || c.rarity === "rare";   // can be picked more than once
+const CARDS = [
+  // Trade (Handel)
+  { id: "weavers",   rarity: "common",    tag: "trade", emoji: "🧵", mods: { farmGold: 1 } },
+  { id: "herring",   rarity: "common",    tag: "trade", emoji: "🐟", mods: { coastGold: 0.5 } },
+  { id: "polders",   rarity: "common",    tag: "trade", emoji: "🌾", mods: { farmCost: -4 } },
+  { id: "rhine",     rarity: "rare",      tag: "trade", emoji: "🌉", mods: { riverGold: 1 } },
+  { id: "clothhall", rarity: "rare",      tag: "trade", emoji: "🏛️", mods: { incomePct: 0.1 } },
+  { id: "staple",    rarity: "epic",      tag: "trade", emoji: "⚖️", mods: { stapleMult: 1 } },
+  { id: "hanse",     rarity: "legendary", tag: "trade", emoji: "⛵", mods: { coastMult: 1, goldRegiment: 30 } },
+  { id: "debase",    rarity: "cursed",    tag: "trade", emoji: "🪙", mods: { incomePct: -0.15 }, gold: 50 },
+  // War (Oorlog)
+  { id: "goedendag", rarity: "common",    tag: "war",   emoji: "🔨", mods: { attack: 0.1 } },
+  { id: "schutterij",rarity: "common",    tag: "war",   emoji: "🏹", mods: { militiaPlus: 1 } },
+  { id: "ransom",    rarity: "common",    tag: "war",   emoji: "💰", mods: { ransomGold: 2 } },
+  { id: "march",     rarity: "rare",      tag: "war",   emoji: "🥾", mods: { momentum: 1 } },
+  { id: "veterans",  rarity: "rare",      tag: "war",   emoji: "🎖️", mods: { winRecruit: 1 } },
+  { id: "siege",     rarity: "epic",      tag: "war",   emoji: "🪨", mods: { ignoreWalls: 1 } },
+  { id: "spurs",     rarity: "legendary", tag: "war",   emoji: "🥇", mods: { militiaPlus: 2, defendRecruit: 1 } },
+  { id: "mercdebt",  rarity: "cursed",    tag: "war",   emoji: "💀", mods: { attack: 0.25, upkeepExtraPct: 0.5 } },
+  // Rule (Bestuur)
+  { id: "bailiffs",  rarity: "common",    tag: "rule",  emoji: "🗝️", mods: { unrestYears: -1 } },
+  { id: "charter",   rarity: "common",    tag: "rule",  emoji: "🏘️", mods: { provinceGold: 0.25 } },
+  { id: "vassals",   rarity: "rare",      tag: "rule",  emoji: "🤝", mods: { conqGold: 1 } },
+  { id: "treasury",  rarity: "epic",      tag: "rule",  emoji: "🏦", mods: { interestPct: 0.1 } },
+  { id: "feud",      rarity: "epic",      tag: "rule",  emoji: "🪝", mods: { capitalDefect: 1 } },
+  { id: "joyous",    rarity: "legendary", tag: "rule",  emoji: "👑", mods: { noUnrest: 1, noRevolt: 1 } },
+  { id: "tyrant",    rarity: "cursed",    tag: "rule",  emoji: "😠", mods: { incomePct: 0.2, unrestYears: 2, revoltMult: 1 } },
+  // Faith (Geloof)
+  { id: "tithes",    rarity: "common",    tag: "faith", emoji: "🙏", mods: { flatGold: 2 } },
+  { id: "granary",   rarity: "common",    tag: "faith", emoji: "🍞", mods: { manpowerFlat: 2, maxManpower: 2 } },
+  { id: "indulgence",rarity: "rare",      tag: "faith", emoji: "📃", mods: { recruitGold: -1 } },
+  { id: "servatius", rarity: "epic",      tag: "faith", emoji: "🦴", mods: { defense: 0.2, manpowerFlat: 2 } },
+  { id: "devotion",  rarity: "legendary", tag: "faith", emoji: "📖", mods: {} },   // Faith cards count double for set bonuses
+  { id: "pact",      rarity: "cursed",    tag: "faith", emoji: "⛪", mods: { bishopPact: 1, incomePct: -0.2 }, notFor: ["utrecht"], excludes: ["excomm"] },
+  { id: "excomm",    rarity: "cursed",    tag: "faith", emoji: "🔥", mods: { attack: 0.2, plunderGold: 3, excommunicated: 1, revoltMult: 1 }, notFor: ["utrecht"], excludes: ["pact"] }
+];
+const CARD_BY_ID = {};
+for (const c of CARDS) CARD_BY_ID[c.id] = c;
+
+// Set bonuses: what 3, 5 and 7 cards of one tag add (each level comes on top of the one before)
+const SET_BONUS = {
+  trade: [{ incomePct: 0.1 }, { hanseWeight: 2, hanseGold: 3 }, { incomePct: 0.25 }],
+  war:   [{ attack: 0.1 }, { luckMin: 0.1 }, { winRecruit: 1 }],
+  rule:  [{ unrestYears: -1 }, { provinceGold: 0.34 }, { noRevolt: 1, conqGold: 1 }],
+  faith: [{ manpowerFlat: 2 }, { flatGold: 3 }, { defense: 0.25 }]
+};
+
+const isFortune = () => game.mode === "fortune" && Boolean(game.fortune);
+function freshFortune() {
+  return { cards: [], exp: 0, level: 0, drafts: 0, rerolls: 0, offer: null, bank: 0, marched: 0, defecting: false };
+}
+const devsOn = () => !isFortune();   // the development system only exists in the campaign
+const expNeeded = () => FORTUNE.levelBase + FORTUNE.levelStep * game.fortune.level;
+// Adds EXP for the player; every full bar is a level, and every level is a card
+function gainExp(n) {
+  if (!isFortune() || !n) return 0;
+  const f = game.fortune;
+  f.exp += n;
+  while (f.exp >= expNeeded()) { f.exp -= expNeeded(); f.level += 1; }
+  return n;
+}
+const ownsCard = (id) => isFortune() && game.fortune.cards.includes(id);
+const cardCount = (id) => isFortune() ? game.fortune.cards.filter(c => c === id).length : 0;
+// How many cards of a tag count for its set bonus (Modern Devotion: Faith cards count double)
+function tagCount(tag) {
+  if (!isFortune()) return 0;
+  const n = game.fortune.cards.filter(id => CARD_BY_ID[id].tag === tag).length;
+  return tag === "faith" && game.fortune.cards.includes("devotion") ? n * 2 : n;
+}
+const setLevel = (tag) => FORTUNE.setAt.filter(at => tagCount(tag) >= at).length;
+
+// Everything your cards and set bonuses add up to (used by mod())
+function fortuneMods() {
+  const all = {};
+  const add = (mods) => { for (const k in mods) all[k] = (all[k] || 0) + mods[k]; };
+  for (const id of game.fortune.cards) add(CARD_BY_ID[id].mods);
+  for (const tag of TAGS) for (let i = 0; i < setLevel(tag); i++) add(SET_BONUS[tag][i]);
+  return all;
+}
+
+const tagName = (t) => ({ trade: T`Trade`, war: T`War`, rule: T`Rule`, faith: T`Faith` }[t]);
+const tagIcon = (t) => ({ trade: "⚓", war: "⚔️", rule: "👑", faith: "⛪" }[t]);
+const rarityName = (r) => ({ common: T`Common`, rare: T`Rare`, epic: T`Epic`, legendary: T`Legendary`, cursed: T`Cursed` }[r]);
+function cardName(id) {
+  return {
+    weavers: T`Flemish Weavers`, herring: T`Herring Fishery`, polders: T`Polder Works`, rhine: T`Rhine Tolls`,
+    clothhall: T`Cloth Hall`, staple: T`Staple Right`, hanse: T`Hanseatic Charter`, debase: T`Debased Coinage`,
+    goedendag: T`Goedendag`, schutterij: T`Civic Guard`, ransom: T`Ransom the Nobles`, march: T`Forced March`,
+    veterans: T`Blooded Veterans`, siege: T`Siege Engineers`, spurs: T`Golden Spurs`, mercdebt: T`Mercenary Debt`,
+    bailiffs: T`Bailiffs`, charter: T`Town Charters`, vassals: T`Loyal Vassals`, treasury: T`Ducal Treasury`,
+    feud: T`Hook and Cod Feud`, joyous: T`Joyous Entry`, tyrant: T`Tyrant's Tax`,
+    tithes: T`Tithes`, granary: T`Monastery Granaries`, indulgence: T`Indulgences`, servatius: T`Relics of Saint Servatius`,
+    devotion: T`Modern Devotion`, pact: T`Pact with the Bishop`, excomm: T`Excommunication`
+  }[id] || id;
+}
+function cardEffect(id) {
+  const m = CARD_BY_ID[id].mods;
+  switch (id) {
+    case "weavers": return T`+${m.farmGold} 💰 a year in every province with a farm.`;
+    case "herring": return T`+1 💰 a year for every ${Math.round(1 / m.coastGold)} coastal provinces ⚓ you hold.`;
+    case "polders": return T`Farms cost ${-m.farmCost} 💰 less (at least 5).`;
+    case "rhine": return T`+${m.riverGold} 💰 a year for every province you hold on a major river.`;
+    case "clothhall": return T`+${Math.round(m.incomePct * 100)}% income.`;
+    case "staple": return T`All your gold from the coast and the rivers (Herring Fishery, Rhine Tolls, Holland's trade) counts double.`;
+    case "hanse": return T`Coastal provinces pay double, and every ${m.goldRegiment} 💰 of income gives you a free regiment at your capital.`;
+    case "debase": return T`+${CARD_BY_ID.debase.gold} 💰 right now, but your income is ${Math.round(-m.incomePct * 100)}% lower for the rest of the game.`;
+    case "goedendag": return T`Your attacks are ${Math.round(m.attack * 100)}% stronger.`;
+    case "schutterij": return T`+${m.militiaPlus} militia in every province you hold.`;
+    case "ransom": return T`+${m.ransomGold} 💰 for every enemy regiment destroyed in a battle you win.`;
+    case "march": return T`Once a year, an army that wins an attack can act again. Every copy adds one more time.`;
+    case "veterans": return T`Winning an attack adds ${m.winRecruit} regiment to the winning army.`;
+    case "siege": return T`Castles and rivers don't help defenders against your attacks.`;
+    case "spurs": return T`+${m.militiaPlus} militia in every province you hold, and every defense you win adds 1 regiment.`;
+    case "mercdebt": return T`Your attacks are ${Math.round(m.attack * 100)}% stronger, but your upkeep is ${Math.round(m.upkeepExtraPct * 100)}% higher.`;
+    case "bailiffs": return T`Conquered provinces are in unrest ${-m.unrestYears} year less.`;
+    case "charter": return T`+1 💰 a year for every ${Math.round(1 / m.provinceGold)} provinces you hold.`;
+    case "vassals": return T`Conquered provinces pay +${m.conqGold} 💰 a year once their unrest is over.`;
+    case "treasury": return T`Every year you get ${Math.round(m.interestPct * 100)}% of your gold as interest (at most ${FORTUNE.interestMax} 💰).`;
+    case "feud": return T`When you take a capital, a neighbouring province of that realm defects to you.`;
+    case "joyous": return T`Conquered provinces have no unrest, and your provinces never rise up or revolt.`;
+    case "tyrant": return T`+${Math.round(m.incomePct * 100)}% income, but unrest lasts ${m.unrestYears} years longer and revolts are twice as likely.`;
+    case "tithes": return T`+${m.flatGold} 💰 a year.`;
+    case "granary": return T`+${m.manpowerFlat} manpower a year, and your maximum manpower is ${m.maxManpower} higher.`;
+    case "indulgence": return T`Recruits cost ${-m.recruitGold} 💰 less (at least 1).`;
+    case "servatius": return T`Your defenders are ${Math.round(m.defense * 100)}% stronger, and +${m.manpowerFlat} manpower a year.`;
+    case "devotion": return T`Every Faith card counts double for the Faith set bonuses.`;
+    case "pact": return T`The Bishopric accepts peace whenever you ask, and hands over a province that borders you when it does. But your income is ${Math.round(-m.incomePct * 100)}% lower.`;
+    case "excomm": return T`Your attacks are ${Math.round(m.attack * 100)}% stronger and taking a province gives ${m.plunderGold} 💰, but the Bishopric never makes peace with you and revolts are twice as likely.`;
+  }
+  return "";
+}
+function setBonusText(tag, level) {
+  const t = {
+    trade: [T`+10% income`, T`Hanseatic merchants come twice as often and pay +3 💰 per port`, T`+25% income`],
+    war:   [T`Attacks +10%`, T`Battle luck starts at 0.9 instead of 0.8`, T`+1 regiment for every attack you win`],
+    rule:  [T`Unrest 1 year shorter`, T`+1 💰 a year for every 3 provinces`, T`Conquered provinces never revolt and pay +1 💰`],
+    faith: [T`+2 manpower a year`, T`+3 💰 a year`, T`Defenders +25%`]
+  }[tag][level];
+  return t;
 }
 
 // Difficulty only changes the AI realms; your own rules stay the same
@@ -1683,7 +2072,9 @@ const game = {
   provinces: {}     // ownership, buildings and armies per province
 };
 
-function newGame(playerRealm, difficulty) {
+function newGame(playerRealm, difficulty, mode) {
+  game.mode = mode === "fortune" ? "fortune" : "campaign";
+  game.fortune = game.mode === "fortune" ? freshFortune() : null;
   game.difficulty = difficulty || "normal";
   game.year = RULES.startYear;
   game.player = playerRealm;
@@ -1715,7 +2106,7 @@ function newGame(playerRealm, difficulty) {
   }
   // Developments: every realm starts with one free tier 1 pick (the AI makes its pick on its first turn)
   game.dev = {};
-  for (const id of REALM_IDS) game.dev[id] = { done: [], current: null, free: true };
+  for (const id of REALM_IDS) game.dev[id] = { done: [], current: null, free: devsOn() };   // no free pick in Fortune
   resetMods();
 
   // Copy the province data and give each one a neighbor list
@@ -1765,7 +2156,10 @@ const random = (min, max) => min + Math.random() * (max - min);
 const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 
 const farmBonusOf = (realm) => RULES.farmBonus + mod(realm, "farmGold");
-const provinceIncome = (p) => p.unrest > 0 ? 0 : p.income + (p.building === "farm" ? farmBonusOf(p.owner) : 0);
+// Fortune cards can make coastal land pay more (Hanseatic Charter) and conquered land pay extra (Loyal Vassals)
+const provinceIncome = (p) => p.unrest > 0 ? 0
+  : p.income * (1 + (COASTAL.includes(p.id) ? mod(p.owner, "coastMult") : 0)) + (p.building === "farm" ? farmBonusOf(p.owner) : 0)
+    + (p.core !== p.owner ? mod(p.owner, "conqGold") : 0);
 const provinceManpower = (p) => p.unrest > 0 ? 0 : p.manpower;
 
 function incomeOf(realm) {
@@ -1780,17 +2174,22 @@ function bonusIncome(realm) {
   const guilds = Math.floor(provincesOf(realm).filter(p => p.unrest === 0).length * mod(realm, "provinceGold") + 1e-9);
   const poor = provincesOf(realm).filter(p => p.core === realm && p.income === 1 && p.unrest === 0).length;
   const towns = Math.floor(poor * mod(realm, "poorHomeGold") + 1e-9);
-  return Math.floor(ports * mod(realm, "coastGold") + 1e-9) + mod(realm, "flatGold") + guilds + towns;
+  const staple = 1 + mod(realm, "stapleMult");   // Fortune: Staple Right doubles coast and river gold
+  const rivers = mod(realm, "riverGold") ? provincesOf(realm).filter(p => p.riverBorders.length && p.unrest === 0).length : 0;
+  return Math.floor(ports * mod(realm, "coastGold") * staple + 1e-9) + Math.floor(rivers * mod(realm, "riverGold") * staple + 1e-9)
+    + mod(realm, "flatGold") + guilds + towns;
 }
 // Upkeep for an army of this size (Standing army makes it cheaper)
 function upkeepAt(realm, army) {
-  const full = army * RULES.upkeep;
+  let full = army * RULES.upkeep;
+  if (mod(realm, "upkeepExtraPct")) full = Math.ceil(full * (1 + mod(realm, "upkeepExtraPct")) - 1e-9);   // Fortune: Mercenary Debt
   const pct = mod(realm, "upkeepPct");
   return pct > 0 && full > 0 ? full - Math.max(1, Math.floor(full * pct + 1e-9)) : full;
 }
 function upkeepOf(realm) {
   return upkeepAt(realm, armyOf(realm));
 }
+const maxManpowerOf = (realm) => RULES.maxManpower + mod(realm, "maxManpower");
 
 // =====================================================================
 // 3. ACTIONS
@@ -1798,7 +2197,7 @@ function upkeepOf(realm) {
 // =====================================================================
 
 // Recruits are cheaper for a realm that has lost ground
-const recruitCost = (realm) => behind(realm) ? RULES.underdogRecruitGold : RULES.recruitGold + mod(realm, "recruitGold");
+const recruitCost = (realm) => behind(realm) ? RULES.underdogRecruitGold : Math.max(1, RULES.recruitGold + mod(realm, "recruitGold"));
 
 // What one recruit costs right now: gold and manpower, or null when it can't be paid.
 // With mercenary contracts, a regiment can be hired without manpower once a year.
@@ -1825,7 +2224,7 @@ function recruit(p) {
   p.spent += 1;   // new recruits can't move until next turn
 }
 
-const buildCost = (type, realm) => type === "farm" ? RULES.farmCost + mod(realm, "farmCost") : RULES.castleCost + mod(realm, "castleCost");
+const buildCost = (type, realm) => Math.max(5, type === "farm" ? RULES.farmCost + mod(realm, "farmCost") : RULES.castleCost + mod(realm, "castleCost"));
 
 // One building per province, one building per realm per year
 function canBuild(p, type) {
@@ -1850,7 +2249,8 @@ function moveArmy(from, to, count) {
 
 // Everyone defending a province: its regiments plus the local militia
 // Militia: 1 everywhere, 2 in a realm's own home provinces
-const militiaOf = (p) => RULES.militia + (p.owner !== "independent" && p.core === p.owner ? RULES.homeMilitia : 0);
+const militiaOf = (p) => RULES.militia + (p.owner !== "independent" && p.core === p.owner ? RULES.homeMilitia : 0)
+  + (p.owner !== "independent" ? mod(p.owner, "militiaPlus") : 0);   // Fortune: Civic Guard, Golden Spurs
 // Attack strength multiplier (Gelre's knights)
 const chargeOf = (realm) => 1 + mod(realm, "attack");
 // A realm's luck roll: usually 0.8 to 1.2, narrower with Captains
@@ -1860,8 +2260,9 @@ const defenseSize = (p) => p.army + militiaOf(p);
 // How much stronger the defenders of "to" are when attacked from "from"
 function defenseBonus(from, to) {
   let bonus = 1;
-  if (to.building === "castle") bonus *= RULES.castleBonus;
-  if (to.riverBorders.includes(from.id) && !mod(to.owner, "noRiver")) bonus *= RULES.riverBonus;
+  const walls = !mod(from.owner, "ignoreWalls");   // Fortune: Siege Engineers
+  if (to.building === "castle" && walls) bonus *= RULES.castleBonus;
+  if (to.riverBorders.includes(from.id) && !mod(to.owner, "noRiver") && walls) bonus *= RULES.riverBonus;
   bonus *= 1 + mod(to.owner, "defense");
   return bonus;
 }
@@ -1891,9 +2292,10 @@ function attack(from, to, count) {
   const result = {
     attacker, defender, from: from.id, to: to.id, place: to.name,
     sent: count, defenders, militia: militiaOf(to), defenseSize: defenseSize(to),
-    bonus, castle: to.building === "castle", river: to.riverBorders.includes(from.id) && !mod(defender, "noRiver"), charge, pikes: mod(defender, "defense") > 0,
+    bonus, castle: to.building === "castle" && !mod(attacker, "ignoreWalls"),
+    river: to.riverBorders.includes(from.id) && !mod(defender, "noRiver") && !mod(attacker, "ignoreWalls"), charge, pikes: mod(defender, "defense") > 0,
     attackStrength, defenseStrength,
-    won: false, attackLoss: 0, defenseLoss: 0, note: "", plunder: 0
+    won: false, attackLoss: 0, defenseLoss: 0, note: "", plunder: 0, ransom: 0, fresh: 0, march: false
   };
 
   // Higher strength wins, ties go to the defender
@@ -1906,12 +2308,29 @@ function attack(from, to, count) {
     result.attackLoss = losses;
     result.defenseLoss = defenders;
     scoreConquest(attacker, defender);
-    result.note = capture(to, attacker, count - losses);
+    // Fortune: Blooded Veterans add fresh regiments, Ransom the Nobles pays for the fallen
+    result.fresh = mod(attacker, "winRecruit");
+    result.ransom = mod(attacker, "ransomGold") * defenders;
+    game.realms[attacker].gold += result.ransom;
+    result.note = capture(to, attacker, count - losses + result.fresh);
+    // Fortune: Forced March lets the winners act again
+    if (attacker === game.player && isFortune() && game.fortune.marched < mod(attacker, "momentum") && to.owner === attacker) {
+      game.fortune.marched += 1;
+      to.spent = 0;
+      result.march = true;
+    }
   } else {
     const losses = Math.max(0, Math.min(Math.ceil(count / 2), defenders - 1));
     to.army -= losses;
     result.attackLoss = count;
     result.defenseLoss = losses;
+    // Fortune: a defense won pays ransom, and Golden Spurs add a regiment
+    result.ransom = mod(defender, "ransomGold") * count;
+    result.fresh = mod(defender, "defendRecruit");
+    if (defender !== "independent") game.realms[defender].gold += result.ransom;
+    to.army += result.fresh;
+    if (defender === game.player) gainExp(FORTUNE.exp.defense);   // Fortune: a defense held
+    if (attacker === game.player) gainExp(FORTUNE.exp.failed);    // Fortune: a failed attack
   }
 
   // Keep score for the end screen
@@ -1944,6 +2363,9 @@ function describe(r) {
     text = T`${them(r.attacker)} took ${r.place} from ${them(r.defender)}.`;
   }
   if (r.attacker === me && r.plunder > 0) text += T` Plunder: +${r.plunder} 💰.`;
+  if (r.ransom > 0 && (r.won ? r.attacker : r.defender) === me) text += T` Ransom: +${r.ransom} 💰.`;
+  if (r.fresh > 0 && (r.won ? r.attacker : r.defender) === me) text += r.fresh === 1 ? T` 1 fresh regiment joins your army.` : T` ${r.fresh} fresh regiments join your army.`;
+  if (r.march) text += T` Forced march: this army can act again this year.`;
   return capitalize(text + r.note);
 }
 
@@ -1956,7 +2378,7 @@ function capture(p, newOwner, survivors) {
   p.owner = newOwner;
   p.army = survivors;
   // Taking back one of your own home provinces causes no unrest
-  p.unrest = (p.core === newOwner) ? 0 : Math.max(0, RULES.unrestYears + mod(newOwner, "unrestYears"));
+  p.unrest = (p.core === newOwner || mod(newOwner, "noUnrest")) ? 0 : Math.max(0, RULES.unrestYears + mod(newOwner, "unrestYears"));
   p.spent = survivors;
 
   // The old owner lost its capital: it moves to their richest province
@@ -1980,7 +2402,25 @@ function capture(p, newOwner, survivors) {
     mine.penalty = 0;
     text += T` ${capitalize(REALMS[newOwner].short)} retook its capital!`;
   }
+  if (newOwner === game.player && isFortune()) text += fortuneGain(p, oldOwner, wasCapital);
+  if (oldOwner === game.player && isFortune()) gainExp(FORTUNE.exp.lost);   // losing land teaches you something too
   return text;
+}
+
+// Fortune: every province you gain gives EXP toward your next card, and the
+// Hook and Cod Feud makes a neighbouring province defect when you take a capital
+function fortuneGain(p, oldOwner, wasCapital) {
+  const f = game.fortune;
+  gainExp(FORTUNE.exp.province + (wasCapital ? FORTUNE.exp.capital : 0));
+  if (!wasCapital || f.defecting || oldOwner === "independent" || !mod(game.player, "capitalDefect")) return "";
+  const q = p.neighbors.map(n => game.provinces[n]).filter(n => n.owner === oldOwner)
+    .sort((a, b) => a.army - b.army)[0];
+  if (!q) return "";
+  f.defecting = true;   // a defection never sets off another one
+  const note = capture(q, game.player, q.army);
+  f.defecting = false;
+  q.spent = q.army;
+  return T` The feud splits ${nameOf(oldOwner)}: ${q.name} defects to you!` + note;
 }
 
 // =====================================================================
@@ -2066,6 +2506,7 @@ function weightedDev(realm, list) {
 // a development it holds back a share of its income (a slightly smaller army), and keeps
 // the gold for the cheapest option it could start instead of spending it on farms.
 function aiSavings(id) {
+  if (!devsOn()) return { rate: 0, earmark: 0 };   // Fortune: nothing to save for
   const d = devOf(id);
   const open = d.free || d.current ? [] : openDevs(id);
   if (open.length === 0) return { rate: 0, earmark: 0 };
@@ -2075,6 +2516,7 @@ function aiSavings(id) {
 // Starts a development when it can pay and still keeps a cushion: next year's
 // shortfall (income minus upkeep) twice over, plus DEV.aiReserve. Never goes broke.
 function aiDevelop(id) {
+  if (!devsOn()) return;
   const d = devOf(id), realm = game.realms[id];
   const open = openDevs(id);
   if (d.free) {
@@ -2239,8 +2681,9 @@ function endTurn() {
     }
     if (realm.gold < 0) realm.gold = 0;
 
-    const newMen = lands.reduce((sum, p) => sum + provinceManpower(p), 0);
-    realm.manpower = Math.min(RULES.maxManpower, realm.manpower + newMen);
+    const newMen = lands.reduce((sum, p) => sum + provinceManpower(p), 0) + mod(id, "manpowerFlat");
+    realm.manpower = Math.min(maxManpowerOf(id), realm.manpower + newMen);
+    if (id === game.player && isFortune()) fortuneYear(realm, income, notes);
 
     // Developments move on a year
     const finished = tickDev(id);
@@ -2278,6 +2721,30 @@ function endTurn() {
   startNewYear(notes, cards);
 }
 
+// Fortune, once a year for the player: interest (Ducal Treasury), free regiments
+// from income (Hanseatic Charter), and Forced March is ready again
+function fortuneYear(realm, income, notes) {
+  const f = game.fortune, me = game.player;
+  f.marched = 0;
+  gainExp(FORTUNE.exp.year);
+  const pct = mod(me, "interestPct");
+  if (pct > 0 && realm.gold > 0) {
+    const interest = Math.min(FORTUNE.interestMax, Math.floor(realm.gold * pct + 1e-9));
+    if (interest > 0) { realm.gold += interest; notes.push({ text: T`Your treasury earns ${interest} 💰 interest.`, kind: "good" }); }
+  }
+  const every = mod(me, "goldRegiment");
+  const capital = game.provinces[realm.capital];
+  if (every > 0 && capital && income > 0) {
+    f.bank += income;
+    let fresh = 0;
+    while (f.bank >= every) { f.bank -= every; fresh += 1; }
+    if (fresh) {
+      capital.army += fresh;
+      notes.push({ text: fresh === 1 ? T`The Hanseatic towns send 1 regiment to ${capital.name}.` : T`The Hanseatic towns send ${fresh} regiments to ${capital.name}.`, kind: "good" });
+    }
+  }
+}
+
 // Things the player might have forgotten this year. Empty list = nothing.
 function unusedWarnings() {
   const me = game.player, realm = game.realms[me], mine = provincesOf(me);
@@ -2298,8 +2765,8 @@ function unusedWarnings() {
   if (!realm.built && mine.some(p => !p.building) && realm.gold >= buildCost("farm", me)) {
     warnings.push(T`You haven't built anything this year, and you have ${realm.gold} 💰.`);
   }
-  if (realm.manpower >= RULES.maxManpower && realm.gold >= recruitCost(me)) {
-    warnings.push(T`Your manpower is full (${RULES.maxManpower}/${RULES.maxManpower}), so next year's new men are wasted unless you recruit.`);
+  if (realm.manpower >= maxManpowerOf(me) && realm.gold >= recruitCost(me)) {
+    warnings.push(T`Your manpower is full (${maxManpowerOf(me)}/${maxManpowerOf(me)}), so next year's new men are wasted unless you recruit.`);
   }
   const exposed = mine.filter(p => p.army === 0 && p.core !== me).map(p => p.name);
   if (exposed.length) {
@@ -2405,6 +2872,18 @@ function makePeace(a, b, notes) {
   const years = truceFor(a, b);
   Object.assign(rel(a, b), { state: "peace", truce: years });
   notes.push({ text: T`${capitalize(who(a))} and ${who(b)} make peace (${years}-year truce).`, kind: "" });
+  // Fortune: with the Pact with the Bishop, Utrecht hands over a province that borders you
+  const me = game.player;
+  if ((a === me || b === me) && (a === "utrecht" || b === "utrecht") && mod(me, "bishopPact")) {
+    const q = provincesOf("utrecht").filter(p => p.neighbors.some(n => game.provinces[n].owner === me) && !isCapital(p))
+      .sort((x, y) => x.army - y.army)[0];
+    if (q) {
+      const home = game.provinces[game.realms.utrecht.capital];
+      if (home && home !== q) home.army += q.army;   // the Bishop's soldiers march home
+      const note = capture(q, me, 0);
+      notes[notes.length - 1].text += T` By the pact, the Bishop hands ${q.name} over to you.` + note;
+    }
+  }
 }
 
 function makeAlliance(a, b, notes) {
@@ -2443,6 +2922,7 @@ function aiDiplomacy(id, notes) {
     const bishop = peaceAfterOf(id, b);   // Utrecht's wars end sooner
     const sooner = soonerFor(id, b);      // so do wars with a realm that has Peace of the land
     if (b === game.player) {
+      if (id === "utrecht" && mod(b, "excommunicated")) continue;   // Fortune: no peace for the excommunicated
       const losing = lead < 0 || myArmy < armyOf(b) * 0.7;
       // The Prince-Bishop offers peace as soon as it is ahead, to keep what it took
       const early = mod(id, "peaceAfter") > 0 && years >= mod(id, "peaceAfter") && lead > 0;
@@ -2495,7 +2975,10 @@ function proposePeace(b) {
   // The Church's word carries weight: a war with Utrecht ends after a short time, whoever is winning
   const after = peaceAfterOf(me, b);
   const bishop = after !== undefined && years >= after;
-  const ok = bishop || (years >= 1 && lead <= 0) || armyOf(b) < armyOf(me) * 0.8 || years >= Math.max(2, diff().peaceYears - soonerFor(me, b));
+  // Fortune: an excommunicated lord gets no peace from the Church, a lord with a pact always does
+  if (b === "utrecht" && mod(me, "excommunicated")) return { ok: false, text: T`The Bishop will not make peace with an excommunicated lord.` };
+  const pact = b === "utrecht" && mod(me, "bishopPact") > 0;
+  const ok = pact || bishop || (years >= 1 && lead <= 0) || armyOf(b) < armyOf(me) * 0.8 || years >= Math.max(2, diff().peaceYears - soonerFor(me, b));
   if (!ok) return { ok, text: T`${capitalize(nameOf(b))} refuses. They think they're winning this war.` };
   const notes = [];
   makePeace(me, b, notes);
@@ -2589,7 +3072,7 @@ document.getElementById("diplo").addEventListener("click", (e) => {
   render();
 });
 
-function closeDiplomacy() { hide("diplo"); render(); }
+function closeDiplomacy() { hide("diplo"); render(); maybeDraft(); }
 
 // --- The Developments screen: three columns (branches), tiers stacked, two options per tier ---
 const devUI = { sel: null, branch: null };
@@ -2597,6 +3080,7 @@ const ROMAN = ["I", "II", "III"];
 
 // A red dot on the button: a free pick waits, or nothing is being developed and there is gold to spare
 function devAttention() {
+  if (!devsOn()) return false;
   const me = game.player;
   if (!me || !game.realms[me]) return false;
   const d = devOf(me), open = openDevs(me);
@@ -2708,11 +3192,13 @@ function runEvents(notes, cards) {
   for (const p of allProvinces()) {
     if (p.owner === "independent" || p.army > 0) continue;
     const owner = p.owner;
-    if (p.core !== owner && alive(p.core) && Math.random() < RULES.uprisingChance) {
+    if (mod(owner, "noRevolt")) continue;   // Fortune: Joyous Entry, Rule set bonus
+    const unrestMult = 1 + mod(owner, "revoltMult");   // Fortune: Tyrant's Tax, Excommunication
+    if (p.core !== owner && alive(p.core) && Math.random() < RULES.uprisingChance * unrestMult) {
       const note = capture(p, p.core, 1);
       if (owner === me) notes.push({ text: T`${p.name} rose up and went back to ${nameOf(p.core)}!${note}`, kind: "bad" });
       else if (p.core === me) notes.push({ text: T`${p.name} rose up against ${nameOf(owner)} and is yours again!${note}`, kind: "good" });
-    } else if (p.unrest > 0 && Math.random() < RULES.revoltChance) {
+    } else if (p.unrest > 0 && Math.random() < RULES.revoltChance * unrestMult) {
       const note = capture(p, "independent", 1);
       if (owner === me) notes.push({ text: T`${p.name} rose in revolt and declared itself independent!${note}`, kind: "bad" });
     }
@@ -2746,7 +3232,7 @@ function runEvents(notes, cards) {
     if (target === me) cards.push({ emoji: "🌾", title: T`A rich harvest`, text: T`The granaries are full. Your treasury gains ${gold} 💰.` });
   }});
   options.push({ weight: behind(target) ? 4 : 2, run: () => {
-    realm.manpower = Math.min(RULES.maxManpower, realm.manpower + 3);
+    realm.manpower = Math.min(maxManpowerOf(target), realm.manpower + 3);
     capital.army += 1;
     if (target === me) cards.push({ emoji: "🛡️", title: T`Volunteers`, text: T`Men from across your lands flock to ${capital.name} to defend the realm: +1 regiment there and +3 manpower.` });
   }});
@@ -2884,6 +3370,7 @@ function startNewYearAfterWar(notes, cards, attacksOnMe) {
   const next = () => {
     if (attacksOnMe.length) showBattle(attacksOnMe.shift(), next);
     else if (cards.length) showCard(cards.shift(), () => { checkGameOver(); next(); });
+    else if (!game.over && draftsWaiting()) openDraft(next);
     else if (!game.over) showYearOverview(notes);
   };
   next();
@@ -2987,6 +3474,7 @@ function keepPlaying() {
   game.notice = null;
   game.message = T`The war goes on. Conquer all ${allProvinces().length} provinces to unite the Low Countries!`;
   render();
+  maybeDraft();
 }
 
 // =====================================================================
@@ -2996,28 +3484,42 @@ function keepPlaying() {
 // =====================================================================
 
 const SAVE_KEY = "lords-of-the-low-countries-save-v2";   // v2: the bigger map (v1 saves don't fit)
+const FORTUNE_SAVE_KEY = "lords-of-the-low-countries-fortune-v1";   // Fortune runs have their own save
+const saveKeyOf = (mode) => mode === "fortune" ? FORTUNE_SAVE_KEY : SAVE_KEY;
 
 function saveGame() {
   if (!game.player || game.over) return;
+  const data = {
+    year: game.year, player: game.player, stats: game.stats,
+    realms: game.realms, provinces: game.provinces,
+    relations: game.relations, flags: game.flags, endless: game.endless, difficulty: game.difficulty,
+    dev: game.dev
+  };
+  if (isFortune()) Object.assign(data, { mode: "fortune", fortune: game.fortune });
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify({
-      year: game.year, player: game.player, stats: game.stats,
-      realms: game.realms, provinces: game.provinces,
-      relations: game.relations, flags: game.flags, endless: game.endless, difficulty: game.difficulty,
-      dev: game.dev
-    }));
+    localStorage.setItem(saveKeyOf(game.mode), JSON.stringify(data));
   } catch (e) { /* storage not available: just don't save */ }
 }
 
-function loadSave() {
+// mode: "campaign" (the default) or "fortune"
+function loadSave(mode) {
   try {
-    const data = JSON.parse(localStorage.getItem(SAVE_KEY));
+    const data = JSON.parse(localStorage.getItem(saveKeyOf(mode)));
+    if (mode === "fortune" && !(data && data.fortune)) return null;
     return data && data.player ? data : null;
   } catch (e) { return null; }
 }
 
-function clearSave() {
-  try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+// Fortune saves from the first test build counted provinces instead of EXP: start their EXP bar at their current card
+function fortuneFromSave(f) {
+  const out = { ...freshFortune(), ...f, defecting: false };
+  out.level = Math.max(out.level, out.drafts);
+  delete out.gained;
+  return out;
+}
+
+function clearSave(mode) {
+  try { localStorage.removeItem(saveKeyOf(mode || game.mode)); } catch (e) {}
 }
 
 function continueGame(data) {
@@ -3025,7 +3527,9 @@ function continueGame(data) {
     year: data.year, player: data.player, stats: data.stats,
     realms: data.realms, provinces: data.provinces,
     relations: data.relations || {}, flags: data.flags || {}, endless: !!data.endless, difficulty: data.difficulty || "normal",
-    dev: data.dev || {},   // saves from before developments: nothing researched, no free pick waiting
+    dev: data.mode === "fortune" ? {} : data.dev || {},   // saves from before developments: nothing researched, no free pick waiting (Fortune has none)
+    mode: data.mode === "fortune" ? "fortune" : "campaign",
+    fortune: data.mode === "fortune" ? fortuneFromSave(data.fortune) : null,
     selected: null, order: null, over: false, lastTurn: [], confirmEnd: null, endInfo: null, offers: [],
     message: T`Welcome back. The year is ${data.year}.`
   });
@@ -3254,9 +3758,9 @@ function renderTopbar() {
     <div class="realm"><button class="menu-btn" data-do="menu">☰</button>${crest(game.player, 20)}${game.year}</div>
     <div class="stats">
       <span>💰 ${s.gold} <small>(${net >= 0 ? "+" : "−"}${Math.abs(net)})</small></span>
-      <span>⚔️ ${s.manpower}/${RULES.maxManpower}</span>
+      <span>⚔️ ${s.manpower}/${maxManpowerOf(game.player)}</span>
       <span>🗺️ ${provincesOf(game.player).length}/${allProvinces().length}</span>
-    </div>`;
+    </div>${isFortune() ? `<div class="expbar" title="EXP"><i style="width:${Math.round(100 * game.fortune.exp / expNeeded())}%"></i></div>` : ""}`;
 }
 
 let panelDetails = false;   // the player opened the extra info in the bottom panel
@@ -3271,14 +3775,16 @@ function renderPanel() {
       <h2 class="end-title ${e.won ? "win" : "lose"}">${e.title}</h2>
       <div>${e.text}</div>
       <div class="end-stats">
-        ${T`${REALMS[game.player].name} (${tr(diff().label).toLowerCase()}) · ${game.year - RULES.startYear} ${yearsWord(game.year - RULES.startYear)} · ${battlesWon(s.won)}, ${s.lost} lost · ${provincesConquered(s.taken)} · most held at once: ${Math.max(s.peak, provincesOf(game.player).length)}`}
+        ${T`${REALMS[game.player].name} (${tr(diff().label).toLowerCase()}) · ${game.year - RULES.startYear} ${yearsWord(game.year - RULES.startYear)} · ${battlesWon(s.won)}, ${s.lost} lost · ${provincesConquered(s.taken)} · most held at once: ${Math.max(s.peak, provincesOf(game.player).length)}`}${isFortune() ? T` · Fortune, ${game.fortune.cards.length} cards` : ""}
       </div>
       ${game.notice ? `<div class="msg">${game.notice}</div>` : ""}
       <div class="spacer"></div>
       <div class="row">
         <button class="act light" data-do="share">${T`Share 📤`}</button>
-        ${online() ? `<button class="act light" data-do="${e.won && !(game.submitted || {})[e.final ? "united" : "victory"] ? "addscore" : "board"}">${T`Leaderboard 🏆`}</button>` : ""}
+        ${isFortune() ? `<button class="act light" data-do="cards">${T`Your cards 🃏`}</button>`
+          : online() ? `<button class="act light" data-do="${e.won && !(game.submitted || {})[e.final ? "united" : "victory"] ? "addscore" : "board"}">${T`Leaderboard 🏆`}</button>` : ""}
       </div>
+      ${isFortune() ? `<div class="hint">${T`Fortune runs are not on the leaderboard.`}</div>` : ""}
       <div class="row">
         ${e.final ? "" : `<button class="act go" data-do="keepplaying">${e.won ? T`Keep conquering` : T`Fight on`}</button>`}
         <button class="act ${e.final ? "" : "light"}" data-do="newgame">${T`New game`}</button>
@@ -3290,7 +3796,8 @@ function renderPanel() {
   const endTurnButton = `<button class="act" data-do="endturn">${T`End turn ⏳`}</button>`;
   const diploButton = `<button class="act light tool" data-do="diplomacy"><span>🤝</span>${T`Diplomacy`}</button>`;
   const devButton = `<button class="act light tool${devAttention() ? " attn" : ""}" data-do="developments"><span>📜</span>${T`Developments`}</button>`;
-  const navRow = `<div class="navrow">${diploButton}${devButton}${endTurnButton.replace('class="act"', 'class="act endturn"')}</div>`;
+  const cardsButton = isFortune() ? `<button class="act light tool" data-do="cards"><span>🃏</span>${T`Cards`}</button>` : "";
+  const navRow = `<div class="navrow">${diploButton}${devsOn() ? devButton : ""}${cardsButton}${endTurnButton.replace('class="act"', 'class="act endturn"')}</div>`;
   const detailsToggle = `<button class="more-toggle" data-do="details">${panelDetails ? T`Hide details ▴` : T`Details ▾`}</button>`;
 
   // --- The player pressed End turn but still has things to do ---
@@ -3317,8 +3824,9 @@ function renderPanel() {
     } else {
       const bonus = defenseBonus(from, to);
       const why = [];
-      if (to.building === "castle") why.push(T`castle`);
-      if (to.riverBorders.includes(from.id) && !mod(to.owner, "noRiver")) why.push(T`river 🌊`);
+      const walls = !mod(game.player, "ignoreWalls");   // Fortune: Siege Engineers
+      if (to.building === "castle" && walls) why.push(T`castle`);
+      if (to.riverBorders.includes(from.id) && !mod(to.owner, "noRiver") && walls) why.push(T`river 🌊`);
       if (mod(to.owner, "defense") > 0) why.push(T`pikemen 🔱`);
       const chance = Math.round(winChance(from, to, count) * 100);
       const charge = chargeOf(game.player);
@@ -3359,6 +3867,7 @@ function renderPanel() {
         <span class="chip">${wars.length ? T`⚔️ At war with ${wars.join(", ")}` : T`🕊️ At peace with every realm`}</span>
         ${allies.length ? `<span class="chip">${T`🤝 Allied with ${allies.join(", ")}`}</span>` : ""}
         ${devOf(game.player).free ? `<span class="chip">${T`🎁 Free first development`}</span>` : ""}
+        ${isFortune() ? `<span class="chip">${T`🃏 Level ${game.fortune.level} · ${game.fortune.exp}/${expNeeded()} EXP`}</span>` : ""}
       </div>
       ${msg}
       ${danger}
@@ -3432,6 +3941,216 @@ function renderPanel() {
     ${yours ? `<div class="actrow">${recruitButton}${buildButtons}</div>` : ""}
     ${navRow}`;
 }
+
+// =====================================================================
+// FORTUNE SCREEN
+// One screen for two things: the draft (pick 1 of 3 cards, or the cursed 4th)
+// and the list of your cards with the set bonuses. The offer is kept in
+// game.fortune.offer and saved, so closing the game doesn't give new cards.
+// =====================================================================
+
+const fortuneUI = { draft: false, sel: null, after: null };
+
+const draftsWaiting = () => isFortune() && !game.over && game.fortune.level > game.fortune.drafts;
+
+// Rarity chances for the next draft, in percent (they move toward rare cards with every draft)
+function draftOdds() {
+  const n = isFortune() ? game.fortune.drafts : 0, w = {};
+  for (const r of ["common", "rare", "epic", "legendary"]) {
+    w[r] = FORTUNE.odds[r] + FORTUNE.shift[r] * n;
+    if (FORTUNE.min[r] !== undefined) w[r] = Math.max(FORTUNE.min[r], w[r]);
+    if (FORTUNE.max[r] !== undefined) w[r] = Math.min(FORTUNE.max[r], w[r]);
+  }
+  const total = Object.values(w).reduce((a, b) => a + b, 0);
+  for (const r in w) w[r] = w[r] / total * 100;
+  return w;
+}
+
+// Cards that may still be offered: one copy of Epic, Legendary and Cursed cards,
+// nothing that is not for your realm or clashes with a card you own
+function cardPool(rarity, skip) {
+  const own = game.fortune.cards;
+  return CARDS.filter(c => c.rarity === rarity && !skip.includes(c.id) &&
+    (stacks(c) || !own.includes(c.id)) && !(c.notFor || []).includes(game.player) &&
+    !(c.excludes || []).some(x => own.includes(x)));
+}
+
+// One random card: first a rarity, then a card of that rarity (tags you already collect come up more often)
+function drawCard(skip, rarity) {
+  if (!rarity) {
+    const odds = draftOdds();
+    const open = Object.keys(odds).filter(r => cardPool(r, skip).length);
+    if (!open.length) return null;
+    let roll = Math.random() * open.reduce((s, r) => s + odds[r], 0);
+    rarity = open[open.length - 1];
+    for (const r of open) { roll -= odds[r]; if (roll <= 0) { rarity = r; break; } }
+  }
+  const pool = cardPool(rarity, skip);
+  if (!pool.length) return null;
+  const own = game.fortune.cards;
+  const weight = (c) => 1 + FORTUNE.tagPull * own.filter(id => CARD_BY_ID[id].tag === c.tag).length;
+  let roll = Math.random() * pool.reduce((s, c) => s + weight(c), 0);
+  for (const c of pool) { roll -= weight(c); if (roll <= 0) return c.id; }
+  return pool[pool.length - 1].id;
+}
+
+function makeOffer() {
+  const cards = [];
+  for (let i = 0; i < 3; i++) { const id = drawCard(cards); if (id) cards.push(id); }
+  return { cards, cursed: drawCard([], "cursed") };
+}
+
+const rerollCost = () => FORTUNE.rerollGold * (game.fortune.rerolls + 1);
+
+function rerollOffer() {
+  const realm = game.realms[game.player];
+  if (realm.gold < rerollCost()) return;
+  realm.gold -= rerollCost();
+  game.fortune.rerolls += 1;
+  game.fortune.offer = makeOffer();
+  fortuneUI.sel = null;
+  playSound("fortune");
+  saveGame();
+  renderFortune();
+}
+
+// Takes a card. Returns a short line about it (for the game message).
+function takeCard(id) {
+  const f = game.fortune, c = CARD_BY_ID[id];
+  const before = TAGS.map(setLevel);
+  f.cards.push(id);
+  f.drafts += 1;
+  f.rerolls = 0;
+  f.offer = null;
+  if (c.gold) game.realms[game.player].gold += c.gold;   // Debased Coinage pays at once
+  resetMods();
+  let text = T`You took ${cardName(id)}.`;
+  TAGS.forEach((t, i) => {
+    const now = setLevel(t);
+    if (now > before[i]) text += T` ${tagIcon(t)} ${tagName(t)} set bonus: ${setBonusText(t, now - 1)}!`;
+  });
+  return text;
+}
+
+// Shows the draft if a card is waiting, then carries on with "after"
+function maybeDraft(after) {
+  if (draftsWaiting() && document.getElementById("fortune").style.display !== "flex") openDraft(after || (() => {}));
+  else if (after) after();
+}
+
+function openDraft(after) {
+  const f = game.fortune;
+  if (!f.offer) { f.offer = makeOffer(); f.rerolls = 0; }
+  Object.assign(fortuneUI, { draft: true, sel: null, after });
+  saveGame();
+  renderFortune();
+  playSound("fortune");
+  show("fortune");
+}
+
+function openCards() {
+  Object.assign(fortuneUI, { draft: false, sel: null, after: null });
+  renderFortune();
+  show("fortune");
+}
+
+function closeFortune() {
+  hide("fortune");
+  render();
+  const after = fortuneUI.after;
+  fortuneUI.after = null;
+  if (after) after();
+}
+
+function cardTile(id, opts = {}) {
+  const c = CARD_BY_ID[id];
+  const owned = cardCount(id);
+  const extra = owned && stacks(c) ? ` · ${T`you have ${owned}`}` : "";
+  return `<button class="fo-card r-${c.rarity}${c.rarity === "cursed" ? " cursed" : ""}${opts.sel ? " sel" : ""}" data-card="${id}">
+    <span class="fo-emoji">${c.emoji}</span>
+    <span class="fo-name">${cardName(id)}</span>
+    <span class="fo-meta">${rarityName(c.rarity)} <span>· ${tagIcon(c.tag)} ${tagName(c.tag)}${extra}</span></span>
+    <span class="fo-text">${cardEffect(id)}</span>
+  </button>`;
+}
+
+// Your cards per tag, with the three set bonuses and how close you are
+function setsHTML() {
+  const f = game.fortune;
+  return TAGS.map(t => {
+    const n = tagCount(t);
+    const mine = [...new Set(f.cards.filter(id => CARD_BY_ID[id].tag === t))];
+    const chips = mine.map(id => {
+      const k = f.cards.filter(x => x === id).length;
+      return `<span class="fo-chip r-${CARD_BY_ID[id].rarity}">${CARD_BY_ID[id].emoji} ${cardName(id)}${k > 1 ? ` ×${k}` : ""}</span>`;
+    }).join("");
+    const lvls = FORTUNE.setAt.map((at, i) =>
+      `<div class="lvl${n >= at ? " on" : ""}">${n >= at ? "✓" : "○"} ${at}: ${setBonusText(t, i)}</div>`).join("");
+    const double = t === "faith" && f.cards.includes("devotion") ? T` (counts double)` : "";
+    return `<div class="fo-set"><h3>${tagIcon(t)} ${tagName(t)}: ${n}${double}</h3>${lvls}${mine.length ? `<div class="fo-owned">${chips}</div>` : ""}</div>`;
+  }).join("");
+}
+
+function renderFortune() {
+  const f = game.fortune, realm = game.realms[game.player];
+  const title = document.getElementById("fo-title"), sub = document.getElementById("fo-sub");
+  const odds = document.getElementById("fo-odds"), offer = document.getElementById("fo-offer");
+  const detail = document.getElementById("fo-detail");
+  const e = FORTUNE.exp;
+  document.getElementById("fo-sets").innerHTML = (fortuneUI.draft ? `<div class="fo-label mine">${T`YOUR CARDS`}</div>` : "") + setsHTML() +
+    (fortuneUI.draft ? "" : `<div class="fo-how">${T`EXP: +${e.year} every year, +${e.province} for every province you gain (+${e.capital} more for a capital), +${e.defense} for every defense you win, +${e.lost} for every province you lose, +${e.failed} for a failed attack.`}</div>`);
+
+  if (!fortuneUI.draft) {
+    title.textContent = T`Your cards`;
+    sub.textContent = T`Level ${f.level} · ${f.exp}/${expNeeded()} EXP to the next card`;
+    const o = draftOdds();
+    odds.textContent = T`Next draft: Common ${Math.round(o.common)}% · Rare ${Math.round(o.rare)}% · Epic ${Math.round(o.epic)}% · Legendary ${Math.round(o.legendary)}%`;
+    offer.innerHTML = "";
+    detail.innerHTML = `<div class="row"><button class="act" data-fo="close">${T`Back`}</button></div>`;
+    return;
+  }
+
+  const o = draftOdds();
+  title.textContent = T`Level ${f.drafts + 1}!`;
+  sub.textContent = T`Fortune smiles. Pick a card. Treasury: ${realm.gold} 💰`;
+  odds.textContent = T`Common ${Math.round(o.common)}% · Rare ${Math.round(o.rare)}% · Epic ${Math.round(o.epic)}% · Legendary ${Math.round(o.legendary)}%`;
+  offer.innerHTML = f.offer.cards.map(id => cardTile(id, { sel: fortuneUI.sel === id })).join("") +
+    (f.offer.cursed ? `<div class="fo-label">${T`OR TEMPT FATE`}</div>${cardTile(f.offer.cursed, { sel: fortuneUI.sel === f.offer.cursed })}` : "") +
+    (f.offer.cards.length ? "" : `<div class="fo-empty">${T`No cards left to offer.`}</div>`);
+
+  const cost = rerollCost();
+  const reroll = `<button class="act light" data-fo="reroll" ${realm.gold >= cost ? "" : "disabled"}>${T`Reroll (${cost} 💰)`}</button>`;
+  const take = fortuneUI.sel
+    ? `<button class="act ${CARD_BY_ID[fortuneUI.sel].rarity === "cursed" ? "go" : ""}" data-fo="take">${T`Take ${cardName(fortuneUI.sel)}`}</button>`
+    : f.offer.cards.length ? `<button class="act" disabled>${T`Pick a card`}</button>`
+    : `<button class="act" data-fo="skip">${T`Continue`}</button>`;
+  detail.innerHTML = `<div class="sub">${fortuneUI.sel ? cardEffect(fortuneUI.sel) : T`Tap a card to look at it, then take it.`}</div><div class="row">${reroll}${take}</div>`;
+}
+
+document.getElementById("fortune").addEventListener("click", (e) => {
+  const card = e.target.closest("[data-card]"), b = e.target.closest("button[data-fo]");
+  if (card && fortuneUI.draft) { fortuneUI.sel = card.dataset.card; renderFortune(); return; }
+  if (!b || b.disabled) return;
+  const what = b.dataset.fo;
+  if (what === "close") closeFortune();
+  if (what === "reroll") rerollOffer();
+  if (what === "skip") { game.fortune.drafts += 1; game.fortune.offer = null; closeFortune(); }
+  if (what === "take" && fortuneUI.sel) {
+    const id = fortuneUI.sel;
+    game.message = takeCard(id);
+    playSound(CARD_BY_ID[id].rarity === "cursed" ? "curse" : "develop");
+    saveGame();
+    // More than one card waiting (a big year): deal the next one right away
+    if (draftsWaiting()) {
+      game.fortune.offer = makeOffer();
+      fortuneUI.sel = null;
+      render();
+      renderFortune();
+      return;
+    }
+    closeFortune();
+  }
+});
 
 // =====================================================================
 // BATTLE SCREEN
@@ -3742,6 +4461,13 @@ function playSound(name) {
     // A short fanfare with a bell on top: something new was built or learned
     [392, 523, 659].forEach((f, i) => tone(ctx, f, i * 0.13, 0.28, "triangle", 0.12));
     tone(ctx, 1047, 0.42, 0.7, "sine", 0.08);
+  } else if (name === "fortune") {
+    // Fortune: a quick rising shimmer when the cards are dealt
+    [659, 784, 988, 1319].forEach((f, i) => tone(ctx, f, i * 0.07, 0.35, "sine", 0.07));
+  } else if (name === "curse") {
+    // A cursed card: two low, uneasy notes
+    tone(ctx, 147, 0, 0.5, "sawtooth", 0.05);
+    tone(ctx, 139, 0.3, 0.7, "sawtooth", 0.05);
   } else if (name === "event") {
     tone(ctx, 587, 0, 0.3, "sine", 0.1);
     tone(ctx, 880, 0.12, 0.45, "sine", 0.08);
@@ -3853,7 +4579,7 @@ async function api(path, options = {}) {
 
 // Anonymous statistics: one row when a game starts, one when it ends
 function logEvent(kind, extra = {}) {
-  if (!online()) return;
+  if (!online() || game.mode === "fortune") return;   // the database can't tell Fortune runs apart yet, so they are not logged
   api("events", {
     method: "POST",
     body: JSON.stringify({ kind, realm: game.player, difficulty: game.difficulty, version: GAME_VERSION, ...extra })
@@ -3901,11 +4627,13 @@ function renderBoardForm() {
 
 // The leaderboard this game's result belongs on, if it's a win
 const scoreCategory = () => (game.endInfo && game.endInfo.won ? (game.endInfo.final ? "united" : "victory") : null);
-const canSubmitScore = () => online() && scoreCategory() && !(game.submitted || {})[scoreCategory()];
+// Fortune runs never go on the leaderboard (the database has no column for the mode yet)
+const canSubmitScore = () => online() && !isFortune() && scoreCategory() && !(game.submitted || {})[scoreCategory()];
 function savedName() { try { return localStorage.getItem("lords-name") || ""; } catch (e) { return ""; } }
 
 // Adds this game to the leaderboard; returns its place (1 = best)
 async function postScore(name) {
+  if (isFortune()) throw new ApiError(0, "fortune");   // never mix Fortune scores with the campaign
   const category = scoreCategory(), years = game.year - RULES.startYear;
   await api("scores", { method: "POST", body: JSON.stringify({
     name, realm: game.player, difficulty: game.difficulty, category,
@@ -4399,6 +5127,7 @@ document.getElementById("panel").addEventListener("click", (e) => {
   const action = button.dataset.do;
   const order = game.order;
   if (action === "keepplaying") { keepPlaying(); return; }
+  if (action === "cards") { openCards(); return; }
   if (action === "share") { openShareForm(); return; }
   if (action === "addscore") { openBoard(true); return; }
   if (action === "board") { openBoard(false); return; }
@@ -4434,7 +5163,7 @@ document.getElementById("panel").addEventListener("click", (e) => {
       game.selected = (to.owner === game.player) ? to.id : from.id;
       render();
       guideEvent("acted");
-      showBattle(result, () => { checkGameOver(); render(); });
+      showBattle(result, () => { checkGameOver(); render(); maybeDraft(); });
       return;
     }
   }
@@ -4450,13 +5179,14 @@ function show(id) { document.getElementById(id).style.display = "flex"; renderGu
 function hide(id) { document.getElementById(id).style.display = "none"; renderGuide(); }
 
 function showStart() {
-  hide("menu"); hide("diplo"); hide("eventcard"); hide("battle"); hide("yearview");
-  const save = loadSave();
+  hide("menu"); hide("diplo"); hide("eventcard"); hide("battle"); hide("yearview"); hide("fortune");
+  const save = loadSave(chosenMode);   // each mode has its own saved game
   const button = document.getElementById("continue");
   if (save) {
     const owned = Object.values(save.provinces).filter(p => p.owner === save.player).length;
     const level = tr((DIFFICULTY[save.difficulty] || DIFFICULTY.normal).label).toLowerCase();
-    button.innerHTML = `${crest(save.player, 40)}<span><b>${T`Continue`}</b><small>${T`${REALMS[save.player].name} · ${save.year} · ${owned} provinces · ${level}`}</small></span>`;
+    const cards = save.fortune ? T` · ${save.fortune.cards.length} cards` : "";
+    button.innerHTML = `${crest(save.player, 40)}<span><b>${save.fortune ? T`Continue Fortune` : T`Continue`}</b><small>${T`${REALMS[save.player].name} · ${save.year} · ${owned} provinces · ${level}`}${cards}</small></span>`;
     button.style.display = "flex";
     button.onclick = () => { hide("start"); continueGame(save); };
   } else {
@@ -4475,6 +5205,26 @@ function drawStartMap() {
   }
   el("path", { d: MAP_SHAPES.rivers, fill: "none", stroke: "#5f8fa3", "stroke-width": 3 }, map);
 }
+
+// The mode picker: the normal campaign or Fortune (remembered on this device)
+let chosenMode = "campaign";
+try { chosenMode = localStorage.getItem("lords-mode") === "fortune" ? "fortune" : "campaign"; } catch (e) {}
+function renderMode() {
+  document.getElementById("mode").innerHTML = [["campaign", T`Campaign`], ["fortune", T`Fortune 🃏`]]
+    .map(([id, label]) => `<button class="${id === chosenMode ? "on" : ""}" data-mode="${id}">${label}</button>`).join("");
+  document.getElementById("mode-text").textContent = chosenMode === "fortune"
+    ? T`Earn EXP every year and in battle. Each level, pick 1 of 3 cards that bend the rules. No developments, not on the leaderboard.`
+    : T`The classic game: conquer the Low Countries by 1400.`;
+}
+document.getElementById("mode").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-mode]");
+  if (!b) return;
+  chosenMode = b.dataset.mode;
+  try { localStorage.setItem("lords-mode", chosenMode); } catch (e) {}
+  newGameArmed = false;
+  renderMode();
+  showStart();
+});
 
 // The difficulty picker remembers your last choice on this device
 let chosenDifficulty = "normal";
@@ -4499,7 +5249,7 @@ document.getElementById("topbar").addEventListener("click", (e) => {
 });
 function updateMenuText() {
   document.getElementById("menu-text").textContent =
-    T`${REALMS[game.player].name}, ${game.year}, ${tr(diff().label).toLowerCase()}. Your game is saved automatically.`;
+    (isFortune() ? T`Fortune: ` : "") + T`${REALMS[game.player].name}, ${game.year}, ${tr(diff().label).toLowerCase()}. Your game is saved automatically.`;
 }
 function closeMenu() { hide("menu"); }
 function quitToStart() { saveGame(); showStart(); }
@@ -4517,10 +5267,10 @@ function buildRealmCards() {
     b.style.setProperty("--side", r.color);
     b.innerHTML = `${crest(id, 62)}<span class="rc-name">${r.name}</span><span class="rc-info">${T`${count} provinces`}</span><span class="rc-trait"><b>${traitName(id)}</b><br>${traitShort(id)}</span>`;
     b.onclick = () => {
-      if (loadSave() && !confirmNewGame()) return;
+      if (loadSave(chosenMode) && !confirmNewGame()) return;
       hide("start");
-      newGame(id, chosenDifficulty);
-      setTimeout(openDevelopments, 400);   // the free first pick
+      newGame(id, chosenDifficulty, chosenMode);
+      if (devsOn()) setTimeout(openDevelopments, 400);   // the free first pick (not in Fortune)
     };
     buttons.appendChild(b);
   }
@@ -4569,6 +5319,7 @@ function setLanguage(lang) {
   document.getElementById("lang-btn").textContent = lang === "nl" ? "🌐 Nederlands" : "🌐 English";
   document.getElementById("sound-btn").textContent = sound.on ? T`Sound: on 🔊` : T`Sound: off 🔇`;
   buildRealmCards();
+  renderMode();
   renderDifficulty();
   if (document.getElementById("start").style.display !== "none") showStart();
   if (game.player) render();
