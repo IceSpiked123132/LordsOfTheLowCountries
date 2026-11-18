@@ -102,11 +102,13 @@ def path(g, closed=True, tol=0.4):
             for q in p.geoms: walk(q)
     walk(g); return "".join(out)
 borders = []
+border_lines = {}
 for a in range(len(ids)):
     for b in range(a+1, len(ids)):
         A, Bc = ids[a], ids[b]
         line = cells[A].boundary.intersection(cells[Bc].buffer(0.6))
         L = 0 if line.is_empty else line.length
+        if L >= 4: border_lines[f"{A}|{Bc}"] = path(line)
         if L < 15: continue
         near = line.intersection(rivers.buffer(7)).length
         cross = LineString([seeds[A], seeds[Bc]]).intersects(rivers)
@@ -118,6 +120,7 @@ print("viewBox", vb, "borders", len(borders))
 rows = ",\n".join('  ["%s","%s"%s]' % (a, b, ', true' if r else '') for a, b, r in borders)
 subs = {"__VIEWBOX__": vb, "__BORDERS__": rows,
         "__TERRITORIES__": json.dumps({i: path(cells[i]) for i in ids}),
+        "__BORDER_LINES__": json.dumps(border_lines),
         "__MAP_SHAPES__": json.dumps({"land": path(land, tol=0.6), "rivers": path(rivers, tol=0.5)}),
         "__ICONS__": open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons.js"), encoding="utf-8").read()}
 for k, v in subs.items():

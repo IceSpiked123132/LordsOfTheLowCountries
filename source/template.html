@@ -73,25 +73,42 @@
   #topbar .realm { font-family: 'Cinzel', serif; font-weight: 800; display: flex; align-items: center; gap: 8px; }
   #topbar .swatch { width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(239,227,196,.7); }
   #topbar .stats { display: flex; gap: 12px; }
+  #topbar .stat { position: relative; padding: 4px 2px 6px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #topbar .stat small { opacity: .85; }
+  /* Progress toward the 16 provinces you need to win, under the province count */
+  #topbar .pbar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 2px; background: rgba(239,227,196,.22); }
+  #topbar .pbar b { display: block; height: 100%; border-radius: 2px; background: #d4a72c; transition: width .4s; }
+  #topbar .statpop {
+    position: absolute; left: 10px; right: 10px; top: calc(100% + 6px); z-index: 6;
+    background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 9px 12px; font-size: 14.5px; line-height: 1.3; animation: drop .25s ease-out;
+  }
 
   /* The map. The svg is allowed to draw outside its box (overflow: visible),
      so on any screen shape the edges show more real map instead of a hard cut. */
   #mapwrap { flex: 1; min-height: 0; position: relative; background: var(--sea); overflow: hidden; }
   #map { width: 100%; height: 100%; display: block; overflow: visible; touch-action: none; }
   #zoom-ctrl { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
+  /* First-game tips: a slim banner between the map and the panel, so it never covers the map */
   #guide {
-    position: absolute; left: 8px; right: 58px; bottom: 8px; z-index: 4; display: none;
-    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 8px 12px; font-size: 15px; line-height: 1.3; box-shadow: var(--shadow);
-    animation: drop .35s ease-out;
+    display: none; flex: none; min-height: 84px; background: var(--paper); border-top: 3px solid var(--ink);
+    padding: 8px 12px; font-size: 14.5px; line-height: 1.3; animation: drop .35s ease-out;
   }
-  .guide-head { font-family: 'Cinzel', serif; font-weight: 800; font-size: 11px; letter-spacing: .15em; color: var(--ink-soft); margin-bottom: 2px; }
-  .guide-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+  .guide-row { display: flex; gap: 10px; align-items: center; }
+  .guide-text { flex: 1; min-width: 0; }
+  .guide-head { font-family: 'Cinzel', serif; font-weight: 800; font-size: 10px; letter-spacing: .15em; color: var(--ink-soft); margin-bottom: 1px; }
+  .guide-buttons { display: flex; flex-direction: column; align-items: stretch; gap: 4px; flex: none; width: 92px; }
   .guide-buttons button {
-    font-family: 'Cinzel', serif; font-weight: 800; font-size: 12px; padding: 6px 12px; border-radius: 8px;
+    font-family: 'Cinzel', serif; font-weight: 800; font-size: 12px; padding: 7px 8px; border-radius: 8px;
     border: 1px solid var(--ink); background: var(--paper); color: var(--ink); cursor: pointer;
   }
   .guide-buttons button.on { background: var(--ink); color: var(--parchment); }
+  .guide-buttons button.skip { border-color: transparent; background: none; font-weight: 600; font-size: 11px; color: var(--ink-soft); text-decoration: underline; padding: 2px 0; letter-spacing: 0; }
+  /* What a tip points at: your provinces, or the Developments button */
+  .terr.guide-pulse { animation: terrPulse 1.4s ease-in-out infinite; }
+  @keyframes terrPulse { 50% { stroke: #ffd24a; stroke-width: 3.5; stroke-opacity: 1; } }
+  button.act.guide-hl { animation: btnPulse 1.4s ease-in-out infinite; }
+  @keyframes btnPulse { 50% { box-shadow: 0 0 0 4px rgba(210, 59, 43, .45); } }
   #zoom-ctrl button {
     width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line);
     background: var(--paper); color: var(--ink); font-size: 20px; font-weight: 800; cursor: pointer; box-shadow: var(--shadow);
@@ -110,11 +127,13 @@
   .arrow-head { stroke: #fff8e0; stroke-width: 2; pointer-events: none; }
   .arrow-x { font-size: 22px; font-weight: 800; fill: #fff8e0; stroke: var(--ink); stroke-width: 1.5; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
   .land { fill: #d8caa3; stroke: #a89468; stroke-width: 1; }
-  .terr { stroke: var(--ink); stroke-width: 1; stroke-opacity: .6; fill-opacity: .75; cursor: pointer; }
+  .terr { stroke: var(--ink); stroke-width: 1; stroke-opacity: .35; fill-opacity: .82; cursor: pointer; }
+  /* Where two different owners meet: one clear dark line, drawn over the thin province lines */
+  .obd { fill: none; stroke: #2e2113; stroke-width: 3.4; stroke-opacity: .85; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
   .terr.neighbor { fill-opacity: .98; stroke-width: 2; stroke-opacity: 1; }
   .terr-outline { fill: none; stroke: #fff8e0; stroke-width: 5; stroke-linejoin: round; pointer-events: none; }
   .terr-outline.target { stroke: #ffd24a; stroke-dasharray: 9 6; }
-  .river { fill: none; stroke: #5f8fa3; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+  .river { fill: none; stroke: #6aa0b6; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
   .order-line { stroke: #fff8e0; stroke-width: 6; stroke-linecap: round; pointer-events: none; }
   .city circle { fill: var(--ink); stroke: var(--parchment); stroke-width: 2; cursor: pointer; }
   .city .army { font-family: 'Cinzel', serif; font-size: 17px; font-weight: 800; fill: #fff; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
@@ -128,9 +147,9 @@
 
   /* Info and action panel at the bottom */
   #panel {
-    min-height: 196px; padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
+    min-height: 232px; padding: 8px 14px calc(10px + env(safe-area-inset-bottom));
     background: var(--parchment-dark); border-top: 3px solid var(--ink);
-    font-size: 16px; display: flex; flex-direction: column; gap: 8px;
+    font-size: 16px; display: flex; flex-direction: column; gap: 6px;
   }
   #panel h2 { margin: 0; font-size: 19px; line-height: 1.15; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   #panel h2 .owner { font-family: 'EB Garamond', serif; font-weight: 400; font-size: 15px; }
@@ -138,6 +157,17 @@
   #panel .hint { color: var(--ink-soft); font-style: italic; line-height: 1.25; }
   #panel .msg { background: var(--paper); border-left: 4px solid var(--ink); padding: 6px 10px; border-radius: 6px 10px 10px 6px; line-height: 1.25; }
   #panel .spacer { flex: 1; }
+  #panel .ph { display: flex; align-items: center; gap: 8px; }
+  #panel .ph h2 { flex: 1; min-width: 0; }
+  #panel .inline-hint { font-size: 15px; line-height: 1.3; color: var(--ink-soft); font-style: italic; }
+  #panel .inline-hint button.more-toggle { display: inline; font-style: normal; margin-left: 6px; }
+  .dev-th s { opacity: .6; margin-right: 4px; }
+  /* The year's gain: a province you took flashes and shows +1 */
+  .capture-flash { fill: #fff8e0; stroke: #ffd24a; stroke-width: 4; pointer-events: none; opacity: 0; animation: capFlash 1.3s ease-out 1; }
+  @keyframes capFlash { 0% { opacity: .85; } 100% { opacity: 0; } }
+  .gain-text { font-family: 'Cinzel', serif; font-weight: 800; font-size: 22px; fill: #fff8e0; stroke: var(--ink); stroke-width: 5px; paint-order: stroke;
+    text-anchor: middle; pointer-events: none; animation: gainUp 1.6s ease-out 1 forwards; }
+  @keyframes gainUp { 0% { opacity: 0; transform: translateY(8px); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-26px); } }
   /* Four numbers in a strip: icon and value, small label underneath */
   .stats4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
   .stats4 > div {
@@ -156,7 +186,7 @@
   .more-box { display: flex; flex-direction: column; gap: 4px; }
   /* Row of buttons at the bottom: two small tools and the main button */
   .navrow { display: flex; gap: 8px; align-items: stretch; }
-  .navrow button.act { min-height: 48px; }
+  .navrow button.act { min-height: 44px; }
   .navrow button.tool {
     flex: 0 0 27%; display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 1px; padding: 3px 1px; font-size: 10px; line-height: 1.1; letter-spacing: 0; position: relative;
@@ -164,7 +194,7 @@
   .navrow button.tool span { font-size: 19px; line-height: 1; }
   .navrow button.endturn { flex: 1; font-size: 14px; line-height: 1.15; padding: 4px 6px; }
   .actrow { display: flex; gap: 8px; }
-  .actrow button.act { min-height: 50px; font-size: 13px; line-height: 1.2; padding: 4px 4px; }
+  .actrow button.act { min-height: 46px; font-size: 13px; line-height: 1.2; padding: 4px 4px; }
   .row { display: flex; gap: 8px; align-items: center; }
   button.act {
     flex: 1; min-height: 46px; padding: 6px 10px;
@@ -237,9 +267,10 @@
   .diff button.on { background: var(--ink); color: var(--parchment); }
   .diff-text { font-size: 14px; color: var(--ink-soft); min-height: 36px; text-align: center; }
   /* Mode (Campaign or Fortune) and difficulty share one compact block, so the start screen keeps its height */
-  .start-choices { width: 100%; display: flex; flex-direction: column; gap: 5px; margin-top: 4px; }
+  .start-choices { width: 100%; display: flex; flex-direction: column; gap: 4px; margin-top: 0; }
   .start-choices .diff-text { margin-top: -1px; }
-  .diff.mode button { padding: 6px 0; font-size: 12px; }
+  .diff.mode button { padding: 4px 0 3px; font-size: 12px; line-height: 1.05; }
+  .diff.mode button small { display: block; font-family: 'EB Garamond', serif; font-weight: 600; font-size: 10.5px; line-height: 1.1; opacity: .8; margin-top: 0; }
   .crest { display: inline-block; vertical-align: middle; flex: none; }
 
   /* Leaderboard, feedback and share screens */
@@ -507,13 +538,13 @@
   <div id="topbar"></div>
   <div id="mapwrap">
     <svg id="map" viewBox="__VIEWBOX__"></svg>
-    <div id="guide"></div>
     <div id="zoom-ctrl">
       <button data-zoom="in" aria-label="Zoom in">+</button>
       <button data-zoom="out" aria-label="Zoom out">−</button>
       <button data-zoom="reset" aria-label="Show whole map">⟲</button>
     </div>
   </div>
+  <div id="guide"></div>
   <div id="panel"></div>
 
   <div id="start" class="overlay">
@@ -613,7 +644,7 @@
       <details>
         <summary>Developments</summary>
         <div>
-        <p>Press <b>Developments 📜</b> to research improvements in three branches: Trade, War and Rule. Every branch has three tiers, and in each tier you choose one of two options, so no two games develop the same way. A development costs gold when you start it and takes 3 years, and only one can be developed at a time. Your first tier I pick is free. Your realm's favourite branch (★) is 20% cheaper. The other realms develop too.</p>
+        <p>Press <b>Developments 📜</b> to research improvements in three branches: Trade, War and Rule. Every branch has three tiers, and in each tier you choose one of two options, so no two games develop the same way. A development costs gold when you start it and takes 3 years, and only one can be developed at a time. Your first tier I pick is free. Each realm has one fixed specialty branch (★), whatever you pick, and it is 20% cheaper. The other realms develop too.</p>
         </div>
       </details>
       <details>
@@ -700,7 +731,7 @@
       <details>
         <summary>Ontwikkelingen</summary>
         <div>
-        <p>Druk op <b>Ontwikkelingen 📜</b> om verbeteringen te onderzoeken in drie takken: Handel, Oorlog en Bestuur. Elke tak heeft drie niveaus, en per niveau kies je één van twee opties, dus geen twee spellen ontwikkelen zich hetzelfde. Een ontwikkeling kost goud als je begint en duurt 3 jaar, en je kunt er maar één tegelijk ontwikkelen. Je eerste keuze van niveau I is gratis. De favoriete tak van je rijk (★) is 20% goedkoper. De andere rijken ontwikkelen ook.</p>
+        <p>Druk op <b>Ontwikkelingen 📜</b> om verbeteringen te onderzoeken in drie takken: Handel, Oorlog en Bestuur. Elke tak heeft drie niveaus, en per niveau kies je één van twee opties, dus geen twee spellen ontwikkelen zich hetzelfde. Een ontwikkeling kost goud als je begint en duurt 3 jaar, en je kunt er maar één tegelijk ontwikkelen. Je eerste keuze van niveau I is gratis. Elk rijk heeft één vaste specialiteitstak (★), ongeacht wat je kiest, en die is 20% goedkoper. De andere rijken ontwikkelen ook.</p>
         </div>
       </details>
       <details>
@@ -1101,10 +1132,7 @@ const NL = {
   "Move": "Verplaatsen",
   "Attack ⚔️": "Aanvallen ⚔️",
   "Your realm has lost ground: recruits cost only {} 💰, and fortune favors you.": "Je rijk heeft terrein verloren: rekruten kosten maar {0} 💰, en het geluk staat aan jouw kant.",
-  "Conquer all {} provinces to unite the Low Countries.": "Verover alle {0} provincies om de Lage Landen te verenigen.",
-  "Own {} of the {} provinces to win.": "Bezit {0} van de {1} provincies om te winnen.",
   "⚔️ At war with {}": "⚔️ In oorlog met {0}",
-  "🕊️ At peace with every realm": "🕊️ In vrede met alle rijken",
   "🤝 Allied with {}": "🤝 Bondgenoot van {0}",
   "Tap one of your provinces to recruit or to send its army.": "Tik op een van je provincies om te rekruteren of een leger te sturen.",
   "{} ({} ready)": "{0} ({1} klaar)",
@@ -1139,11 +1167,19 @@ const NL = {
   "<b>Defeat.</b> The attack on {} failed.": "<b>Nederlaag.</b> De aanval op {0} is mislukt.",
   "<b>{} has fallen.</b>": "<b>{0} is gevallen.</b>",
   "<b>Held!</b> {} beat back the attack.": "<b>Standgehouden!</b> {0} heeft de aanval afgeslagen.",
-  "You rule the {}: the provinces in your color. Tap one of them to see what you can do there.": "Jij regeert over het {0}: de provincies in jouw kleur. Tik op een ervan om te zien wat je daar kunt doen.",
-  "Here you can recruit soldiers or build a farm or castle. To send an army, tap a neighboring province. The grey ones are independent: you can attack them any time.": "Hier kun je soldaten rekruteren of een boerderij of kasteel bouwen. Tik op een aangrenzende provincie om een leger te sturen. De grijze zijn onafhankelijk: die kun je altijd aanvallen.",
-  "To attack another realm, first declare war under Diplomacy 🤝. Both armies then need one turn to mobilize before the fighting can start.": "Om een ander rijk aan te vallen, verklaar je eerst de oorlog via Diplomatie 🤝. Beide legers hebben dan één beurt nodig om te mobiliseren voordat er gevochten kan worden.",
-  "Done for this year? Press End turn. The other realms make their moves, and the map shows you what they did.": "Klaar voor dit jaar? Druk op Beurt beëindigen. De andere rijken doen hun zetten, en de kaart laat zien wat ze deden.",
-  "Every year your provinces pay gold, and every regiment costs 1 💰 upkeep. Own {} of the {} provinces to win. Good luck!": "Elk jaar leveren je provincies goud op, en elk regiment kost 1 💰 onderhoud. Bezit {0} van de {1} provincies om te winnen. Succes!",
+  "You rule the {}: the provinces in your color. Tap one to see what you can do there.": "Jij regeert over het {0}: de provincies in jouw kleur. Tik op een ervan om te zien wat je daar kunt doen.",
+  "Recruit or build here. To send an army, tap a neighboring province. Grey ones are independent: you can always attack them.": "Rekruteer of bouw hier. Tik op een aangrenzende provincie om een leger te sturen. Grijze zijn onafhankelijk: die kun je altijd aanvallen.",
+  "Developments give your realm lasting bonuses. Your first one is free: open Developments and pick one.": "Ontwikkelingen geven je rijk blijvende voordelen. Je eerste is gratis: open Ontwikkelingen en kies er een.",
+  "To attack another realm, declare war under Diplomacy 🤝 first. Armies need one turn to mobilize.": "Om een ander rijk aan te vallen, verklaar je eerst de oorlog via Diplomatie 🤝. Legers hebben één beurt nodig om te mobiliseren.",
+  "Done for this year? Press End turn. The other realms move, and the map shows what they did.": "Klaar voor dit jaar? Druk op Beurt beëindigen. De andere rijken doen hun zetten en de kaart laat zien wat ze deden.",
+  "Your provinces pay gold each year and every regiment costs 1 💰 upkeep. Own {} of the {} provinces to win.": "Je provincies leveren elk jaar goud op en elk regiment kost 1 💰 onderhoud. Bezit {0} van de {1} provincies om te winnen.",
+  "Gold in your treasury. Each year your provinces pay {} and your regiments cost {} upkeep.": "Goud in je schatkist. Elk jaar leveren je provincies {0} op en kosten je regimenten {1} onderhoud.",
+  "Manpower: {}. Each new regiment uses 1. Your provinces add more every year, up to {}.": "Mankracht: {0}. Elk nieuw regiment kost 1. Je provincies voegen elk jaar meer toe, tot maximaal {1}.",
+  "Provinces you own: {} of {}. Conquer all of them to unite the Low Countries.": "Provincies in bezit: {0} van de {1}. Verover ze allemaal om de Lage Landen te verenigen.",
+  "Provinces you own: {} of {}. Reach {} to win.": "Provincies in bezit: {0} van de {1}. Haal er {2} om te winnen.",
+  "+1 province": "+1 provincie",
+  "Classic, 1350 to 1400": "Klassiek, 1350 tot 1400",
+  "Level up, pick cards": "Level omhoog, kies kaarten",
   "Tip {} of {}": "Tip {0} van {1}",
   "Skip tips": "Tips overslaan",
   "Got it": "Begrepen",
@@ -1205,13 +1241,12 @@ const NL = {
   "Press and hold the image to save or share it.": "Houd de afbeelding ingedrukt om haar op te slaan of te delen.",
   "Download the image": "Download de afbeelding",
   "Tap an option to choose it.": "Tik op een optie om te kiezen.",
-  "★ Your favourite branch: 20% cheaper.": "★ Jouw favoriete tak: 20% goedkoper.",
+  "★ Specialty of your realm: 20% cheaper. Each realm has one fixed specialty.": "★ Specialiteit van je rijk: 20% goedkoper. Elk rijk heeft één vaste specialiteit.",
   "Tier {}": "Niveau {0}",
   "Free 🎁": "Gratis 🎁",
   "Diplomacy": "Diplomatie",
   "Details ▾": "Details ▾",
   "Hide details ▴": "Verberg details ▴",
-  "🎁 Free first development": "🎁 Gratis eerste ontwikkeling",
   "Income": "Inkomen",
   "Manpower": "Mankracht",
   "Army": "Leger",
@@ -1879,7 +1914,7 @@ const PROVINCES = {
   dordrecht: { name: "Dordrecht", owner: "holland", x: 105, y: 352, income: 3, manpower: 1 },
   middelburg:{ name: "Middelburg",owner: "holland", x: -50, y: 418, income: 2, manpower: 1, labelAbove: true },
   // Bishopric of Utrecht (the Nedersticht around Utrecht, the Oversticht in the east)
-  utrecht:   { name: "Utrecht",   owner: "utrecht", x: 173, y: 288, income: 3, manpower: 2 },
+  utrecht:   { name: "Utrecht",   owner: "utrecht", x: 173, y: 288, income: 3, manpower: 2, crownAbove: true },
   amersfoort:{ name: "Amersfoort",owner: "utrecht", x: 222, y: 266, income: 1, manpower: 2 },
   zwolle:    { name: "Zwolle",    owner: "utrecht", x: 318, y: 186, income: 2, manpower: 1 },
   deventer:  { name: "Deventer",  owner: "utrecht", x: 329, y: 243, income: 2, manpower: 1 },
@@ -1921,6 +1956,9 @@ const TERRITORIES = __TERRITORIES__;
 
 // Map outline: land and river shapes, already converted to map positions.
 const MAP_SHAPES = __MAP_SHAPES__;
+
+// The shared edge of two neighbouring provinces, keyed "a|b" (used to draw owner borders).
+const BORDER_LINES = __BORDER_LINES__;
 
 // =====================================================================
 // 2. GAME STATE
@@ -2950,6 +2988,11 @@ function devAttention() {
   if (!devsOn()) return false;
   const me = game.player;
   if (!me || !game.realms[me]) return false;
+  // During the first-game tips the dot appears only from the Developments tip on
+  if (guide.step !== null) {
+    const steps = guideSteps(), i = steps.findIndex(st => st.id === "developments");
+    if (guide.step < i) return false;
+  }
   const d = devOf(me), open = openDevs(me);
   if (d.free) return true;
   if (d.current || open.length === 0) return false;
@@ -2957,6 +3000,7 @@ function devAttention() {
 }
 
 function openDevelopments() {
+  guideEvent("devopen");
   devUI.sel = null;
   devUI.branch = devUI.branch || FAVOURITE[game.player] || BRANCHES[0];
   renderDevelopments();
@@ -2978,12 +3022,14 @@ function renderDevelopments() {
     const done = DEVELOPMENTS.filter(o => o.branch === b && d.done.includes(o.id)).length;
     return `<button class="dev-tab${b === cur ? " on" : ""}" data-branch="${b}" style="--branch:${colors[b]}">${branchIcon(b)} ${branchName(b)}${FAVOURITE[me] === b ? " ★" : ""}<small>${"●".repeat(done)}${"○".repeat(3 - done)}</small></button>`;
   }).join("");
-  document.getElementById("dev-note").textContent = FAVOURITE[me] === cur ? T`★ Your favourite branch: 20% cheaper.` : "";
+  document.getElementById("dev-note").textContent = FAVOURITE[me] === cur ? T`★ Specialty of your realm: 20% cheaper. Each realm has one fixed specialty.` : "";
 
   document.getElementById("dev-grid").innerHTML = [1, 2, 3].map(t => {
     const options = DEVELOPMENTS.filter(o => o.branch === cur && o.tier === t);
     const tierDone = options.some(o => d.done.includes(o.id));
-    const price = tierDone ? "✅" : d.free && t === 1 ? T`Free 🎁` : `${devCost(me, options[0])} 💰`;
+    const cost = devCost(me, options[0]);
+    const price = tierDone ? "✅" : d.free && t === 1 ? T`Free 🎁`
+      : cost < DEV.costs[t - 1] ? `<s>${DEV.costs[t - 1]}</s>${cost} 💰` : `${cost} 💰`;
     const cards = options.map(o => {
       const st = devState(me, o);
       const icon = st === "done" ? "✅" : st === "current" ? "⏳" : st === "locked" ? "🔒" : o.emoji;
@@ -3496,6 +3542,7 @@ function el(tag, attrs, parent) {
 }
 
 function render() {
+  statPop = null;
   renderMap();
   renderTopbar();
   renderPanel();
@@ -3516,8 +3563,15 @@ function renderMap() {
   for (const p of allProvinces()) {
     let cls = "terr";
     if (sel && sel.id !== p.id && sel.neighbors.includes(p.id)) cls += " neighbor";
-    const t = el("path", { d: TERRITORIES[p.id], fill: REALMS[p.owner].color, class: cls }, svg);
+    const t = el("path", { d: TERRITORIES[p.id], fill: REALMS[p.owner].color, class: cls, "data-owner": p.owner }, svg);
     t.addEventListener("click", (e) => { e.stopPropagation(); tapProvince(p.id); });
+  }
+
+  // One clear dark line wherever two different owners meet
+  const obd = el("g", {}, svg);
+  for (const key in BORDER_LINES) {
+    const [a, b] = key.split("|");
+    if (game.provinces[a].owner !== game.provinces[b].owner) el("path", { d: BORDER_LINES[key], class: "obd" }, obd);
   }
 
   // Rivers on top of the land
@@ -3557,10 +3611,18 @@ function renderMap() {
       el("circle", { cx, cy, r: 10, class: "badge" }, g);
       el("use", { href: "#ic-" + icon, x: cx - 7, y: cy - 7, width: 14, height: 14, class: "mi" }, g);
     };
-    if (isCapital(p)) badge("crown", p.x + 16, p.y - 14);
+    if (isCapital(p)) badge("crown", p.crownAbove ? p.x : p.x + 16, p.crownAbove ? p.y - 28 : p.y - 14);   // crownAbove: keeps the crown off a neighbour's name (Utrecht, Amersfoort)
     if (p.building) badge(p.building === "farm" ? "wheat" : "castle", p.x - 16, p.y - 14);
     el("text", { x: p.x, y: p.y + r + 16, class: "label", "data-id": p.id }, g).textContent = p.name;
     g.addEventListener("click", (e) => { e.stopPropagation(); tapProvince(p.id); });
+  }
+  // A province you just took flashes once and shows +1
+  if (game.flash) {
+    const f = game.provinces[game.flash];
+    el("path", { d: TERRITORIES[f.id], class: "capture-flash" }, svg);
+    const g = el("g", { transform: `translate(${f.x},${f.y - 24})` }, svg);
+    el("text", { x: 0, y: 0, class: "gain-text" }, g).textContent = tr("+1 province");
+    game.flash = null;
   }
   updateLabels();
 }
@@ -3617,18 +3679,36 @@ function drawArrow(r, parent) {
   if (!r.won) el("text", { x: (x1 + x2) / 2, y: (y1 + y2) / 2, class: "arrow-x" }, parent).textContent = "✕";
 }
 
+let statPop = null;   // which top bar number has its explanation open ("gold", "men" or "land")
+function statPopText(key) {
+  const id = game.player, total = allProvinces().length, mine = provincesOf(id).length;
+  if (key === "gold") return T`Gold in your treasury. Each year your provinces pay ${incomeOf(id)} and your regiments cost ${upkeepOf(id)} upkeep.`;
+  if (key === "men") return T`Manpower: ${game.realms[id].manpower}. Each new regiment uses 1. Your provinces add more every year, up to ${maxManpowerOf(id)}.`;
+  return game.endless ? T`Provinces you own: ${mine} of ${total}. Conquer all of them to unite the Low Countries.`
+    : T`Provinces you own: ${mine} of ${total}. Reach ${RULES.provincesToWin} to win.`;
+}
 function renderTopbar() {
   const r = REALMS[game.player];
   const s = game.realms[game.player];
   const net = incomeOf(game.player) - upkeepOf(game.player);
+  const total = allProvinces().length, mine = provincesOf(game.player).length;
+  const target = game.endless ? total : RULES.provincesToWin;
   document.getElementById("topbar").innerHTML = `
     <div class="realm"><button class="menu-btn" data-do="menu">☰</button>${crest(game.player, 20)}${game.year}</div>
     <div class="stats">
-      <span>💰 ${s.gold} <small>(${net >= 0 ? "+" : "−"}${Math.abs(net)})</small></span>
-      <span>⚔️ ${s.manpower}/${maxManpowerOf(game.player)}</span>
-      <span>🗺️ ${provincesOf(game.player).length}/${allProvinces().length}</span>
-    </div>${isFortune() ? `<div class="expbar" title="EXP"><i style="width:${Math.round(100 * game.fortune.exp / expNeeded())}%"></i></div>` : ""}`;
+      <span class="stat" data-stat="gold">💰 ${s.gold} <small>(${net >= 0 ? "+" : "−"}${Math.abs(net)})</small></span>
+      <span class="stat" data-stat="men">⚔️ ${s.manpower}/${maxManpowerOf(game.player)}</span>
+      <span class="stat" data-stat="land">🗺️ ${mine}/${target}<i class="pbar"><b style="width:${Math.min(100, Math.round(100 * mine / target))}%"></b></i></span>
+    </div>${isFortune() ? `<div class="expbar" title="EXP"><i style="width:${Math.round(100 * game.fortune.exp / expNeeded())}%"></i></div>` : ""}
+    ${statPop ? `<div class="statpop">${statPopText(statPop)}</div>` : ""}`;
 }
+document.getElementById("topbar").addEventListener("click", (e) => {
+  const st = e.target.closest("[data-stat]");
+  if (!st || !game.player || game.over) return;
+  statPop = statPop === st.dataset.stat ? null : st.dataset.stat;
+  renderTopbar();
+  if (statPop) { const k = statPop; setTimeout(() => { if (statPop === k) { statPop = null; renderTopbar(); } }, 6000); }
+});
 
 let panelDetails = false;   // the player opened the extra info in the bottom panel
 
@@ -3723,24 +3803,21 @@ function renderPanel() {
   if (!game.selected) {
     const r = REALMS[game.player];
     const wars = warsOf(game.player).map(nameOf), allies = alliesOf(game.player).map(nameOf);
-    const total = allProvinces().length;
-    const goal = game.endless ? T`Conquer all ${total} provinces to unite the Low Countries.` : T`Own ${RULES.provincesToWin} of the ${total} provinces to win.`;
     const danger = behind(game.player)
       ? `<div class="hint">${T`Your realm has lost ground: recruits cost only ${RULES.underdogRecruitGold} 💰, and fortune favors you.`}</div>` : "";
+    // The goal lives in the top bar now, and peace is the normal state: only war, allies and Fortune levels get a chip
     panel.innerHTML = `
-      <h2>${crest(game.player, 26)}${r.name}</h2>
-      <div class="chips">
-        <span class="chip"><b>${traitName(game.player)}</b></span>
-        <span class="chip">${wars.length ? T`⚔️ At war with ${wars.join(", ")}` : T`🕊️ At peace with every realm`}</span>
+      <div class="ph">${crest(game.player, 26)}<h2>${r.name}</h2><span class="chip"><b>${traitName(game.player)}</b></span></div>
+      ${wars.length || allies.length || isFortune() ? `<div class="chips">
+        ${wars.length ? `<span class="chip">${T`⚔️ At war with ${wars.join(", ")}`}</span>` : ""}
         ${allies.length ? `<span class="chip">${T`🤝 Allied with ${allies.join(", ")}`}</span>` : ""}
-        ${devOf(game.player).free ? `<span class="chip">${T`🎁 Free first development`}</span>` : ""}
         ${isFortune() ? `<span class="chip">${T`🃏 Level ${game.fortune.level} · ${game.fortune.exp}/${expNeeded()} EXP`}</span>` : ""}
-      </div>
+      </div>` : ""}
+      <div class="sub">${traitShort(game.player)}</div>
       ${msg}
       ${danger}
-      <div class="hint">${T`Tap one of your provinces to recruit or to send its army.`} ${goal}</div>
+      <div class="inline-hint">${T`Tap one of your provinces to recruit or to send its army.`}${detailsToggle}</div>
       ${panelDetails ? `<div class="more-box"><div class="sub">${traitLong(game.player)}</div></div>` : ""}
-      ${detailsToggle}
       <div class="spacer"></div>
       ${navRow}`;
     return;
@@ -3801,9 +3878,8 @@ function renderPanel() {
       <div><b>🛡️ ${p.army}</b><small>${armyLabel}</small></div>
       <div><b>${buildingValue}</b><small>${buildingLabel}</small></div>
     </div>
-    ${hint ? `<div class="hint">${hint}</div>` : ""}
+    <div class="inline-hint">${hint}${detailsToggle}</div>
     ${details}
-    ${detailsToggle}
     <div class="spacer"></div>
     ${yours ? `<div class="actrow">${recruitButton}${buildButtons}</div>` : ""}
     ${navRow}`;
@@ -4182,16 +4258,20 @@ const guide = { step: null };
 
 const GUIDE_STEPS = [
   { id: "welcome",
-    text: () => T`You rule the ${REALMS[game.player].name}: the provinces in your color. Tap one of them to see what you can do there.` },
+    text: () => T`You rule the ${REALMS[game.player].name}: the provinces in your color. Tap one to see what you can do there.` },
   { id: "province", next: true,
-    text: () => T`Here you can recruit soldiers or build a farm or castle. To send an army, tap a neighboring province. The grey ones are independent: you can attack them any time.` },
+    text: () => T`Recruit or build here. To send an army, tap a neighboring province. Grey ones are independent: you can always attack them.` },
+  { id: "developments", next: true, devs: true,
+    text: () => T`Developments give your realm lasting bonuses. Your first one is free: open Developments and pick one.` },
   { id: "war", next: true,
-    text: () => T`To attack another realm, first declare war under Diplomacy 🤝. Both armies then need one turn to mobilize before the fighting can start.` },
+    text: () => T`To attack another realm, declare war under Diplomacy 🤝 first. Armies need one turn to mobilize.` },
   { id: "endturn",
-    text: () => T`Done for this year? Press End turn. The other realms make their moves, and the map shows you what they did.` },
+    text: () => T`Done for this year? Press End turn. The other realms move, and the map shows what they did.` },
   { id: "money", next: true, last: true,
-    text: () => T`Every year your provinces pay gold, and every regiment costs 1 💰 upkeep. Own ${RULES.provincesToWin} of the ${allProvinces().length} provinces to win. Good luck!` }
+    text: () => T`Your provinces pay gold each year and every regiment costs 1 💰 upkeep. Own ${RULES.provincesToWin} of the ${allProvinces().length} provinces to win.` }
 ];
+// The Developments tip only exists when the mode has developments (not Fortune)
+function guideSteps() { return GUIDE_STEPS.filter(st => !st.devs || devsOn()); }
 
 function guideDone() {
   try { return localStorage.getItem(GUIDE_KEY) === "yes"; } catch (e) { return true; }
@@ -4211,7 +4291,7 @@ function restartGuide() {
 }
 function nextGuideStep() {
   if (guide.step === null) return;
-  if (GUIDE_STEPS[guide.step].last) return finishGuide();
+  if (guideSteps()[guide.step].last) return finishGuide();
   guide.step += 1;
   renderGuide();
 }
@@ -4219,8 +4299,9 @@ function nextGuideStep() {
 // The game reports what the player did; a tip moves on when its moment comes
 function guideEvent(name) {
   if (guide.step === null) return;
-  const id = GUIDE_STEPS[guide.step].id;
+  const id = guideSteps()[guide.step].id;
   if (id === "welcome" && name === "select-own") nextGuideStep();
+  else if (id === "developments" && name === "devopen") nextGuideStep();
   else if (id === "province" && (name === "acted")) nextGuideStep();
   else if (id === "endturn" && name === "endturn") { guide.step += 1; renderGuide(); }
   else renderGuide();
@@ -4230,14 +4311,27 @@ function renderGuide() {
   const box = document.getElementById("guide");
   // The last tip waits until the new-year screens are out of the way
   const busy = ["battle", "eventcard", "yearview"].some(id => document.getElementById(id).style.display === "flex");
-  if (guide.step === null || game.over || busy) { box.style.display = "none"; return; }
-  const step = GUIDE_STEPS[guide.step];
+  const steps = guideSteps();
+  const on = !(guide.step === null || game.over || busy) && steps[guide.step];
+  // What the tip points at (the map and panel are rebuilt on every render, so this runs after them)
+  const id = on ? steps[guide.step].id : null;
+  svg.querySelectorAll(".terr").forEach(t => t.classList.toggle("guide-pulse", id === "welcome" && t.dataset.owner === game.player));
+  document.querySelectorAll("#panel [data-do=developments]").forEach(b => {
+    b.classList.toggle("guide-hl", id === "developments");
+    b.classList.toggle("attn", devAttention());   // the red dot waits for the Developments tip
+  });
+  if (!on) { box.style.display = "none"; return; }
+  const step = steps[guide.step];
   box.innerHTML = `
-    <div class="guide-head">${T`Tip ${guide.step + 1} of ${GUIDE_STEPS.length}`}</div>
-    <div>${step.text()}</div>
-    <div class="guide-buttons">
-      <button data-guide="skip">${T`Skip tips`}</button>
-      ${step.next ? `<button data-guide="next" class="on">${step.last ? T`Got it` : T`Next`}</button>` : ""}
+    <div class="guide-row">
+      <div class="guide-text">
+        <div class="guide-head">${T`Tip ${guide.step + 1} of ${steps.length}`}</div>
+        <div>${step.text()}</div>
+      </div>
+      <div class="guide-buttons">
+        ${step.next ? `<button data-guide="next" class="on">${step.last ? T`Got it` : T`Next`}</button>` : ""}
+        <button data-guide="skip" class="skip">${T`Skip tips`}</button>
+      </div>
     </div>`;
   box.style.display = "block";
 }
@@ -4367,7 +4461,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-18.2";
+const GAME_VERSION = "2026-11-18.4";
 
 // Leaderboard name rules. The same rules run in the database (source/supabase-security.sql),
 // this copy only gives the player a friendly message first. The word list is generated
@@ -5036,7 +5130,7 @@ document.getElementById("panel").addEventListener("click", (e) => {
       game.selected = (to.owner === game.player) ? to.id : from.id;
       render();
       guideEvent("acted");
-      showBattle(result, () => { checkGameOver(); render(); maybeDraft(); });
+      showBattle(result, () => { if (to.owner === game.player) game.flash = to.id; checkGameOver(); render(); maybeDraft(); });
       return;
     }
   }
@@ -5083,8 +5177,8 @@ function drawStartMap() {
 let chosenMode = "campaign";
 try { chosenMode = localStorage.getItem("lords-mode") === "fortune" ? "fortune" : "campaign"; } catch (e) {}
 function renderMode() {
-  document.getElementById("mode").innerHTML = [["campaign", T`Campaign`], ["fortune", T`Fortune 🃏`]]
-    .map(([id, label]) => `<button class="${id === chosenMode ? "on" : ""}" data-mode="${id}">${label}</button>`).join("");
+  document.getElementById("mode").innerHTML = [["campaign", T`Campaign`, T`Classic, 1350 to 1400`], ["fortune", T`Fortune 🃏`, T`Level up, pick cards`]]
+    .map(([id, label, sub]) => `<button class="${id === chosenMode ? "on" : ""}" data-mode="${id}">${label}<small>${sub}</small></button>`).join("");
   renderDifficulty();
 }
 document.getElementById("mode").addEventListener("click", (e) => {
@@ -5143,7 +5237,6 @@ function buildRealmCards() {
       if (loadSave(chosenMode) && !confirmNewGame()) return;
       hide("start");
       newGame(id, chosenDifficulty, chosenMode);
-      if (devsOn()) setTimeout(openDevelopments, 400);   // the free first pick (not in Fortune)
     };
     buttons.appendChild(b);
   }
