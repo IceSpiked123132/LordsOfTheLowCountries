@@ -212,7 +212,9 @@ declare
   squashed text;
 begin
   if n = '' then return 'empty'; end if;
-  if n ~ '[\u0001-\u001f\u007f-\u009f​-‏ - ⁠-⁯﻿]' then return 'empty'; end if;
+  -- Control and invisible characters, written as \u escapes on purpose: the literal characters
+  -- (U+2028 in particular) get lost when this file is pasted into the Supabase SQL editor.
+  if n ~ '[\u0001-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202f\u2060-\u206f\ufeff]' then return 'empty'; end if;
   if n !~ '[[:alnum:]]' then return 'empty'; end if;
   if n ~ '[^ @]+@[^ @]+' then return 'email'; end if;
   if lower(n) ~ '(https?:|www\.|[a-z0-9-]\.(com|net|org|nl|be|io|co|uk|eu|ru|tk|ly|gg|xyz|app|dev|info|biz|link|click|shop|site|online|top|store|live|me)([^a-z0-9]|$))' then
