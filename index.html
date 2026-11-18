@@ -388,6 +388,10 @@
   #topbar .expbar { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(255,255,255,0.12); }
   #topbar .expbar i { display: block; height: 100%; background: #d4a72c; transition: width .4s; }
   .fo-how { font-size: 13px; color: var(--ink-soft); text-align: center; margin: 8px 4px 0; line-height: 1.3; }
+  .fo-tier {
+    display: inline-block; vertical-align: middle; font-family: 'Cinzel', serif; font-size: 12px; font-weight: 800;
+    letter-spacing: .08em; color: #fff; background: var(--rar, #7d7466); border-radius: 999px; padding: 3px 10px 2px; margin-left: 4px;
+  }
   .fo-label.mine { color: var(--ink-soft); margin-bottom: 0; }
   .fo-sets { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
   .fo-set { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 7px 10px; font-size: 14px; line-height: 1.25; }
@@ -612,7 +616,7 @@
       <details>
         <summary>Fortune mode</summary>
         <div>
-        <p>Fortune is a second way to play, chosen on the start screen. The map, the realms and the year loop are the same, but there are no developments. Instead you earn EXP: 2 every year, 4 for every province you gain (8 for a capital), 3 for every defense you win, 3 for every province you lose and 1 for a failed attack. The bar under the top of the screen shows it. Every level, you pick 1 of 3 cards, and each level needs a bit more EXP than the last. Cards are Common, Rare, Epic or Legendary, and later in the game the rare ones show up more often. A Cursed card is always on offer as a 4th choice: strong, with a price. Each card belongs to a tag (Trade, War, Rule or Faith), and 3, 5 and 7 cards of one tag give a set bonus. Common and Rare cards can be picked more than once, and copies stack. A reroll costs gold. Only you get cards. Fortune games have their own save and are not on the leaderboard.</p>
+        <p>Fortune is a second way to play, chosen on the start screen. The map, the realms and the year loop are the same, but there are no developments. Instead you earn EXP: 2 every year, 4 for every province you gain (8 for a capital), 3 for every defense you win, 3 for every province you lose and 1 for a failed attack. The bar under the top of the screen shows it. Every level, you pick 1 of 3 cards, and each level needs a bit more EXP than the last. The 3 cards are always of the same rarity: Common, Rare, Epic or Legendary. Later in the game the rare draws come more often, and a reroll gives new cards of the same rarity. A Cursed card is always on offer as a 4th choice: strong, with a price. Each card belongs to a tag (Trade, War, Rule or Faith), and 3, 5 and 7 cards of one tag give a set bonus. Common and Rare cards can be picked more than once, and copies stack. A reroll costs gold. Only you get cards. Fortune games have their own save and are not on the leaderboard.</p>
         </div>
       </details>
       <details>
@@ -699,7 +703,7 @@
       <details>
         <summary>Fortuinmodus</summary>
         <div>
-        <p>Fortuin is een tweede manier van spelen, te kiezen op het startscherm. De kaart, de rijken en de jaren zijn hetzelfde, maar er zijn geen ontwikkelingen. In plaats daarvan verdien je EXP: 2 per jaar, 4 voor elke provincie die je erbij krijgt (8 voor een hoofdstad), 3 voor elke verdediging die je wint, 3 voor elke provincie die je kwijtraakt en 1 voor een mislukte aanval. De balk bovenaan het scherm laat het zien. Bij elk nieuw niveau kies je 1 van 3 kaarten, en elk niveau vraagt iets meer EXP dan het vorige. Kaarten zijn Gewoon, Zeldzaam, Episch of Legendarisch, en later in het spel komen de zeldzame vaker langs. Er is altijd een Vervloekte kaart als 4e keuze: sterk, maar met een prijs. Elke kaart hoort bij een soort (Handel, Oorlog, Bestuur of Geloof), en 3, 5 en 7 kaarten van één soort geven een setbonus. Gewone en Zeldzame kaarten kun je vaker kiezen, en de kopieën tellen op. Opnieuw trekken kost goud. Alleen jij krijgt kaarten. Fortuinspellen hebben hun eigen opslag en staan niet op het scorebord.</p>
+        <p>Fortuin is een tweede manier van spelen, te kiezen op het startscherm. De kaart, de rijken en de jaren zijn hetzelfde, maar er zijn geen ontwikkelingen. In plaats daarvan verdien je EXP: 2 per jaar, 4 voor elke provincie die je erbij krijgt (8 voor een hoofdstad), 3 voor elke verdediging die je wint, 3 voor elke provincie die je kwijtraakt en 1 voor een mislukte aanval. De balk bovenaan het scherm laat het zien. Bij elk nieuw niveau kies je 1 van 3 kaarten, en elk niveau vraagt iets meer EXP dan het vorige. De 3 kaarten zijn altijd even zeldzaam: Gewoon, Zeldzaam, Episch of Legendarisch. Later in het spel komen de zeldzame trekkingen vaker, en opnieuw trekken geeft nieuwe kaarten van dezelfde soort. Er is altijd een Vervloekte kaart als 4e keuze: sterk, maar met een prijs. Elke kaart hoort bij een soort (Handel, Oorlog, Bestuur of Geloof), en 3, 5 en 7 kaarten van één soort geven een setbonus. Gewone en Zeldzame kaarten kun je vaker kiezen, en de kopieën tellen op. Opnieuw trekken kost goud. Alleen jij krijgt kaarten. Fortuinspellen hebben hun eigen opslag en staan niet op het scorebord.</p>
         </div>
       </details>
       <details>
@@ -1505,7 +1509,7 @@ const NL = {
   "Your cards": "Je kaarten",
   "Next draft: Common {}% · Rare {}% · Epic {}% · Legendary {}%": "Volgende keer: Gewoon {0}% · Zeldzaam {1}% · Episch {2}% · Legendarisch {3}%",
   "Back": "Terug",
-  "Common {}% · Rare {}% · Epic {}% · Legendary {}%": "Gewoon {0}% · Zeldzaam {1}% · Episch {2}% · Legendarisch {3}%",
+  "This draft's odds were Common {}% · Rare {}% · Epic {}% · Legendary {}%": "Kans bij deze trekking: Gewoon {0}% · Zeldzaam {1}% · Episch {2}% · Legendarisch {3}%",
   "OR TEMPT FATE": "OF DAAG HET LOT UIT",
   "YOUR CARDS": "JE KAARTEN",
   "No cards left to offer.": "Er zijn geen kaarten meer om te kiezen.",
@@ -3975,16 +3979,18 @@ function cardPool(rarity, skip) {
     !(c.excludes || []).some(x => own.includes(x)));
 }
 
-// One random card: first a rarity, then a card of that rarity (tags you already collect come up more often)
+// The rarity of a whole draft: one roll with the odds of draftOdds() (rarities with no cards left are skipped)
+function rollRarity() {
+  const odds = draftOdds();
+  const open = Object.keys(odds).filter(r => cardPool(r, []).length);
+  if (!open.length) return null;
+  let roll = Math.random() * open.reduce((s, r) => s + odds[r], 0);
+  for (const r of open) { roll -= odds[r]; if (roll <= 0) return r; }
+  return open[open.length - 1];
+}
+
+// One random card of a rarity (tags you already collect come up more often)
 function drawCard(skip, rarity) {
-  if (!rarity) {
-    const odds = draftOdds();
-    const open = Object.keys(odds).filter(r => cardPool(r, skip).length);
-    if (!open.length) return null;
-    let roll = Math.random() * open.reduce((s, r) => s + odds[r], 0);
-    rarity = open[open.length - 1];
-    for (const r of open) { roll -= odds[r]; if (roll <= 0) { rarity = r; break; } }
-  }
   const pool = cardPool(rarity, skip);
   if (!pool.length) return null;
   const own = game.fortune.cards;
@@ -3994,10 +4000,14 @@ function drawCard(skip, rarity) {
   return pool[pool.length - 1].id;
 }
 
-function makeOffer() {
+// A draft is 3 cards of ONE rarity, so a single roll decides whether you see Epics or Legendaries at all.
+// When fewer than 3 cards of that rarity are left (they are one copy each), you get the ones that are left.
+// A reroll keeps the rarity: gold buys different cards, not better odds.
+function makeOffer(rarity) {
+  rarity = rarity && cardPool(rarity, []).length ? rarity : rollRarity();
   const cards = [];
-  for (let i = 0; i < 3; i++) { const id = drawCard(cards); if (id) cards.push(id); }
-  return { cards, cursed: drawCard([], "cursed") };
+  for (let i = 0; rarity && i < 3; i++) { const id = drawCard(cards, rarity); if (id) cards.push(id); }
+  return { rarity, cards, cursed: drawCard([], "cursed") };
 }
 
 const rerollCost = () => FORTUNE.rerollGold * (game.fortune.rerolls + 1);
@@ -4007,7 +4017,7 @@ function rerollOffer() {
   if (realm.gold < rerollCost()) return;
   realm.gold -= rerollCost();
   game.fortune.rerolls += 1;
-  game.fortune.offer = makeOffer();
+  game.fortune.offer = makeOffer(game.fortune.offer && game.fortune.offer.rarity);
   fortuneUI.sel = null;
   playSound("fortune");
   saveGame();
@@ -4111,9 +4121,9 @@ function renderFortune() {
   }
 
   const o = draftOdds();
-  title.textContent = T`Level ${f.drafts + 1}!`;
+  title.innerHTML = `${T`Level ${f.drafts + 1}!`}${f.offer.rarity ? ` <span class="fo-tier r-${f.offer.rarity}">${rarityName(f.offer.rarity)}</span>` : ""}`;
   sub.textContent = T`Fortune smiles. Pick a card. Treasury: ${realm.gold} 💰`;
-  odds.textContent = T`Common ${Math.round(o.common)}% · Rare ${Math.round(o.rare)}% · Epic ${Math.round(o.epic)}% · Legendary ${Math.round(o.legendary)}%`;
+  odds.textContent = T`This draft's odds were Common ${Math.round(o.common)}% · Rare ${Math.round(o.rare)}% · Epic ${Math.round(o.epic)}% · Legendary ${Math.round(o.legendary)}%`;
   offer.innerHTML = f.offer.cards.map(id => cardTile(id, { sel: fortuneUI.sel === id })).join("") +
     (f.offer.cursed ? `<div class="fo-label">${T`OR TEMPT FATE`}</div>${cardTile(f.offer.cursed, { sel: fortuneUI.sel === f.offer.cursed })}` : "") +
     (f.offer.cards.length ? "" : `<div class="fo-empty">${T`No cards left to offer.`}</div>`);

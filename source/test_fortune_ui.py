@@ -54,18 +54,18 @@ with sync_playwright() as p:
         page.evaluate("""() => { game.fortune.level = 1; game.fortune.cards = ['weavers', 'herring', 'tithes'];
                                  resetMods(); game.realms[game.player].gold = 30;
                                  openDraft(() => {});
-                                 game.fortune.offer = { cards: ['march', 'hanse', 'feud'], cursed: 'pact' }; renderFortune(); }""")
+                                 game.fortune.offer = { rarity: "epic", cards: ["siege", "treasury", "feud"], cursed: "pact" }; renderFortune(); }""")
         page.wait_for_timeout(300)
         problems.extend(f"{lang} emoji {x}" for x in page.evaluate(SCAN))
         page.screenshot(path=f"{out}/{lang}-3-draft.png")
-        page.click("[data-card=hanse]")
+        page.click("[data-card=treasury]")
         page.wait_for_timeout(150)
         problems.extend(f"{lang} emoji {x}" for x in page.evaluate(SCAN))
         page.screenshot(path=f"{out}/{lang}-4-draft-selected.png")
         page.click("[data-fo=take]")
         page.wait_for_timeout(300)
         state = page.evaluate("() => ({ cards: game.fortune.cards, drafts: game.fortune.drafts, open: document.getElementById('fortune').style.display, msg: game.message })")
-        if "hanse" not in state["cards"] or state["open"] != "none": problems.append(f"{lang}: taking a card failed {state}")
+        if "treasury" not in state["cards"] or state["open"] != "none": problems.append(f"{lang}: taking a card failed {state}")
 
         # Reroll costs gold and deals new cards
         page.evaluate("() => { game.fortune.level = 2; game.realms[game.player].gold = 12; openDraft(() => {}); }")
@@ -73,6 +73,12 @@ with sync_playwright() as p:
         page.click("[data-fo=reroll]")
         after = page.evaluate("() => ({ gold: game.realms[game.player].gold, rerolls: game.fortune.rerolls })")
         if before - after["gold"] != 5 or after["rerolls"] != 1: problems.append(f"{lang}: reroll {before} -> {after}")
+        same = page.evaluate("""() => { const bad = []; const keep = game.fortune.offer.rarity;
+            for (let i = 0; i < 300; i++) { const o = makeOffer(); const r = new Set(o.cards.map(id => CARD_BY_ID[id].rarity));
+              if (r.size !== 1 || !r.has(o.rarity) || o.cards.length !== 3) bad.push(JSON.stringify(o)); }
+            const o2 = makeOffer('legendary'); if (o2.rarity !== 'legendary') bad.push('reroll lost its rarity');
+            return { bad: bad.slice(0, 3), keep, after: game.fortune.offer.rarity }; }""")
+        if same["bad"]: problems.append(f"{lang}: mixed draft {same['bad']}")
         page.evaluate("() => { const f = game.fortune; takeCard(f.offer.cards[0]); hide('fortune'); }")
 
         # Your cards: a big collection with set bonuses
