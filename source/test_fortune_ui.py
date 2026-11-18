@@ -27,7 +27,10 @@ with sync_playwright() as p:
     page = ctx.new_page()
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
-    page.route("https://ktvkqdxxpfmferhdjapz.supabase.co/**", lambda r: (problems.append("online request: " + r.request.url), r.fulfill(status=500, body="{}")))
+    sent = []   # bodies the game posts to the statistics (events)
+    page.route("https://ktvkqdxxpfmferhdjapz.supabase.co/**", lambda r: (
+        sent.append(json.loads(r.request.post_data or "{}")) if "/events" in r.request.url else problems.append("other online request: " + r.request.url),
+        r.fulfill(status=500, body="{}")))
     page.goto(f"file://{root}/index.html")
     page.wait_for_timeout(500)
 
@@ -82,7 +85,7 @@ with sync_playwright() as p:
         page.evaluate("() => { const f = game.fortune; takeCard(f.offer.cards[0]); hide('fortune'); }")
 
         # Your cards: a big collection with set bonuses
-        page.evaluate("""() => { game.fortune.cards = ['weavers','weavers','herring','rhine','hanse','goedendag','march','veterans','veterans','tithes','granary','devotion','servatius'];
+        page.evaluate("""() => { game.fortune.cards = ['weavers','weavers','herring','rhine','hanse','goedendag','march','veterans','veterans','tithes','granary','devotion','servatius']; game.fortune.level = 13; game.fortune.drafts = 13;
                                  resetMods(); openCards(); }""")
         page.wait_for_timeout(200)
         problems.extend(f"{lang} emoji {x}" for x in page.evaluate(SCAN))
@@ -129,5 +132,15 @@ with sync_playwright() as p:
     if page.evaluate("() => mod('gelre', 'ransomGold')") != 0: problems.append("campaign has card modifiers")
     browser.close()
 
+# Statistics: campaign rows exactly as before, Fortune rows marked, finished Fortune games with level and cards
+camp = [b for b in sent if "mode" not in b]
+fort = [b for b in sent if b.get("mode") == "fortune"]
+if not camp or any(k in b for b in camp for k in ("level", "cards")): problems.append(f"campaign events wrong: {camp}")
+starts = [b for b in fort if b["kind"] == "start"]
+ends = [b for b in fort if b["kind"] == "finish"]
+if not starts or any(k in b for b in starts for k in ("level", "cards")): problems.append(f"Fortune start events wrong: {starts}")
+if not ends or any(not isinstance(b.get("level"), int) or (b.get("cards") and len(b["cards"].split(",")) > b["level"]) for b in ends):
+    problems.append(f"Fortune finish events wrong: {ends}")
+print("statistics rows sent:", len(camp), "campaign,", len(starts), "Fortune starts,", len(ends), "Fortune finishes, e.g.", ends[:1])
 print("page errors:", errors)
 print("problems:", problems)

@@ -6,7 +6,8 @@ Usage:  python3 source/sync_security.py
 Copies the blocklist and the accent rules into:
   source/supabase-security.sql   between "-- BEGIN GENERATED" and "-- END GENERATED"
   source/template.html           between "// BEGIN GENERATED NAME RULES" and "// END GENERATED NAME RULES"
-and rebuilds the security part of source/supabase-setup.sql from supabase-security.sql,
+and rebuilds the security part of source/supabase-setup.sql from supabase-security.sql
+(and its Fortune statistics part from supabase-fortune-stats.sql),
 so a fresh database gets exactly the same rules as the script for the existing one.
 Run it after editing blocklist.txt or supabase-security.sql, then rebuild the game.
 """
@@ -98,6 +99,13 @@ def main():
     start = security.index("-- ---------- 1. Settings tables")
     replace_between(HERE / "supabase-setup.sql", "-- BEGIN SECURITY", "-- END SECURITY",
                     "-- (copied from supabase-security.sql by source/sync_security.py, do not edit here)\n\n" + security[start:].rstrip())
+
+    # supabase-setup.sql also gets the Fortune statistics (columns, checks, views), last,
+    # so a fresh database matches an existing one that ran supabase-fortune-stats.sql
+    fortune = (HERE / "supabase-fortune-stats.sql").read_text(encoding="utf-8")
+    body = fortune[fortune.index("-- BEGIN FORTUNE STATS") + len("-- BEGIN FORTUNE STATS"):fortune.index("-- END FORTUNE STATS")]
+    replace_between(HERE / "supabase-setup.sql", "-- BEGIN FORTUNE STATS", "-- END FORTUNE STATS",
+                    "-- (copied from supabase-fortune-stats.sql by source/sync_security.py, do not edit here)\n" + body.rstrip())
     print(f"{len(words)} words ({sum(1 for v in words.values() if v)} whole word), {len(frm)} accent letters. Synced.")
 
 

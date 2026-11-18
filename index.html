@@ -4598,7 +4598,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-18.4";
+const GAME_VERSION = "2026-11-18.5";
 
 // Leaderboard name rules. The same rules run in the database (source/supabase-security.sql),
 // this copy only gives the player a friendly message first. The word list is generated
@@ -4682,11 +4682,14 @@ async function api(path, options = {}) {
 }
 
 // Anonymous statistics: one row when a game starts, one when it ends
+// Fortune rows carry mode "fortune" (campaign rows send no mode, the database defaults it to "campaign"),
+// and a finished Fortune game also sends the level reached and the cards taken (see supabase-fortune-stats.sql)
 function logEvent(kind, extra = {}) {
-  if (!online() || game.mode === "fortune") return;   // the database can't tell Fortune runs apart yet, so they are not logged
+  if (!online()) return;
+  const fortune = isFortune() ? { mode: "fortune" } : {};
   api("events", {
     method: "POST",
-    body: JSON.stringify({ kind, realm: game.player, difficulty: game.difficulty, version: GAME_VERSION, ...extra })
+    body: JSON.stringify({ kind, realm: game.player, difficulty: game.difficulty, version: GAME_VERSION, ...fortune, ...extra })
   }).catch(() => {});
 }
 
@@ -4696,7 +4699,8 @@ function logFinish(won, final) {
     result: final ? (won ? "united" : "destroyed") : (won ? "victory" : "defeat"),
     years: game.year - RULES.startYear,
     provinces: provincesOf(game.player).length,
-    battles_won: s.won, battles_lost: s.lost
+    battles_won: s.won, battles_lost: s.lost,
+    ...(isFortune() ? { level: game.fortune.level, cards: game.fortune.cards.length ? game.fortune.cards.join(",") : null } : {})
   });
 }
 

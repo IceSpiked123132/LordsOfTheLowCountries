@@ -22,6 +22,8 @@
   th { font-family: 'Cinzel', serif; font-size: 13px; background: #d9c79c; }
   td.num, th.num { text-align: right; }
   .bar { height: 12px; background: #b23a3a; border-radius: 3px; min-width: 2px; }
+  .r-common { color: #7d7466; } .r-rare { color: #2f5d9e; } .r-epic { color: #6b3fa0; } .r-legendary { color: #b8860b; } .r-cursed { color: #8b1e3f; }
+  td.up { color: #2e6b2e; } td.down { color: #9a2c2c; }
   #error { color: #9a2c2c; }
 </style>
 </head>
@@ -30,10 +32,18 @@
   <h1>Statistics</h1>
   <div class="muted">Lords of the Low Countries · anonymous totals from every game played · <span id="updated"></span></div>
   <div id="error"></div>
-  <h2>Overall</h2>
+  <h2>Campaign</h2>
   <div class="tiles" id="tiles"></div>
   <h2>Per realm and difficulty</h2>
   <table id="realms"></table>
+  <h2>Fortune mode</h2>
+  <div id="fortune-note" class="muted"></div>
+  <div class="tiles" id="ftiles"></div>
+  <h2>Fortune per realm and difficulty</h2>
+  <table id="frealms"></table>
+  <h2>Fortune cards</h2>
+  <p class="muted">Taken: in how many finished Fortune games the card was taken (copies counted once). Win rate: how many of those games were won, next to the win rate of all finished Fortune games. Few games means the numbers swing a lot.</p>
+  <table id="fcards"></table>
   <h2>Last 60 days</h2>
   <table id="daily"></table>
   <p class="muted">Raw data, leaderboard entries and feedback messages are in the Supabase dashboard (Table Editor).</p>
@@ -53,6 +63,63 @@ async function get(view) {
 }
 
 const fmt = (v) => (v === null || v === undefined ? "–" : v);
+const pct = (a, b) => (b ? Math.round(100 * a / b) + "%" : "–");
+
+// Fortune cards: id -> name, rarity, tag. Keep in step with CARDS in source/template.html
+const CARDS = {
+  weavers: ["Flemish Weavers", "common", "Trade"], herring: ["Herring Fishery", "common", "Trade"],
+  polders: ["Polder Works", "common", "Trade"], rhine: ["Rhine Tolls", "rare", "Trade"],
+  clothhall: ["Cloth Hall", "rare", "Trade"], staple: ["Staple Right", "epic", "Trade"],
+  hanse: ["Hanseatic Charter", "legendary", "Trade"], debase: ["Debased Coinage", "cursed", "Trade"],
+  goedendag: ["Goedendag", "common", "War"], schutterij: ["Civic Guard", "common", "War"],
+  ransom: ["Ransom the Nobles", "common", "War"], march: ["Forced March", "rare", "War"],
+  veterans: ["Blooded Veterans", "rare", "War"], siege: ["Siege Engineers", "epic", "War"],
+  spurs: ["Golden Spurs", "legendary", "War"], mercdebt: ["Mercenary Debt", "cursed", "War"],
+  bailiffs: ["Bailiffs", "common", "Rule"], charter: ["Town Charters", "common", "Rule"],
+  vassals: ["Loyal Vassals", "rare", "Rule"], treasury: ["Ducal Treasury", "epic", "Rule"],
+  feud: ["Hook and Cod Feud", "epic", "Rule"], joyous: ["Joyous Entry", "legendary", "Rule"],
+  tyrant: ["Tyrant's Tax", "cursed", "Rule"], tithes: ["Tithes", "common", "Faith"],
+  granary: ["Monastery Granaries", "common", "Faith"], indulgence: ["Indulgences", "rare", "Faith"],
+  servatius: ["Relics of Saint Servatius", "epic", "Faith"], devotion: ["Modern Devotion", "legendary", "Faith"],
+  pact: ["Pact with the Bishop", "cursed", "Faith"], excomm: ["Excommunication", "cursed", "Faith"]
+};
+
+// Fortune statistics need supabase-fortune-stats.sql in the database; before that the views don't exist
+async function loadFortune() {
+  try {
+    const [[o], realms, cards] = await Promise.all([get("stats_fortune_overview"), get("stats_fortune_realms"), get("stats_fortune_cards")]);
+    const tiles = [
+      ["Games started", o.games_started], ["Games finished", o.games_finished],
+      ["Victories", o.victories], ["Countries united", o.countries_united],
+      ["Started last 7 days", o.started_last_7_days], ["Avg. years to victory", o.avg_years_to_victory],
+      ["Avg. level reached", o.avg_level], ["Avg. cards per game", o.avg_cards]
+    ];
+    document.getElementById("ftiles").innerHTML = tiles.map(([label, v]) => `<div class="tile"><b>${fmt(v)}</b>${label}</div>`).join("");
+    document.getElementById("frealms").innerHTML =
+      `<tr><th>Realm</th><th>Difficulty</th><th class="num">Started</th><th class="num">Finished</th><th class="num">Won</th><th class="num">Win rate</th><th class="num">Avg. level</th></tr>` +
+      realms.map(r => `<tr><td>${REALM_NAMES[r.realm]}</td><td>${r.difficulty}</td><td class="num">${r.started}</td><td class="num">${r.finished}</td>
+        <td class="num">${r.won}</td><td class="num">${pct(r.won, r.finished)}</td><td class="num">${fmt(r.avg_level)}</td></tr>`).join("");
+    const finished = Number(o.games_finished) || 0, base = finished ? o.victories / finished : 0;
+    const byId = {};
+    for (const c of cards) byId[c.card] = c;
+    const rows = Object.keys(CARDS).map(id => ({ id, ...(byId[id] || { games: 0, copies: 0, wins: 0 }) }))
+      .concat(cards.filter(c => !CARDS[c.card]).map(c => ({ id: c.card, ...c })))
+      .sort((a, b) => b.games - a.games);
+    document.getElementById("fcards").innerHTML =
+      `<tr><th>Card</th><th>Tag</th><th class="num">Taken</th><th class="num">Copies</th><th class="num">Win rate</th></tr>` +
+      rows.map(r => {
+        const [name, rarity, tag] = CARDS[r.id] || [r.id, "", ""];
+        const rate = r.games ? r.wins / r.games : null;
+        const cls = rate === null || r.games < 10 ? "num" : rate > base + 0.1 ? "num up" : rate < base - 0.1 ? "num down" : "num";
+        return `<tr><td class="r-${rarity}">${name}</td><td>${tag}</td><td class="num">${r.games} (${pct(r.games, finished)})</td>
+          <td class="num">${r.copies}</td><td class="${cls}">${pct(r.wins, r.games)}</td></tr>`;
+      }).join("") +
+      `<tr><td><i>All finished Fortune games</i></td><td></td><td class="num">${finished}</td><td></td><td class="num">${pct(o.victories, finished)}</td></tr>`;
+  } catch (e) {
+    document.getElementById("fortune-note").textContent =
+      "Fortune statistics aren't available yet: run source/supabase-fortune-stats.sql once in the Supabase SQL Editor.";
+  }
+}
 
 async function load() {
   if (!ONLINE.url) {
@@ -76,10 +143,11 @@ async function load() {
 
     const top = Math.max(1, ...daily.map(d => d.started));
     document.getElementById("daily").innerHTML =
-      `<tr><th>Day</th><th class="num">Started</th><th class="num">Finished</th><th class="num">Won</th><th style="width:40%"></th></tr>` +
-      daily.map(d => `<tr><td>${d.day}</td><td class="num">${d.started}</td><td class="num">${d.finished}</td><td class="num">${d.won}</td>
+      `<tr><th>Day</th><th class="num">Started</th><th class="num">Finished</th><th class="num">Won</th><th class="num">Fortune started</th><th style="width:35%"></th></tr>` +
+      daily.map(d => `<tr><td>${d.day}</td><td class="num">${d.started}</td><td class="num">${d.finished}</td><td class="num">${d.won}</td><td class="num">${fmt(d.fortune_started)}</td>
         <td><div class="bar" style="width:${Math.round(100 * d.started / top)}%"></div></td></tr>`).join("");
     document.getElementById("updated").textContent = "loaded " + new Date().toLocaleString();
+    await loadFortune();
   } catch (e) {
     document.getElementById("error").textContent = "Couldn't load the statistics: " + e.message;
   }

@@ -387,6 +387,13 @@ create index if not exists scores_board_idx        on public.scores (difficulty,
 
 revoke all on public.events, public.scores, public.feedback from anon, authenticated;
 grant insert (kind, realm, difficulty, result, years, provinces, battles_won, battles_lost, version) on public.events to anon;
+-- Fortune statistics columns (added by supabase-fortune-stats.sql). Granted again here when they
+-- exist, so running this file again later doesn't switch the Fortune statistics off.
+do $$ begin
+  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'events' and column_name = 'cards') then
+    grant insert (mode, level, cards) on public.events to anon;
+  end if;
+end $$;
 grant insert (name, realm, difficulty, category, years, provinces) on public.scores to anon;
 grant select on public.scores to anon;
 grant insert (message, contact, realm, year, difficulty, version) on public.feedback to anon;
