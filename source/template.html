@@ -236,6 +236,10 @@
   .diff button:last-child { border-right: none; }
   .diff button.on { background: var(--ink); color: var(--parchment); }
   .diff-text { font-size: 14px; color: var(--ink-soft); min-height: 36px; text-align: center; }
+  /* Mode (Campaign or Fortune) and difficulty share one compact block, so the start screen keeps its height */
+  .start-choices { width: 100%; display: flex; flex-direction: column; gap: 5px; margin-top: 4px; }
+  .start-choices .diff-text { margin-top: -1px; }
+  .diff.mode button { padding: 6px 0; font-size: 12px; }
   .crest { display: inline-block; vertical-align: middle; flex: none; }
 
   /* Leaderboard, feedback and share screens */
@@ -520,12 +524,11 @@
       <h1>Lords of the<br>Low Countries</h1>
       <div class="start-rule"></div>
       <button id="continue" class="continue-btn" style="display:none"></button>
-      <div class="section-label" data-t>MODE</div>
-      <div class="diff" id="mode"></div>
-      <div class="diff-text" id="mode-text"></div>
-      <div class="section-label" data-t>DIFFICULTY</div>
-      <div class="diff" id="difficulty"></div>
-      <div class="diff-text" id="difficulty-text"></div>
+      <div class="start-choices">
+        <div class="diff mode" id="mode"></div>
+        <div class="diff" id="difficulty"></div>
+        <div class="diff-text" id="difficulty-text"></div>
+      </div>
       <div class="section-label" data-t>CHOOSE YOUR REALM</div>
       <div id="realm-buttons" class="realm-grid"></div>
       <div id="start-msg"></div>
@@ -1169,7 +1172,6 @@ const NL = {
   "{}, {}, {}. Your game is saved automatically.": "{0}, {1}, {2}. Je spel wordt automatisch opgeslagen.",
   "{} provinces": "{0} provincies",
   "This replaces your saved game. Tap a realm again to confirm.": "Dit vervangt je opgeslagen spel. Tik nog een keer op een rijk om te bevestigen.",
-  "DIFFICULTY": "MOEILIJKHEID",
   "CHOOSE YOUR REALM": "KIES JE RIJK",
   "How to play": "Spelregels",
   "⚓ Trade": "⚓ Handel",
@@ -1424,7 +1426,7 @@ const NL = {
   "EXP: +{} every year, +{} for every province you gain (+{} more for a capital), +{} for every defense you win, +{} for every province you lose, +{} for a failed attack.": "EXP: +{0} per jaar, +{1} voor elke provincie die je erbij krijgt (+{2} extra voor een hoofdstad), +{3} voor elke verdediging die je wint, +{4} voor elke provincie die je kwijtraakt, +{5} voor een mislukte aanval.",
   "Level {}!": "Niveau {0}!",
   "Fortune smiles. Pick a card. Treasury: {} 💰": "Het lot lacht je toe. Kies een kaart. Schatkist: {0} 💰",
-  "Earn EXP every year and in battle. Each level, pick 1 of 3 cards that bend the rules. No developments, not on the leaderboard.": "Verdien EXP elk jaar en in de strijd. Kies bij elk niveau 1 van 3 kaarten die de regels buigen. Geen ontwikkelingen, niet op de ranglijst.",
+  "Fortune: earn EXP and pick cards, no developments, no leaderboard.": "Fortuin: verdien EXP en kies kaarten, geen ontwikkelingen, geen ranglijst.",
   "You took {}.": "Je koos {0}.",
   " {} {} set bonus: {}!": " Setbonus {0} {1}: {2}!",
   "you have {}": "je hebt er {0}",
@@ -1444,9 +1446,7 @@ const NL = {
   "Continue Fortune": "Verder met Fortuin",
   "Campaign": "Veldtocht",
   "Fortune 🃏": "Fortuin 🃏",
-  "The classic game: conquer the Low Countries by 1400.": "Het klassieke spel: verover de Lage Landen voor 1400.",
-  "Fortune: ": "Fortuin: ",
-  "MODE": "SPELMODUS"
+  "Fortune: ": "Fortuin: "
 };
 
 // =====================================================================
@@ -4367,7 +4367,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-18.1";
+const GAME_VERSION = "2026-11-18.2";
 
 // Leaderboard name rules. The same rules run in the database (source/supabase-security.sql),
 // this copy only gives the player a friendly message first. The word list is generated
@@ -5085,9 +5085,7 @@ try { chosenMode = localStorage.getItem("lords-mode") === "fortune" ? "fortune" 
 function renderMode() {
   document.getElementById("mode").innerHTML = [["campaign", T`Campaign`], ["fortune", T`Fortune 🃏`]]
     .map(([id, label]) => `<button class="${id === chosenMode ? "on" : ""}" data-mode="${id}">${label}</button>`).join("");
-  document.getElementById("mode-text").textContent = chosenMode === "fortune"
-    ? T`Earn EXP every year and in battle. Each level, pick 1 of 3 cards that bend the rules. No developments, not on the leaderboard.`
-    : T`The classic game: conquer the Low Countries by 1400.`;
+  renderDifficulty();
 }
 document.getElementById("mode").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-mode]");
@@ -5105,7 +5103,9 @@ try { chosenDifficulty = localStorage.getItem("lords-difficulty") || "normal"; }
 function renderDifficulty() {
   document.getElementById("difficulty").innerHTML = Object.entries(DIFFICULTY)
     .map(([id, d]) => `<button class="${id === chosenDifficulty ? "on" : ""}" data-level="${id}">${tr(d.label)}</button>`).join("");
-  document.getElementById("difficulty-text").textContent = tr(DIFFICULTY[chosenDifficulty].text);
+  // In Fortune the line also says what the mode is
+  document.getElementById("difficulty-text").textContent = tr(DIFFICULTY[chosenDifficulty].text) +
+    (chosenMode === "fortune" ? " " + T`Fortune: earn EXP and pick cards, no developments, no leaderboard.` : "");
 }
 document.getElementById("difficulty").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-level]");
