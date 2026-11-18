@@ -395,6 +395,12 @@ do $$ begin
   end if;
 end $$;
 grant insert (name, realm, difficulty, category, years, provinces) on public.scores to anon;
+-- The Fortune leaderboard column (added by supabase-fortune-stats.sql), granted again when it exists.
+do $$ begin
+  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'scores' and column_name = 'mode') then
+    grant insert (mode) on public.scores to anon;
+  end if;
+end $$;
 grant select on public.scores to anon;
 grant insert (message, contact, realm, year, difficulty, version) on public.feedback to anon;
 

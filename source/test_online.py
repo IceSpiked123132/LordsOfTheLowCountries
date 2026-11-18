@@ -110,7 +110,9 @@ with sync_playwright() as p:
         mock.mode["scores"] = "ok"
         got = board("Zorro"); check("good name is accepted: form closes and board lists", got == "" or page.locator("#board-form").is_hidden(), got)
         check("  result marked as submitted", page.evaluate("Boolean(game.submitted && game.submitted.victory)"))
-        check("  request body has only the expected fields", set(json.loads([x for x in mock.posts if x[0] == "scores"][-1][1])) == {"name","realm","difficulty","category","years","provinces"})
+        body = json.loads([x for x in mock.posts if x[0] == "scores"][-1][1])
+        check("  request body has only the expected fields", set(body) == {"name","realm","difficulty","category","years","provinces","mode"}, body)
+        check("  campaign score is sent with mode campaign", body.get("mode") == "campaign", body)
         shot(page, f"06-board-after-{lang}")
         page.evaluate("hide('board')")
 

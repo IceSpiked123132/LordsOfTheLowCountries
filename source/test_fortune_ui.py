@@ -27,10 +27,19 @@ with sync_playwright() as p:
     page = ctx.new_page()
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
-    sent = []   # bodies the game posts to the statistics (events)
-    page.route("https://ktvkqdxxpfmferhdjapz.supabase.co/**", lambda r: (
-        sent.append(json.loads(r.request.post_data or "{}")) if "/events" in r.request.url else problems.append("other online request: " + r.request.url),
-        r.fulfill(status=500, body="{}")))
+    sent = []    # bodies the game posts to the statistics (events)
+    scores = []  # (method, url, body) of leaderboard requests
+    def handle(r):
+        url = r.request.url
+        if "/events" in url:
+            sent.append(json.loads(r.request.post_data or "{}")); return r.fulfill(status=500, body="{}")
+        if "/scores" in url:
+            scores.append((r.request.method, url, json.loads(r.request.post_data or "{}")))
+            if r.request.method == "POST": return r.fulfill(status=201, body="")
+            return r.fulfill(status=200, content_type="application/json",
+                             body=json.dumps([{"name": "Willem", "realm": "holland", "years": 14, "created_at": "2026-11-18T10:00:00Z"}]))
+        problems.append("other online request: " + url); return r.fulfill(status=500, body="{}")
+    page.route("https://ktvkqdxxpfmferhdjapz.supabase.co/**", handle)
     page.goto(f"file://{root}/index.html")
     page.wait_for_timeout(500)
 
@@ -126,8 +135,22 @@ with sync_playwright() as p:
     page.evaluate("() => document.getElementById('continue').click()")
     st = page.evaluate("() => ({ mode: game.mode, player: game.player, cards: game.fortune && game.fortune.cards, ransom: mod(game.player, 'ransomGold') })")
     if st["mode"] != "fortune" or st["cards"] != ["ransom"] or st["ransom"] != 2: problems.append(f"continue Fortune: {st}")
-    # Leaderboard can't be used in Fortune
-    if page.evaluate("() => { game.endInfo = { won: true, final: false }; return canSubmitScore(); }"): problems.append("Fortune score could be submitted")
+    # Fortune has its own leaderboard: scores are sent with mode "fortune", the board reads mode=eq.fortune
+    if not page.evaluate("() => { game.endInfo = { won: true, final: false }; game.year = 1372; return canSubmitScore(); }"): problems.append("Fortune score can't be submitted")
+    page.evaluate("() => postScore('Jonathan')"); page.wait_for_timeout(400)
+    posted = [b for (m, u, b) in scores if m == "POST"]
+    if not posted or posted[-1].get("mode") != "fortune": problems.append(f"Fortune score sent without mode fortune: {posted}")
+    gets = [u for (m, u, b) in scores if m == "GET"]
+    if not gets or "mode=eq.fortune" not in gets[-1]: problems.append(f"Fortune rank query not filtered on mode: {gets}")
+    page.evaluate("() => { hide('start'); openBoard(false); }"); page.wait_for_timeout(400)
+    if page.evaluate("() => board.mode") != "fortune": problems.append("leaderboard opened in a Fortune game is not on the Fortune tab")
+    gets = [u for (m, u, b) in scores if m == "GET"]
+    if "mode=eq.fortune" not in gets[-1]: problems.append(f"Fortune board not filtered on mode: {gets[-1]}")
+    page.screenshot(path=f"{out}/en-10-board-fortune.png")
+    page.click("[data-board-mode=campaign]"); page.wait_for_timeout(300)
+    gets = [u for (m, u, b) in scores if m == "GET"]
+    if "mode=eq.campaign" not in gets[-1]: problems.append(f"campaign tab not filtered on mode: {gets[-1]}")
+    page.evaluate("() => hide('board')")
     page.evaluate("() => { game.mode = 'campaign'; game.fortune = null; resetMods(); }")
     if page.evaluate("() => mod('gelre', 'ransomGold')") != 0: problems.append("campaign has card modifiers")
     browser.close()

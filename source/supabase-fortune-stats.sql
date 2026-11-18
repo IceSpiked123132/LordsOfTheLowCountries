@@ -18,6 +18,9 @@
 --      the campaign numbers, and adds stats_daily.fortune_started at the end.
 --   5. Adds three public views for Fortune: stats_fortune_overview, stats_fortune_realms
 --      and stats_fortune_cards (how often each card is taken and how often those games are won).
+--   6. A separate Fortune leaderboard: adds mode ('campaign' default, or 'fortune') to
+--      public.scores, lets the game's public key insert it, and indexes the board per mode.
+--      Old games that don't send a mode land on the campaign board, as before.
 --
 -- Until this has been run, the game's Fortune rows are refused by the database (unknown
 -- column) and simply not counted; campaign rows keep working either way.
@@ -161,5 +164,18 @@ order by games desc, card;
 
 grant select on public.stats_overview, public.stats_daily, public.stats_realms,
   public.stats_fortune_overview, public.stats_fortune_realms, public.stats_fortune_cards to anon;
+
+-- ---------- 6. Fortune leaderboard ----------
+-- Same categories (victory, united), same checks and the same rate limit as the campaign;
+-- the mode keeps the two boards apart.
+
+alter table public.scores add column if not exists mode text not null default 'campaign';
+do $$ begin
+  alter table public.scores add constraint scores_mode_check check (mode in ('campaign', 'fortune'));
+exception when duplicate_object then null; end $$;
+
+grant insert (mode) on public.scores to anon;
+
+create index if not exists scores_mode_board_idx on public.scores (mode, difficulty, category, years, created_at);
 
 -- END FORTUNE STATS

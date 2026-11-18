@@ -650,7 +650,7 @@
       <details>
         <summary>Fortune mode</summary>
         <div>
-        <p>Fortune is a second way to play, chosen on the start screen. The map, the realms and the year loop are the same, but there are no developments. Instead you earn EXP: 2 every year, 4 for every province you gain (8 for a capital), 3 for every defense you win, 3 for every province you lose and 1 for a failed attack. The bar under the top of the screen shows it. Every level, you pick 1 of 3 cards, and each level needs a bit more EXP than the last. The 3 cards are always of the same rarity: Common, Rare, Epic or Legendary. Later in the game the rare draws come more often, and a reroll gives new cards of the same rarity. A Cursed card is always on offer as a 4th choice: strong, with a price. Each card belongs to a tag (Trade, War, Rule or Faith), and 3, 5 and 7 cards of one tag give a set bonus. Common and Rare cards can be picked more than once, and copies stack. A reroll costs gold. Only you get cards. Fortune games have their own save and are not on the leaderboard.</p>
+        <p>Fortune is a second way to play, chosen on the start screen. The map, the realms and the year loop are the same, but there are no developments. Instead you earn EXP: 2 every year, 4 for every province you gain (8 for a capital), 3 for every defense you win, 3 for every province you lose and 1 for a failed attack. The bar under the top of the screen shows it. Every level, you pick 1 of 3 cards, and each level needs a bit more EXP than the last. The 3 cards are always of the same rarity: Common, Rare, Epic or Legendary. Later in the game the rare draws come more often, and a reroll gives new cards of the same rarity. A Cursed card is always on offer as a 4th choice: strong, with a price. Each card belongs to a tag (Trade, War, Rule or Faith), and 3, 5 and 7 cards of one tag give a set bonus. Common and Rare cards can be picked more than once, and copies stack. A reroll costs gold. Only you get cards. Fortune games have their own save and their own leaderboard.</p>
         </div>
       </details>
       <details>
@@ -737,7 +737,7 @@
       <details>
         <summary>Fortuinmodus</summary>
         <div>
-        <p>Fortuin is een tweede manier van spelen, te kiezen op het startscherm. De kaart, de rijken en de jaren zijn hetzelfde, maar er zijn geen ontwikkelingen. In plaats daarvan verdien je EXP: 2 per jaar, 4 voor elke provincie die je erbij krijgt (8 voor een hoofdstad), 3 voor elke verdediging die je wint, 3 voor elke provincie die je kwijtraakt en 1 voor een mislukte aanval. De balk bovenaan het scherm laat het zien. Bij elk nieuw niveau kies je 1 van 3 kaarten, en elk niveau vraagt iets meer EXP dan het vorige. De 3 kaarten zijn altijd even zeldzaam: Gewoon, Zeldzaam, Episch of Legendarisch. Later in het spel komen de zeldzame trekkingen vaker, en opnieuw trekken geeft nieuwe kaarten van dezelfde soort. Er is altijd een Vervloekte kaart als 4e keuze: sterk, maar met een prijs. Elke kaart hoort bij een soort (Handel, Oorlog, Bestuur of Geloof), en 3, 5 en 7 kaarten van één soort geven een setbonus. Gewone en Zeldzame kaarten kun je vaker kiezen, en de kopieën tellen op. Opnieuw trekken kost goud. Alleen jij krijgt kaarten. Fortuinspellen hebben hun eigen opslag en staan niet op het scorebord.</p>
+        <p>Fortuin is een tweede manier van spelen, te kiezen op het startscherm. De kaart, de rijken en de jaren zijn hetzelfde, maar er zijn geen ontwikkelingen. In plaats daarvan verdien je EXP: 2 per jaar, 4 voor elke provincie die je erbij krijgt (8 voor een hoofdstad), 3 voor elke verdediging die je wint, 3 voor elke provincie die je kwijtraakt en 1 voor een mislukte aanval. De balk bovenaan het scherm laat het zien. Bij elk nieuw niveau kies je 1 van 3 kaarten, en elk niveau vraagt iets meer EXP dan het vorige. De 3 kaarten zijn altijd even zeldzaam: Gewoon, Zeldzaam, Episch of Legendarisch. Later in het spel komen de zeldzame trekkingen vaker, en opnieuw trekken geeft nieuwe kaarten van dezelfde soort. Er is altijd een Vervloekte kaart als 4e keuze: sterk, maar met een prijs. Elke kaart hoort bij een soort (Handel, Oorlog, Bestuur of Geloof), en 3, 5 en 7 kaarten van één soort geven een setbonus. Gewone en Zeldzame kaarten kun je vaker kiezen, en de kopieën tellen op. Opnieuw trekken kost goud. Alleen jij krijgt kaarten. Fortuinspellen hebben hun eigen opslag en hun eigen ranglijst.</p>
         </div>
       </details>
       <details>
@@ -806,6 +806,7 @@
     <div class="box">
       <h1 data-t>🏆 Leaderboard</h1>
       <div id="board-form"></div>
+      <div class="diff" id="board-mode"></div>
       <div class="diff" id="board-cat"></div>
       <div class="diff" id="board-diff"></div>
       <div id="board-status"></div>
@@ -1266,6 +1267,7 @@ const NL = {
   "{} is #{} on the Lords of the Low Countries leaderboard ({}), playing {}. Can you do better?": "{0} staat #{1} op de ranglijst van Lords of the Low Countries ({2}), met {3}. Kun jij het beter?",
   "{} played Lords of the Low Countries as {}. Can you do better?": "{0} speelde Lords of the Low Countries als {1}. Kun jij het beter?",
   "{} · #{} on the leaderboard": "{0} · #{1} op de ranglijst",
+  "{} · #{} on the Fortune leaderboard": "{0} · #{1} op de Fortuinranglijst",
   "Your name goes on the picture, so everyone knows whose realm this is.": "Je naam komt op de afbeelding, zodat iedereen weet wiens rijk dit is.",
   "Also put my result on the leaderboard 🏆": "Zet mijn resultaat ook op de ranglijst 🏆",
   // Privacy and online errors
@@ -1454,14 +1456,13 @@ const NL = {
   "The Bishop will not make peace with an excommunicated lord.": "De bisschop sluit geen vrede met een geëxcommuniceerde heer.",
   " · Fortune, {} cards": " · Fortuin, {0} kaarten",
   "Your cards 🃏": "Je kaarten 🃏",
-  "Fortune runs are not on the leaderboard.": "Fortuinspellen staan niet op de ranglijst.",
   "Cards": "Kaarten",
   "🃏 Level {} · {}/{} EXP": "🃏 Niveau {0} · {1}/{2} EXP",
   "Level {} · {}/{} EXP to the next card": "Niveau {0} · {1}/{2} EXP tot de volgende kaart",
   "EXP: +{} every year, +{} for every province you gain (+{} more for a capital), +{} for every defense you win, +{} for every province you lose, +{} for a failed attack.": "EXP: +{0} per jaar, +{1} voor elke provincie die je erbij krijgt (+{2} extra voor een hoofdstad), +{3} voor elke verdediging die je wint, +{4} voor elke provincie die je kwijtraakt, +{5} voor een mislukte aanval.",
   "Level {}!": "Niveau {0}!",
   "Fortune smiles. Pick a card. Treasury: {} 💰": "Het lot lacht je toe. Kies een kaart. Schatkist: {0} 💰",
-  "Fortune: earn EXP and pick cards, no developments, no leaderboard.": "Fortuin: verdien EXP en kies kaarten, geen ontwikkelingen, geen ranglijst.",
+  "Fortune: earn EXP and pick cards, no developments, own leaderboard.": "Fortuin: verdien EXP en kies kaarten, geen ontwikkelingen, eigen ranglijst.",
   "You took {}.": "Je koos {0}.",
   " {} {} set bonus: {}!": " Setbonus {0} {1}: {2}!",
   "you have {}": "je hebt er {0}",
@@ -1481,6 +1482,7 @@ const NL = {
   "Continue Fortune": "Verder met Fortuin",
   "Campaign": "Veldtocht",
   "Fortune 🃏": "Fortuin 🃏",
+  "Fortune": "Fortuin",
   "Fortune: ": "Fortuin: "
 };
 
@@ -3728,10 +3730,10 @@ function renderPanel() {
       <div class="spacer"></div>
       <div class="row">
         <button class="act light" data-do="share">${T`Share 📤`}</button>
-        ${isFortune() ? `<button class="act light" data-do="cards">${T`Your cards 🃏`}</button>`
-          : online() ? `<button class="act light" data-do="${e.won && !(game.submitted || {})[e.final ? "united" : "victory"] ? "addscore" : "board"}">${T`Leaderboard 🏆`}</button>` : ""}
+        ${online() ? `<button class="act light" data-do="${e.won && !(game.submitted || {})[e.final ? "united" : "victory"] ? "addscore" : "board"}">${T`Leaderboard 🏆`}</button>`
+          : isFortune() ? `<button class="act light" data-do="cards">${T`Your cards 🃏`}</button>` : ""}
       </div>
-      ${isFortune() ? `<div class="hint">${T`Fortune runs are not on the leaderboard.`}</div>` : ""}
+      ${isFortune() && online() ? `<div class="row"><button class="act light" data-do="cards">${T`Your cards 🃏`}</button></div>` : ""}
       <div class="row">
         ${e.final ? "" : `<button class="act go" data-do="keepplaying">${e.won ? T`Keep conquering` : T`Fight on`}</button>`}
         <button class="act ${e.final ? "" : "light"}" data-do="newgame">${T`New game`}</button>
@@ -4461,7 +4463,7 @@ function toggleSound() {
 // =====================================================================
 
 const ONLINE = { url: "https://ktvkqdxxpfmferhdjapz.supabase.co", key: "sb_publishable_erRlVVHE-3PEDIB470-zKA_klja3q7W" };
-const GAME_VERSION = "2026-11-18.5";
+const GAME_VERSION = "2026-11-18.6";
 
 // Leaderboard name rules. The same rules run in the database (source/supabase-security.sql),
 // this copy only gives the player a friendly message first. The word list is generated
@@ -4568,9 +4570,12 @@ function logFinish(won, final) {
 }
 
 // --- Leaderboard ---
-const board = { difficulty: "normal", category: "victory", highlight: null, submitting: false };
+// mode: "campaign" or "fortune", the two leaderboards never mix
+const board = { mode: "campaign", difficulty: "normal", category: "victory", highlight: null, submitting: false };
 
 function openBoard(submit) {
+  const inGame = document.getElementById("start").style.display === "none" && game && game.player;
+  board.mode = submit || inGame ? (isFortune() ? "fortune" : "campaign") : chosenMode;
   board.difficulty = submit ? game.difficulty : (board.difficulty || chosenDifficulty);
   board.category = submit ? (game.endInfo && game.endInfo.final ? "united" : "victory") : board.category;
   board.submitting = Boolean(submit);
@@ -4585,7 +4590,7 @@ function renderBoardForm() {
   const name = savedName();
   const years = game.year - RULES.startYear;
   form.innerHTML = `
-    <div>${crest(game.player, 28)} <b>${REALMS[game.player].name}</b>: ${board.category === "united" ? T`united the Low Countries in ${years} ${yearsWord(years)}` : T`victory in ${years} ${yearsWord(years)}`} (${tr(diff().label).toLowerCase()})</div>
+    <div>${crest(game.player, 28)} <b>${REALMS[game.player].name}</b>: ${board.category === "united" ? T`united the Low Countries in ${years} ${yearsWord(years)}` : T`victory in ${years} ${yearsWord(years)}`} (${tr(diff().label).toLowerCase()}${board.mode === "fortune" ? `, ${T`Fortune`}` : ""})</div>
     <div class="row">
       <input id="board-name" maxlength="20" placeholder="${T`Your name`}" value="${name.replace(/"/g, "&quot;")}">
       <button class="act go" id="board-submit">${T`Add`}</button>
@@ -4598,24 +4603,24 @@ function renderBoardForm() {
 
 // The leaderboard this game's result belongs on, if it's a win
 const scoreCategory = () => (game.endInfo && game.endInfo.won ? (game.endInfo.final ? "united" : "victory") : null);
-// Fortune runs never go on the leaderboard (the database has no column for the mode yet)
-const canSubmitScore = () => online() && !isFortune() && scoreCategory() && !(game.submitted || {})[scoreCategory()];
+// Campaign and Fortune results go on separate leaderboards (the mode column in scores)
+const canSubmitScore = () => online() && scoreCategory() && !(game.submitted || {})[scoreCategory()];
 function savedName() { try { return localStorage.getItem("lords-name") || ""; } catch (e) { return ""; } }
 
 // Adds this game to the leaderboard; returns its place (1 = best)
 async function postScore(name) {
-  if (isFortune()) throw new ApiError(0, "fortune");   // never mix Fortune scores with the campaign
   const category = scoreCategory(), years = game.year - RULES.startYear;
+  const mode = isFortune() ? "fortune" : "campaign";
   await api("scores", { method: "POST", body: JSON.stringify({
     name, realm: game.player, difficulty: game.difficulty, category,
-    years, provinces: provincesOf(game.player).length
+    years, provinces: provincesOf(game.player).length, mode
   }) });
   game.submitted = game.submitted || {};
   game.submitted[category] = true;
   game.notice = null;
   board.highlight = { name, years };
   try {
-    const faster = await api(`scores?select=years&difficulty=eq.${game.difficulty}&category=eq.${category}&years=lt.${years}&limit=1000`);
+    const faster = await api(`scores?select=years&mode=eq.${mode}&difficulty=eq.${game.difficulty}&category=eq.${category}&years=lt.${years}&limit=1000`);
     return faster.length + 1;
   } catch (e) { return null; }
 }
@@ -4646,6 +4651,8 @@ async function submitScore() {
 }
 
 async function loadBoard() {
+  document.getElementById("board-mode").innerHTML = [["campaign", T`Campaign`], ["fortune", T`Fortune 🃏`]]
+    .map(([id, label]) => `<button class="${id === board.mode ? "on" : ""}" data-board-mode="${id}">${label}</button>`).join("");
   document.getElementById("board-diff").innerHTML = Object.entries(DIFFICULTY)
     .map(([id, d]) => `<button class="${id === board.difficulty ? "on" : ""}" data-board-diff="${id}">${tr(d.label)}</button>`).join("");
   document.getElementById("board-cat").innerHTML = [["victory", T`Fastest victory`], ["united", T`Whole country`]]
@@ -4655,7 +4662,7 @@ async function loadBoard() {
   list.innerHTML = "";
   status.textContent = T`Loading…`;
   try {
-    const rows = await api(`scores?select=name,realm,years,created_at&difficulty=eq.${board.difficulty}&category=eq.${board.category}&order=years.asc,created_at.asc&limit=25`);
+    const rows = await api(`scores?select=name,realm,years,created_at&mode=eq.${board.mode}&difficulty=eq.${board.difficulty}&category=eq.${board.category}&order=years.asc,created_at.asc&limit=25`);
     status.textContent = rows.length ? "" : T`No one is on this board yet. Be the first!`;
     const h = board.highlight;
     list.innerHTML = rows.map((r, i) => `
@@ -4674,7 +4681,8 @@ function escapeHtml(text) {
 }
 
 document.getElementById("board").addEventListener("click", (e) => {
-  const d = e.target.closest("[data-board-diff]"), c = e.target.closest("[data-board-cat]");
+  const d = e.target.closest("[data-board-diff]"), c = e.target.closest("[data-board-cat]"), m = e.target.closest("[data-board-mode]");
+  if (m && !board.submitting) { board.mode = m.dataset.boardMode; loadBoard(); }
   if (d) { board.difficulty = d.dataset.boardDiff; loadBoard(); }
   if (c) { board.category = c.dataset.boardCat; loadBoard(); }
 });
@@ -4782,7 +4790,7 @@ async function buildShareImage(name, rank) {
   c.fillText(T`${years} ${yearsWord(years)} · ${battlesWon(s.won)} · ${tr(diff().label)} difficulty`, 260, 1198);
   if (name) {
     c.font = "800 32px Cinzel"; c.fillStyle = "#7a2e22";
-    c.fillText(rank ? T`${name} · #${rank} on the leaderboard` : name, 260, 1246);
+    c.fillText(rank ? (isFortune() ? T`${name} · #${rank} on the Fortune leaderboard` : T`${name} · #${rank} on the leaderboard`) : name, 260, 1246);
   }
   c.textAlign = "center";
   c.font = "600 28px Cinzel"; c.fillStyle = "#6b5338";
@@ -5203,7 +5211,7 @@ function renderDifficulty() {
     .map(([id, d]) => `<button class="${id === chosenDifficulty ? "on" : ""}" data-level="${id}">${tr(d.label)}</button>`).join("");
   // In Fortune the line also says what the mode is
   document.getElementById("difficulty-text").textContent = tr(DIFFICULTY[chosenDifficulty].text) +
-    (chosenMode === "fortune" ? " " + T`Fortune: earn EXP and pick cards, no developments, no leaderboard.` : "");
+    (chosenMode === "fortune" ? " " + T`Fortune: earn EXP and pick cards, no developments, own leaderboard.` : "");
 }
 document.getElementById("difficulty").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-level]");

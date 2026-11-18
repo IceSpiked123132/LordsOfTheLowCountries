@@ -480,6 +480,12 @@ do $$ begin
   end if;
 end $$;
 grant insert (name, realm, difficulty, category, years, provinces) on public.scores to anon;
+-- The Fortune leaderboard column (added by supabase-fortune-stats.sql), granted again when it exists.
+do $$ begin
+  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'scores' and column_name = 'mode') then
+    grant insert (mode) on public.scores to anon;
+  end if;
+end $$;
 grant select on public.scores to anon;
 grant insert (message, contact, realm, year, difficulty, version) on public.feedback to anon;
 
@@ -664,4 +670,17 @@ order by games desc, card;
 
 grant select on public.stats_overview, public.stats_daily, public.stats_realms,
   public.stats_fortune_overview, public.stats_fortune_realms, public.stats_fortune_cards to anon;
+
+-- ---------- 6. Fortune leaderboard ----------
+-- Same categories (victory, united), same checks and the same rate limit as the campaign;
+-- the mode keeps the two boards apart.
+
+alter table public.scores add column if not exists mode text not null default 'campaign';
+do $$ begin
+  alter table public.scores add constraint scores_mode_check check (mode in ('campaign', 'fortune'));
+exception when duplicate_object then null; end $$;
+
+grant insert (mode) on public.scores to anon;
+
+create index if not exists scores_mode_board_idx on public.scores (mode, difficulty, category, years, created_at);
 -- END FORTUNE STATS

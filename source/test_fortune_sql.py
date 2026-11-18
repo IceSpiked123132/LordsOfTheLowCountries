@@ -16,8 +16,8 @@ def psql(sql, db="postgres", file=None):
     r = subprocess.run(args, capture_output=True, text=True)
     return r.stdout.strip() if r.returncode == 0 else "ERR " + r.stderr.strip()
 
-def post(body):
-    req = urllib.request.Request(f"{BASE}/events", data=json.dumps(body).encode(), method="POST",
+def post(body, table="events"):
+    req = urllib.request.Request(f"{BASE}/{table}", data=json.dumps(body).encode(), method="POST",
         headers={"Content-Type": "application/json", "Prefer": "return=minimal", "apikey": "x"})
     try:
         with urllib.request.urlopen(req) as r: return r.status, ""
@@ -26,8 +26,8 @@ def post(body):
         except Exception: msg = ""
         return e.code, msg
 
-def get(view):
-    with urllib.request.urlopen(urllib.request.Request(f"{BASE}/{view}?select=*", headers={"apikey": "x"})) as r:
+def get(view, query="select=*"):
+    with urllib.request.urlopen(urllib.request.Request(f"{BASE}/{view}?{query}", headers={"apikey": "x"})) as r:
         return json.loads(r.read().decode())
 
 fails = 0
@@ -81,6 +81,21 @@ check("cards: march taken in 2 games, 1 win", fc.get("march"), (2, 2, 1))
 check("cards: goedendag 1 game, no win", fc.get("goedendag"), (1, 1, 0))
 check("the public key still can't read raw events", psql("set role anon; select count(*) from public.events").startswith("ERR"), True)
 
+print("== Fortune leaderboard (mode on scores)")
+def sc(**kw):
+    b = {"name": "Jonathan", "realm": "holland", "difficulty": "normal", "category": "victory", "years": 24, "provinces": 16}; b.update(kw); return b
+check("campaign score without mode (older game versions)", post(sc(), "scores"), (201, ""))
+check("campaign score with mode campaign", post(sc(mode="campaign", years=30), "scores"), (201, ""))
+check("fortune score", post(sc(mode="fortune", years=18), "scores"), (201, ""))
+check("fortune united score", post(sc(mode="fortune", category="united", years=40, provinces=31), "scores"), (201, ""))
+check("unknown mode refused (check constraint)", post(sc(mode="arcade"), "scores")[0], 400)
+check("fortune score still gets the normal checks", post(sc(mode="fortune", provinces=40), "scores"), (400, "score_invalid"))
+check("fortune score still gets the name rules", post(sc(mode="fortune", name="www.spam.com"), "scores")[0], 400)
+check("campaign board shows only campaign scores",
+      [x["years"] for x in get("scores", "select=years&mode=eq.campaign&category=eq.victory&order=years")], [24, 30])
+check("fortune board shows only fortune scores",
+      [x["years"] for x in get("scores", "select=years&mode=eq.fortune&category=eq.victory&order=years")], [18])
+
 print("== Existing database: old setup, then this file twice, then security.sql again")
 root = HERE.parent
 old_setup = subprocess.run(["git", "-C", str(root), "show", "cb59990:source/supabase-setup.sql"], capture_output=True, text=True).stdout
@@ -92,11 +107,15 @@ psql("insert into public.events (kind, realm, difficulty) values ('start', 'brab
 check("fortune file runs on the old database", psql(None, "olddb", str(HERE / "supabase-fortune-stats.sql")).startswith("ERR"), False)
 check("and runs a second time", psql(None, "olddb", str(HERE / "supabase-fortune-stats.sql")).startswith("ERR"), False)
 check("old rows became campaign rows", psql("select mode from public.events", "olddb"), "campaign")
+psql("insert into public.scores (name, realm, difficulty, category, years, provinces) values ('Old', 'gelre', 'normal', 'victory', 30, 16)", "olddb")
+check("old leaderboard rows are on the campaign board", psql("select mode from public.scores", "olddb"), "campaign")
 check("security file runs again afterwards", psql(None, "olddb", str(HERE / "supabase-security.sql")).startswith("ERR"), False)
 ins = "set role anon; insert into public.events (kind, realm, difficulty, result, years, provinces, battles_won, battles_lost, mode, level, cards) values ('finish', 'utrecht', 'hard', 'defeat', 50, 4, 3, 9, 'fortune', 5, 'tithes,pact'); select 'ok'"
 check("Fortune row still accepted for the public key", psql(ins, "olddb").splitlines()[-1], "ok")
 check("campaign row still accepted for the public key",
       psql("set role anon; insert into public.events (kind, realm, difficulty) values ('start', 'gelre', 'normal'); select 'ok'", "olddb").splitlines()[-1], "ok")
+check("Fortune score still accepted for the public key after security.sql",
+      psql("set role anon; insert into public.scores (name, realm, difficulty, category, years, provinces, mode) values ('Jan', 'brabant', 'hard', 'victory', 20, 16, 'fortune'); select 'ok'", "olddb").splitlines()[-1], "ok")
 check("public key reads the fortune card view",
       psql("set role anon; select card || ':' || games from public.stats_fortune_cards order by card", "olddb").splitlines()[1:], ["pact:1", "tithes:1"])
 check("security file runs again on the fresh database too",
